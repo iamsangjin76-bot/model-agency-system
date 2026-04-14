@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"echo test\")",
+      "Bash(cmd /c \"dir /a\")",
+      "Bash(cmd /c \"dir /a E:\"\")",
+      "Bash(cmd /c \"dir E:\"\")",
+      "Bash(cmd /c \"wmic logicaldisk get caption,description,drivetype,filesystem,freespace,size,status 2>&1 & echo DONE\")",
+      "Bash(cmd /c \"fsutil fsinfo drives & echo END\")",
+      "Bash(cmd /c \"dir & echo ---END---\")",
+      "Bash(cmd /c \"powershell -Command Get-ChildItem -Path ''E:\\\\Project M\\\\model-agency-system'' -Force | Select-Object Name,Length,LastWriteTime | Out-String\")",
+      "Bash(cmd /c \"powershell -NoProfile -Command \"\"Get-ChildItem -Path ''E:\\\\Project M\\\\model-agency-system'' -Force | Out-String\"\" 2>&1\")",
+      "Bash(cmd /c \"powershell -NoProfile -Command \"\"[System.IO.Directory]::GetFiles\\(''E:\\\\Project M\\\\model-agency-system''\\)\"\" 2>&1\")",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npm:*)",
+      "Bash(dir:*)",
+      "Bash(python -c:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pkill:*)",
+      "Bash(source:*)",
+      "Bash(GIT_DIR=\"F:/Project M/model-agency-system/.git\" GIT_WORK_TREE=\"F:/Project M/model-agency-system\" git status:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "sequential-thinking"
+  ]
+}
