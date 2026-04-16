@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS, ROLE_COLORS, AdminRole } from '@/types/auth';
-import { modelsAPI, castingsAPI } from '@/services/api';
+import { modelsAPI, castingsAPI, settlementsAPI } from '@/services/api';
 import ModelListPage from './ModelListPage';
 import ModelFormPage from './ModelFormPage';
 import NewsSearchPage from './NewsSearchPage';
@@ -15,6 +15,10 @@ import SchedulePage from './SchedulePage';
 import ContractPage from './ContractPage';
 import SettlementPage from './SettlementPage';
 import AdminManagementPage from './AdminManagementPage';
+import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import {
   LayoutDashboard,
   Users,
@@ -64,6 +68,9 @@ function DashboardHome() {
   const { admin } = useAuth();
   const [modelCount, setModelCount] = useState<string>('-');
   const [castingCount, setCastingCount] = useState<string>('-');
+  const [modelChartData, setModelChartData] = useState<{name:string;value:number}[]>([]);
+  const [castingChartData, setCastingChartData] = useState<{name:string;value:number}[]>([]);
+  const [settlementData, setSettlementData] = useState<{income:number;expense:number}>({income:0,expense:0});
 
   useEffect(() => {
     modelsAPI.stats()
@@ -179,6 +186,31 @@ function DashboardHome() {
           </div>
         </div>
       </div>
+      {/* 통계 차트 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold mb-4">모델 성별 분포</h3>
+          {modelChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart><Pie data={modelChartData} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({name,value})=>`${name} ${value}`}>{modelChartData.map((_,i) => (<Cell key={i} fill={['#6366f1','#ec4899','#a3e635'][i%3]} />))}</Pie><Tooltip /></PieChart>
+            </ResponsiveContainer>
+          ) : (<div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">데이터 없음</div>)}
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold mb-4">캐스팅 현황</h3>
+          {castingChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={castingChartData} barSize={28}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" tick={{fontSize:12}} /><YAxis allowDecimals={false} tick={{fontSize:12}} /><Tooltip /><Bar dataKey="value" name="건수" fill="#818cf8" radius={[4,4,0,0]} /></BarChart>
+            </ResponsiveContainer>
+          ) : (<div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">데이터 없음</div>)}
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold mb-4">정산 요약</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={[{name:'수입',value:settlementData.income},{name:'지출',value:settlementData.expense}]} barSize={40}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" tick={{fontSize:13}} /><YAxis tickFormatter={(v)=>`${(v/10000).toFixed(0)}만`} tick={{fontSize:11}} /><Tooltip formatter={(v:any)=>`${Number(v).toLocaleString()}원`} /><Bar dataKey="value" name="금액" radius={[4,4,0,0]}><Cell fill="#34d399" /><Cell fill="#f87171" /></Bar></BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }
@@ -281,7 +313,7 @@ export default function DashboardPage() {
       {/* 메인 콘텐츠 */}
       <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
         {/* 헤더 */}
-        <header className="h-16 bg-whiteborder-b border-gray-200 flex items-center justify-between px-4 lg:px-8">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
