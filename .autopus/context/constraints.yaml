@@ -1,0 +1,52 @@
+deny:
+  # Python patterns
+  - pattern: "print("
+    reason: Production logs require structured logging, not print
+    suggest: "Use logger.info(), logger.error() with appropriate level"
+    category: logging
+  - pattern: "except:"
+    reason: Bare except hides bugs by swallowing all exceptions
+    suggest: "Catch specific exceptions, e.g. `except Exception as e:`"
+    category: error-handling
+  - pattern: "eval("
+    reason: Arbitrary code execution is a critical security risk
+    suggest: Use json.loads or ast.literal_eval for safe parsing
+    category: security
+  - pattern: "exec("
+    reason: Arbitrary code execution is a critical security risk
+    suggest: Avoid; restructure to not require dynamic execution
+    category: security
+  - pattern: "os.system("
+    reason: Shell injection risk when called with user input
+    suggest: "Use subprocess.run([...], shell=False) with list args"
+    category: security
+  # React/TypeScript patterns
+  - pattern: ": any"
+    reason: "Using `any` nullifies TypeScript's value"
+    suggest: "Use precise types or `unknown` with type guards"
+    category: typescript
+  - pattern: "// @ts-ignore"
+    reason: Hides errors without fixing root cause
+    suggest: "Use `// @ts-expect-error` with reason, or fix the type"
+    category: typescript
+  - pattern: "dangerouslySetInnerHTML"
+    reason: XSS risk when rendering raw HTML
+    suggest: Use default text rendering; sanitize with DOMPurify if HTML required
+    category: security
+  - pattern: "eval("
+    reason: Arbitrary execution in browser = XSS vector
+    suggest: Use JSON.parse or safer alternatives
+    category: security
+  - pattern: "// @ts-nocheck"
+    reason: Disables type checking for entire file
+    suggest: Remove; fix underlying type errors
+    category: typescript
+  # Project-specific patterns
+  - pattern: "patch_*.py"
+    reason: Text-replacement scripts caused bugs (2026-04-16 incident)
+    suggest: Use executor/debugger agents for direct code edits
+    category: project-rule
+  - pattern: 'SECRET_KEY = "'
+    reason: Secrets must not be embedded in source
+    suggest: Read from .env via environment variables
+    category: security
