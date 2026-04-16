@@ -55,6 +55,17 @@ export interface Schedule {
   location?: string; memo?: string; status?: string;
 }
 
+export interface ActivityLogEntry {
+  id: number;
+  action: string;
+  target_type: string | null;
+  target_id: number | null;
+  target_name: string | null;
+  details: string | null;
+  admin_id: number;
+  created_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Helper: build query string from optional params
 // ---------------------------------------------------------------------------
@@ -137,6 +148,13 @@ export const schedulesAPI = {
   delete: (id: number) => request(`/schedules/${id}`, { method: 'DELETE' }),
 };
 
+export const activityLogsAPI = {
+  /** Fetch the N most recent activity log entries. */
+  recent: (limit = 5) =>
+    request<{ items: ActivityLogEntry[]; total: number }>(
+      `/activity-logs?page=1&page_size=${limit}`),
+};
+
 /** Direct localStorage read needed for multipart upload (bypasses request helper). */
 const getStoredToken = (): string | null => localStorage.getItem('access_token');
 
@@ -164,7 +182,7 @@ export const filesAPI = {
 const domainApi = {
   models: modelsAPI, clients: clientsAPI, castings: castingsAPI,
   contracts: contractsAPI, settlements: settlementsAPI,
-  schedules: schedulesAPI, files: filesAPI,
+  schedules: schedulesAPI, files: filesAPI, activityLogs: activityLogsAPI,
 };
 
 export default domainApi;

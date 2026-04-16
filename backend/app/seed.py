@@ -7,7 +7,7 @@ Run with: python -m app.seed  (from the backend/ directory)
 from datetime import date
 import bcrypt
 
-from app.models.database import SessionLocal, Admin, Model, AdminRole, ModelType, Gender
+from app.models.database import SessionLocal, Admin, Model, AdminRole, ModelType, Gender, ActivityLog
 from app.routers.clients import Client, ClientGrade, Industry
 from app.routers.castings import Casting, CastingType, CastingStatus
 from app.routers.contracts import Contract, ContractType, ContractStatus
@@ -215,6 +215,39 @@ def seed_settlements(db, contract_ids: dict, model_ids: dict, client_ids: dict):
     return inserted, skipped
 
 
+def seed_activity_logs(db, admin_ids: dict):
+    """Insert activity log records using the super admin."""
+    admin_id = admin_ids["admin"]
+    records = [
+        dict(action="create", target_type="model", target_name="김민지",
+             details="신규 모델 등록", admin_id=admin_id),
+        dict(action="update", target_type="casting", target_name="봄 화장품 CF 캐스팅",
+             details="캐스팅 상태 확정", admin_id=admin_id),
+        dict(action="create", target_type="contract", target_name="김민지 전속 계약",
+             details="전속 계약 신규 생성", admin_id=admin_id),
+        dict(action="update", target_type="settlement", target_name="Q1 에이전시 수수료",
+             details="정산 완료 처리", admin_id=admin_id),
+        dict(action="login", target_type=None, target_name=None,
+             details="관리자 로그인", admin_id=admin_id),
+    ]
+    inserted = skipped = 0
+    for r in records:
+        existing = db.query(ActivityLog).filter(
+            ActivityLog.admin_id == r["admin_id"],
+            ActivityLog.action == r["action"],
+            ActivityLog.target_type == r["target_type"],
+            ActivityLog.target_name == r["target_name"],
+        ).first()
+        if existing:
+            skipped += 1
+        else:
+            obj = ActivityLog(**r)
+            db.add(obj)
+            db.flush()
+            inserted += 1
+    return inserted, skipped
+
+
 def run():
     """Orchestrate seeding in FK-safe order with a single transaction."""
     # Ensure all tables exist before inserting
@@ -235,19 +268,21 @@ def run():
         contract_ids, co_ins, co_sk = seed_contracts(db, model_ids, client_ids)
         sc_ins, sc_sk = seed_schedules(db, model_ids, client_ids, casting_ids)
         se_ins, se_sk = seed_settlements(db, contract_ids, model_ids, client_ids)
+        al_ins, al_sk = seed_activity_logs(db, admin_ids)
 
         db.commit()
 
-        total_ins = a_ins + cl_ins + m_ins + ca_ins + co_ins + sc_ins + se_ins
+        total_ins = a_ins + cl_ins + m_ins + ca_ins + co_ins + sc_ins + se_ins + al_ins
         print("=== Seed 완료 ===")
-        print(f"admins:      {a_ins}건 삽입 ({a_sk}건 스킵)")
-        print(f"clients:     {cl_ins}건 삽입 ({cl_sk}건 스킵)")
-        print(f"models:      {m_ins}건 삽입 ({m_sk}건 스킵)")
-        print(f"castings:    {ca_ins}건 삽입 ({ca_sk}건 스킵)")
-        print(f"contracts:   {co_ins}건 삽입 ({co_sk}건 스킵)")
-        print(f"schedules:   {sc_ins}건 삽입 ({sc_sk}건 스킵)")
-        print(f"settlements: {se_ins}건 삽입 ({se_sk}건 스킵)")
-        print(f"총계:        {total_ins}건 삽입")
+        print(f"admins:        {a_ins}건 삽입 ({a_sk}건 스킵)")
+        print(f"clients:       {cl_ins}건 삽입 ({cl_sk}건 스킵)")
+        print(f"models:        {m_ins}건 삽입 ({m_sk}건 스킵)")
+        print(f"castings:      {ca_ins}건 삽입 ({ca_sk}건 스킵)")
+        print(f"contracts:     {co_ins}건 삽입 ({co_sk}건 스킵)")
+        print(f"schedules:     {sc_ins}건 삽입 ({sc_sk}건 스킵)")
+        print(f"settlements:   {se_ins}건 삽입 ({se_sk}건 스킵)")
+        print(f"activity_logs: {al_ins}건 삽입 ({al_sk}건 스킵)")
+        print(f"총계:          {total_ins}건 삽입")
     except Exception:
         db.rollback()
         raise

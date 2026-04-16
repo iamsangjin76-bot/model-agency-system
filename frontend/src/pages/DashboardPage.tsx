@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS, ROLE_COLORS, AdminRole } from '@/types/auth';
-import { modelsAPI, castingsAPI, settlementsAPI } from '@/services/api';
+import { modelsAPI, castingsAPI, settlementsAPI, activityLogsAPI, ActivityLogEntry } from '@/services/api';
 import ModelListPage from './ModelListPage';
 import ModelFormPage from './ModelFormPage';
 import NewsSearchPage from './NewsSearchPage';
@@ -63,6 +63,32 @@ const menuItems = [
   { path: '/dashboard/settings', icon: Settings, label: '시스템 설정', permission: 'settings' },
 ];
 
+// Map raw action + target_type to a Korean display string
+function formatAction(action: string, targetType: string | null): string {
+  const typeLabel: Record<string, string> = {
+    model: '모델', client: '고객사', casting: '캐스팅',
+    contract: '계약', settlement: '정산', schedule: '일정',
+  };
+  const actionLabel: Record<string, string> = {
+    create: '등록', update: '수정', delete: '삭제',
+    login: '로그인', logout: '로그아웃',
+  };
+  const t = targetType ? (typeLabel[targetType] ?? targetType) : '';
+  const a = actionLabel[action] ?? action;
+  return t ? `${t} ${a}` : a;
+}
+
+// Convert ISO timestamp to relative Korean string
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '방금 전';
+  if (min < 60) return `${min}분 전`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}시간 전`;
+  return `${Math.floor(hr / 24)}일 전`;
+}
+
 // 대시보드 홈 컴포넌트
 function DashboardHome() {
   const { admin } = useAuth();
@@ -71,6 +97,7 @@ function DashboardHome() {
   const [modelChartData, setModelChartData] = useState<{name:string;value:number}[]>([]);
   const [castingChartData, setCastingChartData] = useState<{name:string;value:number}[]>([]);
   const [settlementData, setSettlementData] = useState<{income:number;expense:number}>({income:0,expense:0});
+  const [recentActivity, setRecentActivity] = useState<ActivityLogEntry[]>([]);
 
   useEffect(() => {
     modelsAPI.stats()
@@ -105,6 +132,10 @@ function DashboardHome() {
       .then((data: any) => {
         setSettlementData({ income: data.total_income || 0, expense: data.total_expense || 0 });
       })
+      .catch(() => {});
+
+    activityLogsAPI.recent(5)
+      .then((data) => setRecentActivity(data.items))
       .catch(() => {});
   }, []);
 
@@ -192,20 +223,19 @@ function DashboardHome() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold mb-4">최근 활동</h3>
           <div className="space-y-4">
-            {[
-              { action: '모델 프로필 수정', target: '김모델', time: '5분 전' },
-              { action: '뉴스 기사 저장', target: '홍길동 관련', time: '15분 전' },
-              { action: '이미지 다운로드', target: '박지민', time: '1시간 전' },
-              { action: 'PPT 생성', target: '이수진', time: '2시간 전' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div>
-                  <p className="font-medium text-gray-800">{activity.action}</p>
-                  <p className="text-sm text-gray-500">{activity.target}</p>
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">최근 활동이 없습니다.</p>
+            ) : (
+              recentActivity.map((log) => (
+                <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                  <div>
+                    <p className="font-medium text-gray-800">{formatAction(log.action, log.target_type)}</p>
+                    <p className="text-sm text-gray-500">{log.target_name ?? '-'}</p>
+                  </div>
+                  <span className="text-xs text-gray-400">{formatRelativeTime(log.created_at)}</span>
                 </div>
-                <span className="text-xs text-gray-400">{activity.time}</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
