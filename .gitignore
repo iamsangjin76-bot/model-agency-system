@@ -1,4 +1,58 @@
 
+# ========== Python ==========
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+backend/venv/
+backend/.venv/
+
+# ========== Environment / Secrets ==========
+.env
+.env.local
+.env.*.local
+!.env.sample
+!.env.example
+
+# ========== Databases ==========
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ========== Logs ==========
+*.log
+logs/
+
+# ========== OS ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========== IDE ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========== Build / Dist ==========
+dist/
+build/
+*.exe
+*.zip
+
+# ========== Uploads (런타임 사용자 데이터) ==========
+backend/uploads/
+backend/model_files/
+
 # Autopus-ADK generated files
 .claude/rules/autopus/
 .claude/skills/autopus/
