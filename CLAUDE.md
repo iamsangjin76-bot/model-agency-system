@@ -19,7 +19,7 @@
 IMPORTANT: Follow these language settings strictly for all work in this project.
 
 - **Code comments**: Write all code comments, docstrings, and inline documentation in English (en)
-- **Commit messages**: Write all git commit messages in English (en)
+- **Commit messages**: Summary line in English; body and trailers in Korean allowed (commits: ko)
 - **AI responses**: Respond to the user in English (en)
 
 ## Core Guidelines
