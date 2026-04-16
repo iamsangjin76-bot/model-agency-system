@@ -152,6 +152,11 @@ See .codex/skills/agent-pipeline.md for phase and gate contracts.
 See .codex/agents/ for Codex agent definitions.
 See .opencode/rules/autopus/ for OpenCode guidance.
 
+## 📘 이 프로젝트의 표준 워크플로
+
+작업 난이도별 지시문, 에이전트 치트시트, Worker Contract 4줄 템플릿,
+Lore 커밋 샘플은 `.autopus/WORKFLOW.md` 를 참고한다.
+
 ## ⚠️ 개발 금지 사항 (2026-04-16 Incident 기반)
 
 - `patch_*.py` 같은 자동 텍스트 치환 스크립트로 소스 코드를 수정하지 말 것
