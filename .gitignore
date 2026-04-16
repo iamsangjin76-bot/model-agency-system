@@ -49,6 +49,9 @@ build/
 *.exe
 *.zip
 
+# ========== Node ==========
+node_modules/
+
 # ========== Uploads (런타임 사용자 데이터) ==========
 backend/uploads/
 backend/model_files/
