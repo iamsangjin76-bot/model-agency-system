@@ -67,4 +67,9 @@ backend/model_files/
 .agents/skills/
 .agents/plugins/
 .autopus/
+# Autopus-ADK: 프로젝트 고유 지식은 추적, 리뷰/임시 폴더만 ignore
+!.autopus/
+.autopus/_review/
+.autopus/_tmp/
+.autopus/cache/
 .mcp.json
