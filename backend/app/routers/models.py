@@ -12,7 +12,7 @@ import os
 import math
 
 from app.config import settings
-from app.models.database import get_db, Model, ModelFile, ModelType
+from app.models.database import get_db, Model, ModelFile, ModelType, Gender
 from app.schemas import (
     ModelCreate, ModelUpdate, ModelResponse, ModelListResponse,
     ModelTypeEnum, GenderEnum, PaginatedResponse
@@ -40,9 +40,19 @@ async def get_model_stats(
         ).count()
         by_type[model_type.value] = count
 
+    # Aggregate model count by gender
+    by_gender = {}
+    for gender in Gender:
+        count = db.query(Model).filter(
+            Model.gender == gender,
+            Model.is_active == True
+        ).count()
+        by_gender[gender.value] = count
+
     return {
         "total": total,
-        "by_type": by_type
+        "by_type": by_type,
+        "by_gender": by_gender
     }
 
 

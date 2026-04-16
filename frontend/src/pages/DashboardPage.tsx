@@ -74,15 +74,38 @@ function DashboardHome() {
 
   useEffect(() => {
     modelsAPI.stats()
-      .then((data: any) => setModelCount(data.total?.toLocaleString() || '0'))
+      .then((data: any) => {
+        setModelCount(data.total?.toLocaleString() || '0');
+        // Transform gender breakdown into chart data with Korean labels
+        const genderLabels: Record<string, string> = { male: '남성', female: '여성', other: '기타' };
+        const genderData = Object.entries(data.by_gender || {})
+          .map(([key, val]) => ({ name: genderLabels[key] || key, value: val as number }))
+          .filter(entry => entry.value > 0);
+        setModelChartData(genderData);
+      })
       .catch(() => setModelCount('0'));
 
     castingsAPI.stats()
       .then((data: any) => {
         const total = Object.values(data.by_status || {}).reduce((a: any, b: any) => a + b, 0);
         setCastingCount(String(total));
+        // Transform status breakdown into chart data with Korean labels
+        const statusLabels: Record<string, string> = {
+          request: '의뢰', reviewing: '검토중', matching: '매칭중',
+          proposed: '제안완료', confirmed: '확정', completed: '완료', cancelled: '취소'
+        };
+        const castingData = Object.entries(data.by_status || {})
+          .map(([key, val]) => ({ name: statusLabels[key] || key, value: val as number }))
+          .filter(entry => entry.value > 0);
+        setCastingChartData(castingData);
       })
       .catch(() => setCastingCount('0'));
+
+    settlementsAPI.stats()
+      .then((data: any) => {
+        setSettlementData({ income: data.total_income || 0, expense: data.total_expense || 0 });
+      })
+      .catch(() => {});
   }, []);
 
   const stats = [
