@@ -76,3 +76,6 @@ backend/model_files/
 
 # Claude Code CLI local settings (env-specific, do not commit)
 .claude/settings.local.json
+
+# Browser agent capture artifacts (Phase D-1)
+.agent/browser/
