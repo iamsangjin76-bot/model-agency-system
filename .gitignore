@@ -73,3 +73,6 @@ backend/model_files/
 .autopus/_tmp/
 .autopus/cache/
 .mcp.json
+
+# Claude Code CLI local settings (env-specific, do not commit)
+.claude/settings.local.json
