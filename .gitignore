@@ -79,3 +79,9 @@ backend/model_files/
 
 # Browser agent capture artifacts (Phase D-1)
 .agent/browser/
+
+# .minimax vendor binaries (Phase D-2)
+.minimax/
+
+# Deprecated one-shot scripts (Phase D-2)
+patch_dashboard.py
