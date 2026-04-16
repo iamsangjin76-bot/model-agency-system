@@ -152,4 +152,14 @@ See .codex/skills/agent-pipeline.md for phase and gate contracts.
 See .codex/agents/ for Codex agent definitions.
 See .opencode/rules/autopus/ for OpenCode guidance.
 
+## ⚠️ 개발 금지 사항 (2026-04-16 Incident 기반)
+
+- `patch_*.py` 같은 자동 텍스트 치환 스크립트로 소스 코드를 수정하지 말 것
+- 모든 코드 수정은 Autopus-ADK의 executor/debugger 에이전트를 통해 진행할 것
+- 이유: 2026-04-16 `patch_dashboard.py`가 `</div>` 같은 범용 패턴을 매칭해서 `DashboardPage.tsx`에 차트 섹션을 중복 삽입 → 대시보드 전체가 빈 화면으로 렌더링되는 버그 발생
+- 예외적으로 자동화 스크립트가 필요하다면 세 가지 조건 필수:
+  - (a) 고유 문자열 매칭
+  - (b) 수정 후 문법 검증
+  - (c) 적용 횟수 카운트
+
 <!-- AUTOPUS:END -->
