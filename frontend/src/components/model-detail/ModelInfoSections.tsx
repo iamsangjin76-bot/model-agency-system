@@ -1,15 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Building2, Phone, User, Globe, Briefcase, Star, Instagram, Tag,
+  Building2, Phone, User, Globe, Briefcase, Star, Instagram, Youtube, Tag,
 } from 'lucide-react';
 import DetailSection from './DetailSection';
 
-// Format follower/subscriber count for display
+// Format follower/subscriber count with Korean units (만)
 function fmtNum(n?: number): string {
   if (!n) return '-';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toString();
+  if (n >= 100_000_000) return `${(n / 100_000_000).toFixed(1)}억`;
+  if (n >= 10_000) return `${(n / 10_000).toFixed(1)}만`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}천`;
+  return n.toLocaleString();
 }
 
 // Generic label-value row pair
@@ -37,6 +39,7 @@ interface Props {
 }
 
 export default function ModelInfoSections({ data }: Props) {
+  const navigate = useNavigate();
   const isForeign = data.model_type === 'foreign_model';
   const isCelebrity = data.model_type === 'celebrity';
 
@@ -155,41 +158,55 @@ export default function ModelInfoSections({ data }: Props) {
   const hasSNS = data.instagram_id || data.youtube_id || data.tiktok_id;
   const snsSection = hasSNS ? (
     <DetailSection title="SNS" icon={Instagram}>
-      <FieldGrid>
+      <div className="space-y-3">
         {data.instagram_id && (
-          <>
-            <Field label="인스타그램" value={`@${data.instagram_id}`} />
-            <Field label="팔로워" value={fmtNum(data.instagram_followers)} />
-          </>
+          <div className="flex items-center gap-3">
+            <Instagram className="w-5 h-5 text-pink-500 flex-shrink-0" />
+            <a href={`https://instagram.com/${data.instagram_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
+              @{data.instagram_id}
+            </a>
+            <span className="text-sm text-gray-500">{fmtNum(data.instagram_followers)} followers</span>
+          </div>
         )}
         {data.youtube_id && (
-          <>
-            <Field label="유튜브" value={data.youtube_id} />
-            <Field label="구독자" value={fmtNum(data.youtube_subscribers)} />
-          </>
+          <div className="flex items-center gap-3">
+            <Youtube className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <a href={`https://youtube.com/@${data.youtube_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
+              {data.youtube_id}
+            </a>
+            <span className="text-sm text-gray-500">{fmtNum(data.youtube_subscribers)} subscribers</span>
+          </div>
         )}
         {data.tiktok_id && (
-          <>
-            <Field label="틱톡" value={`@${data.tiktok_id}`} />
-            <Field label="팔로워" value={fmtNum(data.tiktok_followers)} />
-          </>
+          <div className="flex items-center gap-3">
+            <span className="w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">TT</span>
+            <a href={`https://tiktok.com/@${data.tiktok_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
+              @{data.tiktok_id}
+            </a>
+            <span className="text-sm text-gray-500">{fmtNum(data.tiktok_followers)} followers</span>
+          </div>
         )}
-      </FieldGrid>
+      </div>
     </DetailSection>
   ) : null;
 
-  // Keywords & memo section
+  // Keywords & memo section — parse both "#tag" and "tag, tag" formats
   const keywords: string[] = data.keywords
-    ? data.keywords.split(',').map((k: string) => k.trim()).filter(Boolean)
+    ? data.keywords.split(/[,\s]+/).map((k: string) => k.replace(/^#/, '').trim()).filter(Boolean)
     : [];
   const keywordsSection = (keywords.length > 0 || data.memo) ? (
     <DetailSection title="키워드 & 메모" icon={Tag}>
       {keywords.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {keywords.map((kw) => (
-            <span key={kw} className="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">
-              {kw}
-            </span>
+            <button
+              key={kw}
+              type="button"
+              onClick={() => navigate(`/dashboard/models?search=${encodeURIComponent(kw)}`)}
+              className="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+            >
+              #{kw}
+            </button>
           ))}
         </div>
       )}

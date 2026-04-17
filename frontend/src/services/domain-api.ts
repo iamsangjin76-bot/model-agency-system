@@ -96,14 +96,15 @@ function buildQuery(params: Record<string, string | number | undefined>): string
 // ---------------------------------------------------------------------------
 
 export const modelsAPI = {
-  list: (p?: { page?: number; size?: number; search?: string; gender?: string; model_type?: string; height_min?: number; height_max?: number; sort_by?: string; sort_order?: string }) =>
+  list: (p?: { page?: number; size?: number; search?: string; gender?: string; model_type?: string; height_min?: number; height_max?: number; age_range?: string; sort_by?: string; sort_order?: string }) =>
     request<{ items: Model[]; total: number; page: number; size: number }>(
-      `/models?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, gender: p?.gender, model_type: p?.model_type, height_min: p?.height_min, height_max: p?.height_max, sort_by: p?.sort_by, sort_order: p?.sort_order })}`),
+      `/models?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, gender: p?.gender, model_type: p?.model_type, height_min: p?.height_min, height_max: p?.height_max, age_range: p?.age_range, sort_by: p?.sort_by, sort_order: p?.sort_order })}`),
   get: (id: number) => request<Model>(`/models/${id}`),
   create: (data: Partial<Model>) => request<Model>('/models', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: number, data: Partial<Model>) => request<Model>(`/models/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: number) => request(`/models/${id}`, { method: 'DELETE' }),
   stats: () => request<{ total: number; by_gender: Record<string, number>; by_type: Record<string, number> }>('/models/stats/summary'),
+  files: (id: number) => request<{ id: number; file_name: string; file_path: string; file_type: string; file_size: number; is_profile_image: boolean }[]>(`/models/${id}/files`),
 };
 
 export const clientsAPI = {

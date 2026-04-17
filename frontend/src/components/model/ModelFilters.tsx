@@ -6,11 +6,13 @@ interface Props {
   searchQuery: string;
   filterType: ModelType | 'all';
   genderFilter: string;
+  ageRange: string;
   sortBy: string;
   sortOrder: string;
   onSearch: (v: string) => void;
   onTypeChange: (v: ModelType | 'all') => void;
   onGenderChange: (v: string) => void;
+  onAgeRangeChange: (v: string) => void;
   onSortByChange: (v: string) => void;
   onSortOrderChange: (v: string) => void;
   onRefresh: () => void;
@@ -20,8 +22,8 @@ const selectClass =
   'px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all';
 
 export default function ModelFilters({
-  searchQuery, filterType, genderFilter, sortBy, sortOrder,
-  onSearch, onTypeChange, onGenderChange, onSortByChange, onSortOrderChange, onRefresh,
+  searchQuery, filterType, genderFilter, ageRange, sortBy, sortOrder,
+  onSearch, onTypeChange, onGenderChange, onAgeRangeChange, onSortByChange, onSortOrderChange, onRefresh,
 }: Props) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
@@ -33,7 +35,7 @@ export default function ModelFilters({
             type="text"
             value={searchQuery}
             onChange={e => onSearch(e.target.value)}
-            placeholder="이름, 영문명, 인스타그램 ID로 검색..."
+            placeholder="이름, 영문명, 키워드, 특기로 검색..."
             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
           />
         </div>
@@ -63,6 +65,16 @@ export default function ModelFilters({
           <option value="male">남성</option>
           <option value="female">여성</option>
           <option value="other">기타</option>
+        </select>
+
+        {/* Age range filter */}
+        <select value={ageRange} onChange={e => onAgeRangeChange(e.target.value)} className={selectClass}>
+          <option value="all">모든 나이</option>
+          <option value="10대">10대</option>
+          <option value="20대">20대</option>
+          <option value="30대">30대</option>
+          <option value="40대">40대</option>
+          <option value="50대 이상">50대 이상</option>
         </select>
 
         {/* Sort controls */}

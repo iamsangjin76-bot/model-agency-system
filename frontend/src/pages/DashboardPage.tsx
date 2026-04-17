@@ -190,7 +190,7 @@ function DashboardHome() {
           <h3 className="text-lg font-semibold mb-4">빠른 작업</h3>
           <div className="grid grid-cols-2 gap-4">
             <Link
-              to="/dashboard/models"
+              to="/dashboard/models/new"
               className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-3"
             >
               <Users className="w-5 h-5 text-blue-500" />
