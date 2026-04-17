@@ -17,6 +17,7 @@ from app.schemas import (
     ModelCreate, ModelUpdate, ModelResponse, ModelListResponse,
     ModelTypeEnum, GenderEnum, PaginatedResponse
 )
+from app.schemas_detail import ModelDetailResponse
 from app.routers.auth import get_current_active_user, require_permission
 
 router = APIRouter()
@@ -134,27 +135,27 @@ async def list_models(
     }
 
 
-@router.get("/{model_id}", response_model=ModelResponse)
+@router.get("/{model_id}", response_model=ModelDetailResponse)
 async def get_model(
     model_id: int,
     db: Session = Depends(get_db),
     current_user = Depends(require_permission("model", "read"))
 ):
-    """모델 상세 조회"""
+    """모델 상세 조회 — returns full profile including detail fields"""
     model = db.query(Model).filter(Model.id == model_id).first()
     if not model:
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다")
-    
-    # 프로필 이미지 조회
+
+    # Fetch profile image separately (not stored on the ORM model directly)
     profile_image = db.query(ModelFile).filter(
         ModelFile.model_id == model.id,
         ModelFile.is_profile_image == True
     ).first()
-    
-    response = ModelResponse.from_orm(model)
+
+    response = ModelDetailResponse.from_orm(model)
     if profile_image:
         response.profile_image = f"/uploads/{profile_image.file_path}"
-    
+
     return response
 
 

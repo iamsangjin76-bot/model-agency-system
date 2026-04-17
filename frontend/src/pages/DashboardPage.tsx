@@ -5,6 +5,7 @@ import { ROLE_LABELS, ROLE_COLORS, AdminRole } from '@/types/auth';
 import { modelsAPI, castingsAPI, settlementsAPI, activityLogsAPI, ActivityLogEntry } from '@/services/api';
 import ModelListPage from './ModelListPage';
 import ModelFormPage from './ModelFormPage';
+import ModelDetailPage from './ModelDetailPage';
 import NewsSearchPage from './NewsSearchPage';
 import ImageSearchPage from './ImageSearchPage';
 import ProfileExportPage from './ProfileExportPage';
@@ -416,7 +417,7 @@ export default function DashboardPage() {
             <Route index element={<DashboardHome />} />
             <Route path="models" element={<ModelListPage />} />
             <Route path="models/new" element={<ModelFormPage />} />
-            <Route path="models/:id" element={<ModelFormPage />} />
+            <Route path="models/:id" element={<ModelDetailPage />} />
             <Route path="models/:id/edit" element={<ModelFormPage />} />
             <Route path="news-search" element={<NewsSearchPage />} />
             <Route path="image-search" element={<ImageSearchPage />} />
