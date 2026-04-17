@@ -89,7 +89,7 @@ async def list_models(
         query = query.filter(Model.model_type == ModelType(model_type.value))
     
     if gender:
-        query = query.filter(Model.gender == gender.value)
+        query = query.filter(Model.gender == Gender(gender.value))
     
     if is_active is not None:
         query = query.filter(Model.is_active == is_active)
