@@ -42,7 +42,58 @@ interface Props {
 
 export default function SettlementTable({ settlements, isLoading, onSelect, onNewClick }: Props) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <>
+      {/* ── Card view: below lg ───────────────────────────────────── */}
+      <div className="lg:hidden bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-12 text-gray-500">
+            <Clock className="w-5 h-5 animate-spin" /><span>불러오는 중...</span>
+          </div>
+        ) : settlements.length === 0 ? (
+          <div className="py-12 text-center text-gray-500">
+            <Receipt className="w-12 h-12 mx-auto mb-2 opacity-30" />
+            <p>등록된 정산 내역이 없습니다</p>
+            <button onClick={onNewClick} className="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700">
+              첫 정산 등록하기
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {settlements.map((s) => {
+              const typeKey = getTypeKey(s.settlement_type || s.type);
+              const statusKey = getStatusKey(s.status);
+              const typeConfig = SETTLEMENT_TYPES[typeKey];
+              const statusConfig = STATUS_CONFIG[statusKey];
+              const StatusIcon = statusConfig.icon;
+              const displayDate = s.due_date || s.payment_date || s.paid_date || '-';
+              const displayTitle = s.title || s.description || `정산 #${s.id}`;
+              return (
+                <div key={s.id} onClick={() => onSelect(s)} className="flex items-start justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-800 truncate">{displayTitle}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-500">
+                      <span className={typeConfig.color}>{typeConfig.label}</span>
+                      <span>·</span>
+                      <span>{displayDate}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 ml-4 flex-shrink-0">
+                    <span className={`font-semibold text-sm ${typeConfig.isIncome ? 'text-green-600' : 'text-gray-700'}`}>
+                      {typeConfig.isIncome ? '+' : '-'}{formatCurrency(s.amount)}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${statusConfig.bgColor} ${statusConfig.color}`}>
+                      <StatusIcon className="w-3 h-3" />{statusConfig.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Table: lg and above ───────────────────────────────────── */}
+      <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -137,6 +188,7 @@ export default function SettlementTable({ settlements, isLoading, onSelect, onNe
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

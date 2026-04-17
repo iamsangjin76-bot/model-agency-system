@@ -310,12 +310,12 @@ export default function DashboardPage() {
 
       {/* 사이드바 */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transition-all duration-300 
-          ${sidebarOpen ? 'w-64' : 'w-20'} 
+        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transition-all duration-300
+          ${sidebarOpen ? 'w-64 xl:w-72' : 'w-20'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* 로고 */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+        <div className={`h-16 flex items-center border-b border-gray-200 ${sidebarOpen ? 'justify-between px-4' : 'justify-center'}`}>
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl">
               <Camera className="w-5 h-5 text-white" />
@@ -343,9 +343,11 @@ export default function DashboardPage() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                  ${isActive 
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25' 
+                title={!sidebarOpen ? item.label : undefined}
+                className={`flex items-center rounded-xl transition-all
+                  ${sidebarOpen ? 'gap-3 px-4 py-3' : 'justify-center py-3'}
+                  ${isActive
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25'
                     : 'text-gray-600 hover:bg-gray-100'
                   }`}
               >
@@ -359,14 +361,14 @@ export default function DashboardPage() {
         {/* 사이드바 토글 (데스크톱) */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-white border border-gray-200 rounded-full items-center justify-center shadow-sm hover:bg-gray-50"
+          className="hidden lg:flex absolute -right-4 top-20 w-8 h-8 bg-white border border-gray-200 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 hover:shadow-md transition-shadow"
         >
           <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? '-rotate-90' : 'rotate-90'}`} />
         </button>
       </aside>
 
       {/* 메인 콘텐츠 */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64 xl:ml-72' : 'lg:ml-20'}`}>
         {/* 헤더 */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-4">

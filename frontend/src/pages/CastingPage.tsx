@@ -112,9 +112,11 @@ export default function CastingPage() {
       </div>
 
       {/* Search and filter bar */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-col lg:flex-row gap-4 justify-between">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="flex flex-col gap-3">
+
+          {/* Row 1: search + status + type + new button */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -122,13 +124,13 @@ export default function CastingPage() {
                 placeholder="캐스팅 제목, 광고주 검색..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
               />
             </div>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value as CastingStatus | 'all')}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[120px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             >
               <option value="all">모든 상태</option>
               {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
@@ -138,31 +140,42 @@ export default function CastingPage() {
             <select
               value={typeFilter}
               onChange={e => setTypeFilter(e.target.value as CastingType | 'all')}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[120px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             >
               <option value="all">모든 유형</option>
               {Object.entries(CASTING_TYPES).map(([key, cfg]) => (
                 <option key={key} value={key}>{cfg.label}</option>
               ))}
             </select>
+            <button
+              onClick={() => setShowNewModal(true)}
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center gap-2 flex-shrink-0"
+            >
+              <Plus className="w-5 h-5" />
+              새 캐스팅
+            </button>
+          </div>
+
+          {/* Row 2: shoot date range + sort controls */}
+          <div className="flex flex-wrap gap-3 items-center">
             <input
               type="date"
               value={shootDateFrom}
               onChange={e => setShootDateFrom(e.target.value)}
               title="촬영 시작일"
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[140px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             />
             <input
               type="date"
               value={shootDateTo}
               onChange={e => setShootDateTo(e.target.value)}
               title="촬영 종료일"
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[140px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             />
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[120px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             >
               <option value="created_at">등록일</option>
               <option value="shoot_date">촬영일</option>
@@ -172,19 +185,13 @@ export default function CastingPage() {
             <select
               value={sortOrder}
               onChange={e => setSortOrder(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="min-w-[120px] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             >
               <option value="desc">내림차순</option>
               <option value="asc">오름차순</option>
             </select>
           </div>
-          <button
-            onClick={() => setShowNewModal(true)}
-            className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            새 캐스팅
-          </button>
+
         </div>
       </div>
 
