@@ -7,9 +7,10 @@ interface Props {
   isLoading: boolean;
   onMarkRead: (id: number) => void;
   onMarkAllRead: () => void;
+  onClose: () => void;
 }
 
-export default function NotificationDropdown({ notifications, isLoading, onMarkRead, onMarkAllRead }: Props) {
+export default function NotificationDropdown({ notifications, isLoading, onMarkRead, onMarkAllRead, onClose }: Props) {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
@@ -40,7 +41,7 @@ export default function NotificationDropdown({ notifications, isLoading, onMarkR
           </div>
         ) : (
           notifications.map(n => (
-            <NotificationItem key={n.id} notification={n} onRead={onMarkRead} />
+            <NotificationItem key={n.id} notification={n} onRead={onMarkRead} onClose={onClose} />
           ))
         )}
       </div>

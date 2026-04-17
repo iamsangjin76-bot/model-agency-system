@@ -17,6 +17,7 @@ export interface NotificationData {
 interface Props {
   notification: NotificationData;
   onRead: (id: number) => void;
+  onClose: () => void;
 }
 
 function relativeTime(iso: string): string {
@@ -37,11 +38,15 @@ function TypeIcon({ type }: { type?: string | null }) {
   return <Bell className={`${cls} text-gray-400`} />;
 }
 
-export default function NotificationItem({ notification: n, onRead }: Props) {
+export default function NotificationItem({ notification: n, onRead, onClose }: Props) {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    // Mark as read if currently unread
     if (!n.is_read) onRead(n.id);
+    // Always close the dropdown
+    onClose();
+    // Navigate if a target URL is set
     if (n.link_url) navigate(n.link_url);
   };
 

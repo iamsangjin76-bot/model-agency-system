@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { notificationsAPI } from '@/services/api';
 import NotificationDropdown from './NotificationDropdown';
 import { NotificationData } from './NotificationItem';
@@ -12,20 +13,27 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
-  // Poll unread count every 30 s
+  // Fetch unread count from server
   const refreshCount = useCallback(async () => {
     try {
       const data = await notificationsAPI.unreadCount();
-      setUnreadCount(data.unread_count);
+      setUnreadCount(data?.unread_count ?? 0);
     } catch { /* ignore auth/network errors */ }
   }, []);
 
+  // Initial load + 30-second polling
   useEffect(() => {
     refreshCount();
     const timer = setInterval(refreshCount, POLL_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [refreshCount]);
+
+  // Close dropdown whenever the route changes (e.g. after navigate())
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   // Close on outside click
   useEffect(() => {
@@ -43,6 +51,8 @@ export default function NotificationBell() {
     if (!open) {
       setOpen(true);
       setIsLoading(true);
+      // Refresh count immediately when dropdown is opened
+      refreshCount();
       try {
         const data = await notificationsAPI.list({ page: 1, page_size: 20 });
         setNotifications(data.items as NotificationData[]);
@@ -54,19 +64,21 @@ export default function NotificationBell() {
   };
 
   const handleMarkRead = async (id: number) => {
+    // Optimistic update: update UI immediately, sync with server in background
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
     try {
       await notificationsAPI.markRead(id);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch { /* ignore */ }
+    } catch { /* local state already reflects change */ }
   };
 
   const handleMarkAllRead = async () => {
+    // Optimistic update: clear all unread indicators immediately
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
     try {
       await notificationsAPI.markAllRead();
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
-    } catch { /* ignore */ }
+    } catch { /* local state already reflects change */ }
   };
 
   return (
@@ -90,6 +102,7 @@ export default function NotificationBell() {
           isLoading={isLoading}
           onMarkRead={handleMarkRead}
           onMarkAllRead={handleMarkAllRead}
+          onClose={() => setOpen(false)}
         />
       )}
     </div>
