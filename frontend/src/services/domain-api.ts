@@ -96,9 +96,9 @@ function buildQuery(params: Record<string, string | number | undefined>): string
 // ---------------------------------------------------------------------------
 
 export const modelsAPI = {
-  list: (p?: { page?: number; size?: number; search?: string; gender?: string; model_type?: string }) =>
+  list: (p?: { page?: number; size?: number; search?: string; gender?: string; model_type?: string; height_min?: number; height_max?: number; sort_by?: string; sort_order?: string }) =>
     request<{ items: Model[]; total: number; page: number; size: number }>(
-      `/models?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, gender: p?.gender, model_type: p?.model_type })}`),
+      `/models?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, gender: p?.gender, model_type: p?.model_type, height_min: p?.height_min, height_max: p?.height_max, sort_by: p?.sort_by, sort_order: p?.sort_order })}`),
   get: (id: number) => request<Model>(`/models/${id}`),
   create: (data: Partial<Model>) => request<Model>('/models', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: number, data: Partial<Model>) => request<Model>(`/models/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -118,9 +118,9 @@ export const clientsAPI = {
 };
 
 export const castingsAPI = {
-  list: (p?: { page?: number; size?: number; status?: string; client_id?: number }) =>
+  list: (p?: { page?: number; size?: number; search?: string; status?: string; type?: string; client_id?: number; budget_min?: number; budget_max?: number; shoot_date_from?: string; shoot_date_to?: string; sort_by?: string; sort_order?: string }) =>
     request<{ items: Casting[]; total: number }>(
-      `/castings?${buildQuery({ page: p?.page, size: p?.size, status: p?.status, client_id: p?.client_id })}`),
+      `/castings?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, status: p?.status, type: p?.type, client_id: p?.client_id, budget_min: p?.budget_min, budget_max: p?.budget_max, shoot_date_from: p?.shoot_date_from, shoot_date_to: p?.shoot_date_to, sort_by: p?.sort_by, sort_order: p?.sort_order })}`),
   get: (id: number) => request<Casting>(`/castings/${id}`),
   create: (data: Partial<Casting>) => request<Casting>('/castings', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: number, data: Partial<Casting>) => request<Casting>(`/castings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -141,9 +141,9 @@ export const contractsAPI = {
 };
 
 export const settlementsAPI = {
-  list: (p?: { page?: number; size?: number; status?: string; settlement_type?: string }) =>
+  list: (p?: { page?: number; size?: number; search?: string; status?: string; settlement_type?: string; amount_min?: number; amount_max?: number; due_date_from?: string; due_date_to?: string; sort_by?: string; sort_order?: string }) =>
     request<{ items: Settlement[]; total: number }>(
-      `/settlements?${buildQuery({ page: p?.page, size: p?.size, status: p?.status, settlement_type: p?.settlement_type })}`),
+      `/settlements?${buildQuery({ page: p?.page, size: p?.size, search: p?.search, status: p?.status, settlement_type: p?.settlement_type, amount_min: p?.amount_min, amount_max: p?.amount_max, due_date_from: p?.due_date_from, due_date_to: p?.due_date_to, sort_by: p?.sort_by, sort_order: p?.sort_order })}`),
   get: (id: number) => request<Settlement>(`/settlements/${id}`),
   create: (data: Partial<Settlement>) => request<Settlement>('/settlements', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: number, data: Partial<Settlement>) => request<Settlement>(`/settlements/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

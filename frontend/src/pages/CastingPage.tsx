@@ -54,12 +54,22 @@ export default function CastingPage() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [shootDateFrom, setShootDateFrom] = useState('');
+  const [shootDateTo, setShootDateTo] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const fetchCastings = useCallback(async () => {
     setIsLoading(true);
     try {
       const params: Record<string, any> = {};
+      if (searchTerm) params.search = searchTerm;
       if (statusFilter !== 'all') params.status = statusFilter;
+      if (typeFilter !== 'all') params.type = typeFilter;
+      if (shootDateFrom) params.shoot_date_from = shootDateFrom;
+      if (shootDateTo) params.shoot_date_to = shootDateTo;
+      if (sortBy) params.sort_by = sortBy;
+      if (sortOrder) params.sort_order = sortOrder;
       const result = await castingsAPI.list(params);
       setCastings((result.items as unknown as CastingItem[]) || []);
     } catch {
@@ -67,15 +77,9 @@ export default function CastingPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter]);
+  }, [searchTerm, statusFilter, typeFilter, shootDateFrom, shootDateTo, sortBy, sortOrder]);
 
   useEffect(() => { fetchCastings(); }, [fetchCastings]);
-
-  const filteredCastings = castings.filter(c => {
-    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || c.type === typeFilter;
-    return matchesSearch && matchesType;
-  });
 
   const statusStats = {
     total: castings.length,
@@ -141,6 +145,38 @@ export default function CastingPage() {
                 <option key={key} value={key}>{cfg.label}</option>
               ))}
             </select>
+            <input
+              type="date"
+              value={shootDateFrom}
+              onChange={e => setShootDateFrom(e.target.value)}
+              title="촬영 시작일"
+              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            />
+            <input
+              type="date"
+              value={shootDateTo}
+              onChange={e => setShootDateTo(e.target.value)}
+              title="촬영 종료일"
+              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            />
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            >
+              <option value="created_at">등록일</option>
+              <option value="shoot_date">촬영일</option>
+              <option value="deadline">마감일</option>
+              <option value="budget">예산</option>
+            </select>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            >
+              <option value="desc">내림차순</option>
+              <option value="asc">오름차순</option>
+            </select>
           </div>
           <button
             onClick={() => setShowNewModal(true)}
@@ -160,7 +196,7 @@ export default function CastingPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredCastings.length === 0 ? (
+          {castings.length === 0 ? (
             <div className="col-span-3 py-16 text-center text-gray-500">
               <Camera className="w-16 h-16 mx-auto mb-4 opacity-30" />
               <p>등록된 캐스팅이 없습니다.</p>
@@ -168,7 +204,7 @@ export default function CastingPage() {
                 새 캐스팅 등록
               </button>
             </div>
-          ) : filteredCastings.map(casting => (
+          ) : castings.map(casting => (
             <CastingCard
               key={casting.id}
               casting={casting}

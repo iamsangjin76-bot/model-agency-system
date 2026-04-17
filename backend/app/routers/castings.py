@@ -87,6 +87,12 @@ async def list_castings(
     search: Optional[str] = None,
     status: Optional[CastingStatusEnum] = None,
     type: Optional[CastingTypeEnum] = None,
+    budget_min: Optional[float] = None,
+    budget_max: Optional[float] = None,
+    shoot_date_from: Optional[date] = None,
+    shoot_date_to: Optional[date] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user = Depends(require_permission("model", "read"))
 ):
@@ -96,18 +102,25 @@ async def list_castings(
     query = db.query(Casting).filter(Casting.is_active == True)
 
     if search:
-        query = query.filter(Casting.title.ilike(f"%{search}%"))
-    
+        query = query.filter(or_(Casting.title.ilike(f"%{search}%"), Casting.location.ilike(f"%{search}%"), Casting.description.ilike(f"%{search}%")))
+
     if status:
         query = query.filter(Casting.status == CastingStatus(status.value))
     
     if type:
         query = query.filter(Casting.type == CastingType(type.value))
-    
+
+    if budget_min is not None: query = query.filter(Casting.budget >= budget_min)
+    if budget_max is not None: query = query.filter(Casting.budget <= budget_max)
+    if shoot_date_from: query = query.filter(Casting.shoot_date >= shoot_date_from)
+    if shoot_date_to: query = query.filter(Casting.shoot_date <= shoot_date_to)
+
     total = query.count()
     total_pages = math.ceil(total / page_size) if total > 0 else 1
     
-    castings = query.order_by(Casting.created_at.desc())\
+    _CAST_SORT = {"created_at": Casting.created_at, "shoot_date": Casting.shoot_date, "deadline": Casting.deadline, "budget": Casting.budget}
+    _scol = _CAST_SORT.get(sort_by or "", Casting.created_at)
+    castings = query.order_by(_scol.asc() if sort_order == "asc" else _scol.desc())\
                     .offset((page - 1) * page_size)\
                     .limit(page_size)\
                     .all()

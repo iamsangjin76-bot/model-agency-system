@@ -6,7 +6,8 @@ Settlement API Router
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import extract
+from datetime import date
+from sqlalchemy import extract, or_
 from typing import Optional
 import math
 
@@ -25,31 +26,14 @@ async def get_settlement_stats(
 ):
     """정산 통계"""
     Settlement.__table__.create(db.get_bind(), checkfirst=True)
-
-    total_income = 0
-    total_expense = 0
-    pending_amount = 0
-
-    settlements = db.query(Settlement).filter(Settlement.is_active == True).all()
-    for s in settlements:
-        if s.type == SettlementType.AGENCY_FEE and s.status == SettlementStatus.COMPLETED:
-            total_income += s.amount or 0
-        elif s.type != SettlementType.AGENCY_FEE and s.status == SettlementStatus.COMPLETED:
-            total_expense += s.amount or 0
-
-        if s.status in [SettlementStatus.PENDING, SettlementStatus.PROCESSING]:
-            pending_amount += s.amount or 0
-
-    return {
-        "total_income": total_income,
-        "total_expense": total_expense,
-        "net_profit": total_income - total_expense,
-        "pending_count": db.query(Settlement).filter(
-            Settlement.is_active == True,
-            Settlement.status.in_([SettlementStatus.PENDING, SettlementStatus.PROCESSING])
-        ).count(),
-        "pending_amount": pending_amount
-    }
+    rows = db.query(Settlement).filter(Settlement.is_active == True).all()
+    _pending = [SettlementStatus.PENDING, SettlementStatus.PROCESSING]
+    income = sum(s.amount or 0 for s in rows if s.type == SettlementType.AGENCY_FEE and s.status == SettlementStatus.COMPLETED)
+    expense = sum(s.amount or 0 for s in rows if s.type != SettlementType.AGENCY_FEE and s.status == SettlementStatus.COMPLETED)
+    pending_amt = sum(s.amount or 0 for s in rows if s.status in _pending)
+    pending_cnt = sum(1 for s in rows if s.status in _pending)
+    return {"total_income": income, "total_expense": expense, "net_profit": income - expense,
+            "pending_count": pending_cnt, "pending_amount": pending_amt}
 
 
 @router.get("")
@@ -59,6 +43,12 @@ async def list_settlements(
     search: Optional[str] = None,
     status: Optional[SettlementStatusEnum] = None,
     type: Optional[SettlementTypeEnum] = None,
+    amount_min: Optional[float] = None,
+    amount_max: Optional[float] = None,
+    due_date_from: Optional[date] = None,
+    due_date_to: Optional[date] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user = Depends(require_permission("model", "read"))
 ):
@@ -68,18 +58,25 @@ async def list_settlements(
     query = db.query(Settlement).filter(Settlement.is_active == True)
 
     if search:
-        query = query.filter(Settlement.title.ilike(f"%{search}%"))
-    
+        query = query.filter(or_(Settlement.title.ilike(f"%{search}%"), Settlement.description.ilike(f"%{search}%")))
+
     if status:
         query = query.filter(Settlement.status == SettlementStatus(status.value))
     
     if type:
         query = query.filter(Settlement.type == SettlementType(type.value))
-    
+
+    if amount_min is not None: query = query.filter(Settlement.amount >= amount_min)
+    if amount_max is not None: query = query.filter(Settlement.amount <= amount_max)
+    if due_date_from: query = query.filter(Settlement.due_date >= due_date_from)
+    if due_date_to: query = query.filter(Settlement.due_date <= due_date_to)
+
     total = query.count()
     total_pages = math.ceil(total / page_size) if total > 0 else 1
     
-    settlements = query.order_by(Settlement.created_at.desc())\
+    _SET_SORT = {"created_at": Settlement.created_at, "due_date": Settlement.due_date, "paid_date": Settlement.paid_date, "amount": Settlement.amount}
+    _scol = _SET_SORT.get(sort_by or "", Settlement.created_at)
+    settlements = query.order_by(_scol.asc() if sort_order == "asc" else _scol.desc())\
                        .offset((page - 1) * page_size)\
                        .limit(page_size)\
                        .all()

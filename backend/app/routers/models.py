@@ -65,6 +65,10 @@ async def list_models(
     model_type: Optional[ModelTypeEnum] = None,
     gender: Optional[GenderEnum] = None,
     is_active: Optional[bool] = True,
+    height_min: Optional[float] = None,
+    height_max: Optional[float] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user = Depends(require_permission("model", "read"))
 ):
@@ -89,13 +93,20 @@ async def list_models(
     
     if is_active is not None:
         query = query.filter(Model.is_active == is_active)
-    
+
+    if height_min is not None:
+        query = query.filter(Model.height >= height_min)
+    if height_max is not None:
+        query = query.filter(Model.height <= height_max)
+
     # 전체 개수
     total = query.count()
     total_pages = math.ceil(total / page_size)
     
     # 페이지네이션
-    models = query.order_by(Model.created_at.desc())\
+    _MODEL_SORT = {"created_at": Model.created_at, "name": Model.name, "height": Model.height}
+    _scol = _MODEL_SORT.get(sort_by or "", Model.created_at)
+    models = query.order_by(_scol.asc() if sort_order == "asc" else _scol.desc())\
                   .offset((page - 1) * page_size)\
                   .limit(page_size)\
                   .all()

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search,
   Plus,
   Edit,
   Trash2,
@@ -10,11 +9,11 @@ import {
   ChevronRight,
   Users,
   Instagram,
-  RefreshCw,
   AlertCircle,
 } from 'lucide-react';
 import { ModelType, MODEL_TYPE_LABELS, MODEL_TYPE_COLORS } from '@/types/model';
 import { modelsAPI } from '@/services/api';
+import ModelFilters from '@/components/model/ModelFilters';
 
 interface ModelItem {
   id: number;
@@ -43,6 +42,9 @@ export default function ModelListPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ModelType | 'all'>('all');
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [selectedModels, setSelectedModels] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -57,6 +59,9 @@ export default function ModelListPage() {
       };
       if (searchQuery) params.search = searchQuery;
       if (filterType !== 'all') params.model_type = filterType;
+      if (genderFilter !== 'all') params.gender = genderFilter;
+      if (sortBy) params.sort_by = sortBy;
+      if (sortOrder) params.sort_order = sortOrder;
 
       const result = await modelsAPI.list(params);
       setModels((result.items as unknown as ModelItem[]) || []);
@@ -66,7 +71,7 @@ export default function ModelListPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchQuery, filterType]);
+  }, [currentPage, searchQuery, filterType, genderFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchModels();
@@ -74,7 +79,7 @@ export default function ModelListPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterType]);
+  }, [searchQuery, filterType, genderFilter, sortBy, sortOrder]);
 
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -120,56 +125,19 @@ export default function ModelListPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* 검색 */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="이름, 영문명, 인스타그램 ID로 검색..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-            />
-          </div>
-
-          {/* 타입 필터 */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setFilterType('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filterType === 'all'
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              전체
-            </button>
-            {Object.entries(MODEL_TYPE_LABELS).map(([type, label]) => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type as ModelType)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  filterType === type
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={fetchModels}
-            className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-            title="새로고침"
-          >
-            <RefreshCw className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-      </div>
+      <ModelFilters
+        searchQuery={searchQuery}
+        filterType={filterType}
+        genderFilter={genderFilter}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSearch={setSearchQuery}
+        onTypeChange={setFilterType}
+        onGenderChange={setGenderFilter}
+        onSortByChange={setSortBy}
+        onSortOrderChange={setSortOrder}
+        onRefresh={fetchModels}
+      />
 
       {/* 에러 메시지 */}
       {error && (
