@@ -25,11 +25,11 @@ export interface Client {
 }
 
 export interface Casting {
-  id: number; client_id: number; client_name?: string;
-  project_name: string; casting_type?: string; status?: string;
-  requirements?: string; budget?: number; shooting_date?: string;
-  shooting_location?: string; deadline?: string;
-  selected_model_id?: number; selected_model_name?: string;
+  id: number; client_id?: number; client_name?: string;
+  title: string; type?: string; status?: string;
+  description?: string; requirements?: string[]; budget?: number;
+  shoot_date?: string; location?: string; deadline?: string;
+  proposed_models?: { id: number; status: string }[];
 }
 
 export interface Contract {

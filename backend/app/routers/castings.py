@@ -56,6 +56,7 @@ class Casting(Base):
     requirements = Column(JSON, default=[])
     deadline = Column(Date)
     proposed_models = Column(JSON, default=[])
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -70,10 +71,10 @@ async def get_casting_stats(
     """캐스팅 통계"""
     Casting.__table__.create(db.get_bind(), checkfirst=True)
 
-    total = db.query(Casting).count()
+    total = db.query(Casting).filter(Casting.is_active == True).count()
     by_status = {}
     for status in CastingStatus:
-        count = db.query(Casting).filter(Casting.status == status).count()
+        count = db.query(Casting).filter(Casting.status == status, Casting.is_active == True).count()
         by_status[status.value] = count
 
     return {"total": total, "by_status": by_status}
@@ -92,8 +93,8 @@ async def list_castings(
     """캐스팅 목록 조회"""
     Casting.__table__.create(db.get_bind(), checkfirst=True)
     
-    query = db.query(Casting)
-    
+    query = db.query(Casting).filter(Casting.is_active == True)
+
     if search:
         query = query.filter(Casting.title.ilike(f"%{search}%"))
     
@@ -142,10 +143,10 @@ async def get_casting(
     current_user = Depends(require_permission("model", "read"))
 ):
     """캐스팅 상세 조회"""
-    casting = db.query(Casting).filter(Casting.id == casting_id).first()
+    casting = db.query(Casting).filter(Casting.id == casting_id, Casting.is_active == True).first()
     if not casting:
         raise HTTPException(status_code=404, detail="캐스팅을 찾을 수 없습니다")
-    
+
     return {
         "id": casting.id,
         "title": casting.title,
@@ -200,10 +201,10 @@ async def update_casting(
     current_user = Depends(require_permission("model", "update"))
 ):
     """캐스팅 정보 수정"""
-    casting = db.query(Casting).filter(Casting.id == casting_id).first()
+    casting = db.query(Casting).filter(Casting.id == casting_id, Casting.is_active == True).first()
     if not casting:
         raise HTTPException(status_code=404, detail="캐스팅을 찾을 수 없습니다")
-    
+
     update_data = casting_data.dict(exclude_unset=True)
     for key, value in update_data.items():
         if key == "status" and value:
@@ -227,10 +228,10 @@ async def update_casting_status(
     current_user = Depends(require_permission("model", "update"))
 ):
     """캐스팅 상태 변경"""
-    casting = db.query(Casting).filter(Casting.id == casting_id).first()
+    casting = db.query(Casting).filter(Casting.id == casting_id, Casting.is_active == True).first()
     if not casting:
         raise HTTPException(status_code=404, detail="캐스팅을 찾을 수 없습니다")
-    
+
     casting.status = CastingStatus(status.value)
     db.commit()
     
@@ -245,7 +246,7 @@ async def propose_model(
     current_user = Depends(require_permission("model", "update"))
 ):
     """모델 제안"""
-    casting = db.query(Casting).filter(Casting.id == casting_id).first()
+    casting = db.query(Casting).filter(Casting.id == casting_id, Casting.is_active == True).first()
     if not casting:
         raise HTTPException(status_code=404, detail="캐스팅을 찾을 수 없습니다")
     
@@ -258,3 +259,26 @@ async def propose_model(
     return {"message": "모델이 제안되었습니다"}
 
 
+@router.delete("/{casting_id}")
+async def delete_casting(
+    casting_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission("model", "delete"))
+):
+    """캐스팅 삭제 (soft delete)"""
+    casting = db.query(Casting).filter(
+        Casting.id == casting_id, Casting.is_active == True
+    ).first()
+    if not casting:
+        raise HTTPException(status_code=404, detail="캐스팅을 찾을 수 없습니다")
+
+    if casting.status == CastingStatus.CONFIRMED:
+        raise HTTPException(
+            status_code=409,
+            detail="확정된 캐스팅은 삭제할 수 없습니다. 먼저 상태를 변경해 주세요."
+        )
+
+    casting.is_active = False
+    db.commit()
+
+    return {"message": "캐스팅이 삭제되었습니다", "id": casting_id}

@@ -113,7 +113,10 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
           window.location.href = '/login';
         }
         const error = await retryResponse.json().catch(() => ({ detail: '오류가 발생했습니다' }));
-        throw new Error(error.detail || '요청 실패');
+        const retryDetail = Array.isArray(error.detail)
+          ? error.detail.map((e: any) => e.msg).join(', ')
+          : (error.detail || '요청 실패');
+        throw new Error(retryDetail);
       }
       return retryResponse.json();
     } else {
@@ -126,7 +129,10 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: '오류가 발생했습니다' }));
-    throw new Error(error.detail || '요청 실패');
+    const detail = Array.isArray(error.detail)
+      ? error.detail.map((e: any) => e.msg).join(', ')
+      : (error.detail || '요청 실패');
+    throw new Error(detail);
   }
 
   return response.json();

@@ -281,7 +281,7 @@ class CastingTypeEnum(str, Enum):
 class CastingBase(BaseModel):
     title: str
     type: CastingTypeEnum = CastingTypeEnum.OTHER
-    client_id: int
+    client_id: Optional[int] = None
     budget: Optional[int] = None
     shoot_date: Optional[date] = None
     location: Optional[str] = None
