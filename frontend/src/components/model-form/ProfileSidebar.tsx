@@ -41,7 +41,7 @@ export default function ProfileSidebar({
 
         {/* Main profile image */}
         <div
-          className={`aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden mb-4 relative group ${previewImage ? 'cursor-pointer' : ''}`}
+          className={`aspect-[3/4] min-h-[200px] bg-gray-100 rounded-xl overflow-hidden mb-4 relative group ${previewImage ? 'cursor-pointer' : ''}`}
           onClick={() => previewImage && onPreviewChange(null)}
         >
           {displayedImage ? (

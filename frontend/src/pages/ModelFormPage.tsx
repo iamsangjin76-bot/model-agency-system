@@ -189,11 +189,11 @@ export default function ModelFormPage() {
         </div>
         <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50">
           <Save className="w-5 h-5" />
-          {isSaving ? '저장 중...' : '저장'}
+          <span className="hidden sm:inline">{isSaving ? '저장 중...' : '저장'}</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <ProfileSidebar
           isEdit={isEdit} formData={formData}
           profileImages={profileImages} additionalImages={additionalImages}
@@ -203,7 +203,7 @@ export default function ModelFormPage() {
           onDeleteAdditional={handleDeleteAdditional} onPreviewChange={setPreviewImage}
           onFieldChange={handleChange}
         />
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 xl:col-span-3 space-y-6">
           <BasicInfoFields formData={formData} onChange={handleChange} />
           <AgencyContactFields formData={formData} onChange={handleChange} />
           <CareerFields formData={formData} onChange={handleChange} />
@@ -216,7 +216,7 @@ export default function ModelFormPage() {
         <Link to="/dashboard/models" className="px-6 py-2.5 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors">취소</Link>
         <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50">
           <Save className="w-5 h-5" />
-          {isSaving ? '저장 중...' : '저장'}
+          <span className="hidden sm:inline">{isSaving ? '저장 중...' : '저장'}</span>
         </button>
       </div>
     </form>
