@@ -4,7 +4,7 @@
 Model Agency Management System - Database Models
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, Enum, Date, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, Enum, Date, JSON, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -309,12 +309,20 @@ class ActivityLog(Base):
 class Notification(Base):
     """알림 테이블"""
     __tablename__ = "notifications"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     admin_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
     title = Column(String(100), nullable=False)
     message = Column(Text)
     notification_type = Column(String(50))  # casting, contract, settlement, system
     is_read = Column(Boolean, default=False)
-    link_url = Column(String(200))  # 클릭시 이동할 URL
+    link_url = Column(String(200))  # link URL navigated on click
+    target_type = Column(String(50), nullable=True)   # entity type: casting, settlement, model
+    target_id = Column(Integer, nullable=True)         # entity ID for dedup and linking
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_notifications_admin_unread", "admin_id", "is_read"),
+        Index("idx_notifications_admin_created", "admin_id", "created_at"),
+        Index("idx_notifications_target", "target_type", "target_id"),
+    )

@@ -15,6 +15,7 @@ from app.models.database import get_db
 from app.models.settlement import Settlement, SettlementStatus, SettlementType
 from app.schemas import SettlementCreate, SettlementUpdate, SettlementStatusEnum, SettlementTypeEnum
 from app.routers.auth import require_permission
+from app.services.notification_service import notify_all_admins
 
 router = APIRouter()
 
@@ -227,7 +228,8 @@ async def complete_settlement(
     settlement.status = SettlementStatus.COMPLETED
     settlement.paid_date = date.today()
     db.commit()
-
+    notify_all_admins(db, f"정산 완료: {settlement.title or '정산'}", "settlement", "settlement", settlement_id, link_url="/dashboard/settlements", exclude_admin_id=current_user.id)
+    db.commit()
     return {"message": "정산이 완료되었습니다"}
 
 

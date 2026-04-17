@@ -16,6 +16,7 @@ from app.schemas import (
 )
 from app.schemas_detail import ModelDetailResponse
 from app.routers.auth import require_permission
+from app.services.notification_service import notify_all_admins
 
 router = APIRouter()
 
@@ -149,6 +150,8 @@ async def create_model(
     db.add(db_model)
     db.commit()
     db.refresh(db_model)
+    notify_all_admins(db, f"새 모델 등록: {db_model.name}", "model", "model", db_model.id, link_url="/dashboard/models", exclude_admin_id=current_user.id)
+    db.commit()
     return db_model
 
 

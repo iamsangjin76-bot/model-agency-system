@@ -3,6 +3,7 @@ import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS, ROLE_COLORS, AdminRole } from '@/types/auth';
 import { modelsAPI, castingsAPI, settlementsAPI, activityLogsAPI, ActivityLogEntry } from '@/services/api';
+import NotificationBell from '@/components/notification/NotificationBell';
 import ModelListPage from './ModelListPage';
 import ModelFormPage from './ModelFormPage';
 import ModelDetailPage from './ModelDetailPage';
@@ -33,7 +34,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  Bell,
   Camera,
   Newspaper,
   Download,
@@ -383,10 +383,7 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-4">
             {/* 알림 */}
-            <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            <NotificationBell />
 
             {/* 사용자 메뉴 */}
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">

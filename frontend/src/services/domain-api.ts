@@ -176,6 +176,32 @@ export const activityLogsAPI = {
       `/activity-logs?page=1&page_size=${limit}`),
 };
 
+export interface NotificationEntry {
+  id: number;
+  title: string;
+  message: string | null;
+  notification_type: string | null;
+  is_read: boolean;
+  link_url: string | null;
+  target_type: string | null;
+  target_id: number | null;
+  created_at: string;
+}
+
+export const notificationsAPI = {
+  list: (p?: { page?: number; page_size?: number; unread_only?: boolean }) =>
+    request<{ total: number; items: NotificationEntry[] }>(
+      `/notifications?${new URLSearchParams(
+        Object.fromEntries(Object.entries(p ?? {}).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)]))
+      )}`),
+  unreadCount: () =>
+    request<{ unread_count: number }>('/notifications/count'),
+  markRead: (id: number) =>
+    request(`/notifications/${id}/read`, { method: 'PATCH' }),
+  markAllRead: () =>
+    request('/notifications/read-all', { method: 'PATCH' }),
+};
+
 /** Direct localStorage read needed for multipart upload (bypasses request helper). */
 const getStoredToken = (): string | null => localStorage.getItem('access_token');
 
@@ -204,6 +230,7 @@ const domainApi = {
   models: modelsAPI, clients: clientsAPI, castings: castingsAPI,
   contracts: contractsAPI, settlements: settlementsAPI,
   schedules: schedulesAPI, files: filesAPI, activityLogs: activityLogsAPI,
+  notifications: notificationsAPI,
 };
 
 export default domainApi;
