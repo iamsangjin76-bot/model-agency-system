@@ -44,6 +44,7 @@ export default function ModelFormPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingAdditional, setUploadingAdditional] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [pendingProfileFile, setPendingProfileFile] = useState<File | null>(null);
 
   const loadModelFiles = async (modelId: number) => {
     try {
@@ -75,7 +76,16 @@ export default function ModelFormPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !id) return;
+    if (!file) return;
+    if (!id) {
+      // New mode: store locally and show preview until model is saved
+      setPendingProfileFile(file);
+      setProfileImages([URL.createObjectURL(file)]);
+      setProfileFileInfo({ name: file.name, size: file.size });
+      e.target.value = '';
+      return;
+    }
+    // Edit mode: upload immediately
     setUploadingImage(true);
     try {
       await filesAPI.uploadModelFile(Number(id), file, 'profile');
@@ -126,7 +136,11 @@ export default function ModelFormPage() {
         navigate('/dashboard/models');
       } else {
         const created: any = await modelsAPI.create(payload);
-        alert('모델이 등록되었습니다. 프로필 이미지를 업로드해주세요.');
+        if (pendingProfileFile) {
+          try {
+            await filesAPI.uploadModelFile(created.id, pendingProfileFile, 'profile');
+          } catch { /* Upload failure is non-fatal; user can retry in edit mode */ }
+        }
         navigate(`/dashboard/models/${created.id}/edit`);
       }
     } catch (err: any) {

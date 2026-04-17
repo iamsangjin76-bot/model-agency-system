@@ -62,18 +62,13 @@ export default function ProfileSidebar({
               >
                 <Upload className="w-4 h-4" />
                 {uploadingImage ? '업로드 중...' : '업로드'}
-                <input type="file" accept="image/*" className="hidden" onChange={onImageUpload} disabled={!isEdit || uploadingImage} />
+                <input type="file" accept="image/*" className="hidden" onChange={onImageUpload} disabled={uploadingImage} />
               </label>
             </div>
           )}
           {previewImage && (
             <div className="absolute top-2 left-2 right-2 flex justify-center pointer-events-none">
               <span className="bg-black/60 text-white text-xs px-2 py-1 rounded">← 클릭하여 복귀</span>
-            </div>
-          )}
-          {!isEdit && (
-            <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs text-center py-1 rounded">
-              저장 후 이미지 업로드 가능
             </div>
           )}
         </div>

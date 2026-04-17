@@ -141,10 +141,10 @@ function DashboardHome() {
   }, []);
 
   const stats = [
-    { label: '등록 모델', value: modelCount, icon: Users, color: 'from-blue-500 to-blue-600' },
-    { label: '이번 달 캐스팅', value: castingCount, icon: Camera, color: 'from-purple-500 to-purple-600' },
-    { label: '저장된 기사', value: '-', icon: Newspaper, color: 'from-green-500 to-green-600' },
-    { label: '공유 링크', value: '-', icon: Share2, color: 'from-orange-500 to-orange-600' },
+    { label: '등록 모델', value: modelCount, icon: Users, color: 'from-blue-500 to-blue-600', path: '/dashboard/models' },
+    { label: '이번 달 캐스팅', value: castingCount, icon: Camera, color: 'from-purple-500 to-purple-600', path: '/dashboard/casting' },
+    { label: '저장된 기사', value: '-', icon: Newspaper, color: 'from-green-500 to-green-600', path: '/dashboard/news-search' },
+    { label: '공유 링크', value: '-', icon: Share2, color: 'from-orange-500 to-orange-600', path: '/dashboard/share' },
   ];
 
   return (
@@ -167,9 +167,10 @@ function DashboardHome() {
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div
+          <Link
             key={index}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow"
+            to={stat.path}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -180,7 +181,7 @@ function DashboardHome() {
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
