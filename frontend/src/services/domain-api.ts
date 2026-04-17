@@ -43,9 +43,22 @@ export interface Contract {
 }
 
 export interface Settlement {
-  id: number; contract_id?: number; model_id?: number; model_name?: string;
-  settlement_type?: string; amount: number; payment_date?: string;
-  payment_method?: string; status?: string; description?: string;
+  id: number;
+  title?: string;
+  type?: string;           // backend field name
+  settlement_type?: string; // alias returned by list endpoint
+  status?: string;
+  amount: number;
+  contract_id?: number;
+  model_id?: number;
+  client_id?: number;
+  model_name?: string;
+  due_date?: string;
+  paid_date?: string;
+  payment_date?: string;   // compat alias (same as paid_date in list response)
+  bank_info?: string;
+  description?: string;
+  created_at?: string;
 }
 
 export interface Schedule {
@@ -135,7 +148,14 @@ export const settlementsAPI = {
   create: (data: Partial<Settlement>) => request<Settlement>('/settlements', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: number, data: Partial<Settlement>) => request<Settlement>(`/settlements/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   complete: (id: number) => request(`/settlements/${id}/complete`, { method: 'PATCH' }),
-  stats: () => request<{ total_income: number; total_expense: number; pending_count: number }>('/settlements/stats/summary'),
+  stats: () => request<{ total_income: number; total_expense: number; net_profit: number; pending_count: number; pending_amount: number }>('/settlements/stats/summary'),
+  delete: (id: number) => request<{ message: string }>(`/settlements/${id}`, { method: 'DELETE' }),
+  monthlyStats: (months = 5) =>
+    request<{ items: { month: string; label: string; income: number; expense: number }[] }>(
+      `/settlements/stats/monthly?months=${months}`),
+  expenseBreakdown: () =>
+    request<{ items: { name: string; type: string; amount: number; percentage: number }[]; total: number }>(
+      `/settlements/stats/expense-breakdown`),
 };
 
 export const schedulesAPI = {

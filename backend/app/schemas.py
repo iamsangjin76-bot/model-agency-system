@@ -450,10 +450,12 @@ class SettlementCreate(BaseModel):
 class SettlementUpdate(BaseModel):
     title: Optional[str] = None
     type: Optional[SettlementTypeEnum] = None
+    settlement_type: Optional[SettlementTypeEnum] = None  # frontend compat alias
     status: Optional[SettlementStatusEnum] = None
     amount: Optional[int] = None
     due_date: Optional[date] = None
     paid_date: Optional[date] = None
+    payment_date: Optional[date] = None  # frontend compat alias
     bank_info: Optional[str] = None
     description: Optional[str] = None
 

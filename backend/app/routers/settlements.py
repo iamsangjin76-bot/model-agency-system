@@ -6,49 +6,16 @@ Settlement API Router
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, Integer, String, Text, DateTime, Date, Enum as SQLEnum, ForeignKey, or_
+from sqlalchemy import extract
 from typing import Optional
 import math
-from datetime import datetime
-import enum
 
-from app.models.database import get_db, Base
+from app.models.database import get_db
+from app.models.settlement import Settlement, SettlementStatus, SettlementType
 from app.schemas import SettlementCreate, SettlementUpdate, SettlementStatusEnum, SettlementTypeEnum
 from app.routers.auth import require_permission
 
 router = APIRouter()
-
-
-class SettlementStatus(enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class SettlementType(enum.Enum):
-    MODEL_PAYMENT = "model_payment"
-    AGENCY_FEE = "agency_fee"
-    EXPENSE = "expense"
-    REFUND = "refund"
-
-
-class Settlement(Base):
-    __tablename__ = "settlements"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(300), nullable=False)
-    type = Column(SQLEnum(SettlementType), nullable=False)
-    status = Column(SQLEnum(SettlementStatus), default=SettlementStatus.PENDING)
-    amount = Column(Integer, nullable=False)
-    contract_id = Column(Integer, ForeignKey("contracts.id"))
-    model_id = Column(Integer, ForeignKey("models.id"))
-    client_id = Column(Integer, ForeignKey("clients.id"))
-    due_date = Column(Date, nullable=False)
-    paid_date = Column(Date)
-    bank_info = Column(String(200))
-    description = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 @router.get("/stats/summary")
@@ -63,7 +30,7 @@ async def get_settlement_stats(
     total_expense = 0
     pending_amount = 0
 
-    settlements = db.query(Settlement).all()
+    settlements = db.query(Settlement).filter(Settlement.is_active == True).all()
     for s in settlements:
         if s.type == SettlementType.AGENCY_FEE and s.status == SettlementStatus.COMPLETED:
             total_income += s.amount or 0
@@ -78,6 +45,7 @@ async def get_settlement_stats(
         "total_expense": total_expense,
         "net_profit": total_income - total_expense,
         "pending_count": db.query(Settlement).filter(
+            Settlement.is_active == True,
             Settlement.status.in_([SettlementStatus.PENDING, SettlementStatus.PROCESSING])
         ).count(),
         "pending_amount": pending_amount
@@ -97,8 +65,8 @@ async def list_settlements(
     """정산 목록 조회"""
     Settlement.__table__.create(db.get_bind(), checkfirst=True)
     
-    query = db.query(Settlement)
-    
+    query = db.query(Settlement).filter(Settlement.is_active == True)
+
     if search:
         query = query.filter(Settlement.title.ilike(f"%{search}%"))
     
@@ -151,10 +119,10 @@ async def get_settlement(
     current_user = Depends(require_permission("model", "read"))
 ):
     """정산 상세 조회"""
-    settlement = db.query(Settlement).filter(Settlement.id == settlement_id).first()
+    settlement = db.query(Settlement).filter(Settlement.id == settlement_id, Settlement.is_active == True).first()
     if not settlement:
         raise HTTPException(status_code=404, detail="정산을 찾을 수 없습니다")
-    
+
     return {
         "id": settlement.id,
         "title": settlement.title,
@@ -225,17 +193,19 @@ async def update_settlement(
     current_user = Depends(require_permission("model", "update"))
 ):
     """정산 정보 수정"""
-    settlement = db.query(Settlement).filter(Settlement.id == settlement_id).first()
+    settlement = db.query(Settlement).filter(Settlement.id == settlement_id, Settlement.is_active == True).first()
     if not settlement:
         raise HTTPException(status_code=404, detail="정산을 찾을 수 없습니다")
-    
+
     update_data = settlement_data.dict(exclude_unset=True)
     for key, value in update_data.items():
         if key == "status" and value:
-            setattr(settlement, key, SettlementStatus(value.value))
-        elif key == "type" and value:
-            setattr(settlement, key, SettlementType(value.value))
-        elif value is not None:
+            setattr(settlement, "status", SettlementStatus(value.value))
+        elif key in ("type", "settlement_type") and value:
+            setattr(settlement, "type", SettlementType(value.value))
+        elif key == "payment_date" and value is not None:
+            setattr(settlement, "paid_date", value)
+        elif key not in ("settlement_type", "payment_date") and value is not None:
             setattr(settlement, key, value)
     
     db.commit()
@@ -253,14 +223,77 @@ async def complete_settlement(
     """정산 완료 처리"""
     from datetime import date
     
-    settlement = db.query(Settlement).filter(Settlement.id == settlement_id).first()
+    settlement = db.query(Settlement).filter(Settlement.id == settlement_id, Settlement.is_active == True).first()
     if not settlement:
         raise HTTPException(status_code=404, detail="정산을 찾을 수 없습니다")
-    
+
     settlement.status = SettlementStatus.COMPLETED
     settlement.paid_date = date.today()
     db.commit()
-    
+
     return {"message": "정산이 완료되었습니다"}
 
 
+@router.delete("/{settlement_id}")
+async def delete_settlement(
+    settlement_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission("model", "delete"))
+):
+    """정산 삭제 (soft delete)"""
+    s = db.query(Settlement).filter(Settlement.id == settlement_id, Settlement.is_active == True).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="정산을 찾을 수 없습니다")
+    s.is_active = False
+    db.commit()
+    return {"message": "정산이 삭제되었습니다"}
+
+
+@router.get("/stats/monthly")
+async def get_monthly_stats(
+    months: int = Query(5, ge=1, le=12),
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission("model", "read"))
+):
+    """월별 수입/지출 집계"""
+    from datetime import date
+    Settlement.__table__.create(db.get_bind(), checkfirst=True)
+    today = date.today()
+    items = []
+    for i in range(months - 1, -1, -1):
+        m = (today.month - i - 1) % 12 + 1
+        y = today.year + (today.month - i - 1) // 12
+        rows = db.query(Settlement).filter(
+            Settlement.is_active == True,
+            Settlement.status == SettlementStatus.COMPLETED,
+            extract("month", Settlement.paid_date) == m,
+            extract("year", Settlement.paid_date) == y,
+        ).all()
+        income = sum(s.amount or 0 for s in rows if s.type == SettlementType.AGENCY_FEE)
+        expense = sum(s.amount or 0 for s in rows if s.type != SettlementType.AGENCY_FEE)
+        items.append({"month": f"{y}-{m:02d}", "label": f"{m}월", "income": income, "expense": expense})
+    return {"items": items}
+
+
+@router.get("/stats/expense-breakdown")
+async def get_expense_breakdown(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission("model", "read"))
+):
+    """지출 유형별 비율"""
+    Settlement.__table__.create(db.get_bind(), checkfirst=True)
+    rows = db.query(Settlement).filter(
+        Settlement.is_active == True,
+        Settlement.status == SettlementStatus.COMPLETED,
+        Settlement.type != SettlementType.AGENCY_FEE,
+    ).all()
+    totals: dict = {}
+    for s in rows:
+        k = s.type.value if s.type else "expense"
+        totals[k] = totals.get(k, 0) + (s.amount or 0)
+    grand = sum(totals.values())
+    LABELS = {"model_payment": "모델료 지급", "expense": "비용", "refund": "환불"}
+    items = [{"name": LABELS.get(k, k), "type": k, "amount": v,
+              "percentage": round(v / grand * 100, 1) if grand else 0}
+             for k, v in totals.items()]
+    return {"items": items, "total": grand}
