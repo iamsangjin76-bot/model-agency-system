@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bell } from 'lucide-react';
 import NotificationItem, { NotificationData } from './NotificationItem';
+import Spinner from '@/components/ui/Spinner';
 
 interface Props {
   notifications: NotificationData[];
@@ -32,7 +33,7 @@ export default function NotificationDropdown({ notifications, isLoading, onMarkR
       <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size="sm" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-gray-400 dark:text-gray-500">

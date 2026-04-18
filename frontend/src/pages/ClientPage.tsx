@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { clientsAPI } from '@/services/api';
+import { useToast } from '@/contexts/ToastContext';
+import Spinner from '@/components/ui/Spinner';
 import {
   Search,
   Plus,
@@ -181,6 +183,7 @@ const dummyClients = [
 ];
 
 export default function ClientPage() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState<ClientGrade | 'all'>('all');
   const [industryFilter, setIndustryFilter] = useState<Industry | 'all'>('all');
@@ -227,17 +230,18 @@ export default function ClientPage() {
 
   const handleCreateClient = async () => {
     if (!newClient.name.trim() || !newClient.contact_name.trim() || !newClient.phone.trim()) {
-      alert('회사명, 담당자명, 연락처는 필수입니다.');
+      toast.warning('회사명, 담당자명, 연락처는 필수입니다.');
       return;
     }
     setIsSaving(true);
     try {
       await clientsAPI.create(newClient as any);
+      toast.success('고객이 등록되었습니다.');
       setShowNewModal(false);
       setNewClient({ name: '', industry: 'other', grade: 'normal', contact_name: '', phone: '', email: '', memo: '' });
       fetchClients();
     } catch (err: any) {
-      alert(err.message || '등록에 실패했습니다.');
+      toast.error(err.message || '등록에 실패했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -345,7 +349,7 @@ export default function ClientPage() {
       {/* 고객 목록 */}
       {isLoading ? (
         <div className="py-16 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent mx-auto mb-4" />
+          <Spinner size="lg" className="mb-4" />
           <p className="text-gray-500 dark:text-gray-400">불러오는 중...</p>
         </div>
       ) : (

@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { modelsAPI, filesAPI } from '@/services/api';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Model, ModelType, Gender } from '@/types/model';
+import { useToast } from '@/contexts/ToastContext';
+import Spinner from '@/components/ui/Spinner';
 import ProfileSidebar from '@/components/model-form/ProfileSidebar';
 import BasicInfoFields from '@/components/model-form/BasicInfoFields';
 import AgencyContactFields from '@/components/model-form/AgencyContactFields';
@@ -33,6 +35,7 @@ export default function ModelFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState<Partial<Model>>(initialFormData);
   const [profileImages, setProfileImages] = useState<string[]>([]);
@@ -93,7 +96,7 @@ export default function ModelFormPage() {
       const data: any = await modelsAPI.get(Number(id));
       if (data.profile_image) setProfileImages([data.profile_image]);
     } catch (err: any) {
-      alert(err.message || '이미지 업로드에 실패했습니다.');
+      toast.error(err.message || '이미지 업로드에 실패했습니다.');
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -108,7 +111,7 @@ export default function ModelFormPage() {
       await filesAPI.uploadModelFile(Number(id), file, 'additional');
       await loadModelFiles(Number(id));
     } catch (err: any) {
-      alert(err.message || '이미지 업로드에 실패했습니다.');
+      toast.error(err.message || '이미지 업로드에 실패했습니다.');
     } finally {
       setUploadingAdditional(false);
       e.target.value = '';
@@ -127,12 +130,13 @@ export default function ModelFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name?.trim()) { alert('이름을 입력해주세요.'); return; }
+    if (!formData.name?.trim()) { toast.warning('이름을 입력해주세요.'); return; }
     setIsSaving(true);
     const payload = buildPayload(formData);
     try {
       if (isEdit && id) {
         await modelsAPI.update(Number(id), payload);
+        toast.success('저장되었습니다.');
         navigate('/dashboard/models');
       } else {
         const created: any = await modelsAPI.create(payload);
@@ -141,10 +145,11 @@ export default function ModelFormPage() {
             await filesAPI.uploadModelFile(created.id, pendingProfileFile, 'profile');
           } catch { /* Upload failure is non-fatal; user can retry in edit mode */ }
         }
+        toast.success('저장되었습니다.');
         navigate(`/dashboard/models/${created.id}/edit`);
       }
     } catch (err: any) {
-      alert(err.message || '저장에 실패했습니다.');
+      toast.error(err.message || '저장에 실패했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -161,7 +166,7 @@ export default function ModelFormPage() {
   if (isLoadingModel) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent" />
+        <Spinner size="lg" />
       </div>
     );
   }

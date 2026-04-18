@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { authAPI, Admin, AdminCreate, AdminUpdate } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import Spinner from '@/components/ui/Spinner';
 import {
   Users,
   Plus,
@@ -551,7 +552,7 @@ export default function AdminManagementPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size="md" />
           </div>
         ) : filteredAdmins.length === 0 ? (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">

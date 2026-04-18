@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Model, ModelType, MODEL_TYPE_LABELS, MODEL_TYPE_COLORS } from '@/types/model';
+import { useToast } from '@/contexts/ToastContext';
 
 // 템플릿 타입
 interface ProfileTemplate {
@@ -168,6 +169,7 @@ const formatNumber = (num?: number) => {
 };
 
 export default function ProfileExportPage() {
+  const { toast } = useToast();
   const [selectedModels, setSelectedModels] = useState<number[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ProfileTemplate | null>(null);
   const [exportFormat, setExportFormat] = useState<'ppt' | 'pdf'>('pdf');
@@ -201,7 +203,7 @@ export default function ProfileExportPage() {
   // 프로필 생성
   const handleGenerate = async () => {
     if (selectedModels.length === 0) {
-      alert('모델을 선택해주세요.');
+      toast.warning('모델을 선택해주세요.');
       return;
     }
     
@@ -217,9 +219,10 @@ export default function ProfileExportPage() {
         .map(m => m.name)
         .join(', ');
       
-      alert(`${selectedModelNames} 프로필이 ${exportFormat.toUpperCase()} 형식으로 생성되었습니다.`);
+      toast.success(`${selectedModelNames} 프로필이 ${exportFormat.toUpperCase()} 형식으로 생성되었습니다.`);
     } catch (error) {
       console.error('Generation failed:', error);
+      toast.error('프로필 생성에 실패했습니다.');
     } finally {
       setIsGenerating(false);
     }

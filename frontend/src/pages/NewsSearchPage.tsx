@@ -18,6 +18,7 @@ import {
   BookmarkCheck,
 } from 'lucide-react';
 import { Model, MODEL_TYPE_LABELS } from '@/types/model';
+import { useToast } from '@/contexts/ToastContext';
 
 // 뉴스 기사 타입
 interface NewsArticle {
@@ -114,6 +115,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function NewsSearchPage() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModel, setSelectedModel] = useState<Partial<Model> | null>(null);
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -181,9 +183,10 @@ export default function NewsSearchPage() {
       setSavedArticles(prev => [...prev, ...selectedArticles]);
       setSelectedArticles([]);
       
-      alert(`${selectedArticles.length}개의 기사가 "${selectedModel?.name || searchQuery}" 폴더에 저장되었습니다.`);
+      toast.success(`${selectedArticles.length}개의 기사가 "${selectedModel?.name || searchQuery}" 폴더에 저장되었습니다.`);
     } catch (error) {
       console.error('Save failed:', error);
+      toast.error('기사 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);
     }

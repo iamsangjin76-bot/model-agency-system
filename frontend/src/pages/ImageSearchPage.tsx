@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Model } from '@/types/model';
+import { useToast } from '@/contexts/ToastContext';
 
 // 이미지 결과 타입
 interface ImageResult {
@@ -69,6 +70,7 @@ const generateDummyImages = (searchQuery: string): ImageResult[] => {
 };
 
 export default function ImageSearchPage() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModel, setSelectedModel] = useState<Partial<Model> | null>(null);
   const [images, setImages] = useState<ImageResult[]>([]);
@@ -137,9 +139,10 @@ export default function ImageSearchPage() {
       setSavedImages(prev => [...prev, ...selectedImages]);
       setSelectedImages([]);
       
-      alert(`${selectedImages.length}개의 이미지가 "${selectedModel?.name || searchQuery}" 폴더에 저장되었습니다.`);
+      toast.success(`${selectedImages.length}개의 이미지가 "${selectedModel?.name || searchQuery}" 폴더에 저장되었습니다.`);
     } catch (error) {
       console.error('Save failed:', error);
+      toast.error('이미지 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);
     }

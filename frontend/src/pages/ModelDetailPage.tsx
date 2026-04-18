@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { modelsAPI } from '@/services/api';
 import { ArrowLeft, Edit, Trash2, User } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
+import Spinner from '@/components/ui/Spinner';
 import ModelInfoSections from '@/components/model-detail/ModelInfoSections';
 
 const MODEL_TYPE_LABELS: Record<string, string> = {
@@ -37,6 +39,7 @@ function calcAge(birthDate?: string): string {
 export default function ModelDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -55,16 +58,17 @@ export default function ModelDetailPage() {
     if (!window.confirm('이 모델을 삭제하시겠습니까?')) return;
     try {
       await modelsAPI.delete(Number(id));
+      toast.success('삭제되었습니다.');
       navigate('/dashboard/models');
     } catch {
-      alert('삭제에 실패했습니다.');
+      toast.error('삭제에 실패했습니다.');
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent" />
+        <Spinner size="lg" />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Camera, Upload, X, Plus, User } from 'lucide-react';
 import { Model, ModelType, MODEL_TYPE_LABELS } from '@/types/model';
 import { FormField, selectClass } from './FormParts';
+import Spinner from '@/components/ui/Spinner';
 
 interface Props {
   isEdit: boolean;
@@ -105,7 +106,7 @@ export default function ProfileSidebar({
                 ) : (
                   <label className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 cursor-pointer" onClick={e => e.stopPropagation()}>
                     {uploadingAdditional
-                      ? <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                      ? <Spinner size="sm" />
                       : <Plus className="w-4 h-4" />}
                     <input type="file" accept="image/*" className="hidden" onChange={onAdditionalUpload} disabled={!isEdit || uploadingAdditional} />
                   </label>

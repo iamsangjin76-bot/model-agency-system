@@ -4,6 +4,7 @@ import { Search, Plus, Camera, FileText, AlertCircle, Users, ArrowRight, CheckCi
 import CastingFormModal from '@/components/casting/CastingFormModal';
 import CastingDetailModal from '@/components/casting/CastingDetailModal';
 import CastingCard from '@/components/casting/CastingCard';
+import Spinner from '@/components/ui/Spinner';
 
 // Status and type definitions (self-contained)
 type CastingStatus = 'request' | 'reviewing' | 'matching' | 'proposed' | 'confirmed' | 'completed' | 'cancelled';
@@ -198,7 +199,7 @@ export default function CastingPage() {
       {/* Casting card grid */}
       {isLoading ? (
         <div className="py-16 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent mx-auto mb-4" />
+          <Spinner size="lg" className="mb-4" />
           <p className="text-gray-500">불러오는 중...</p>
         </div>
       ) : (

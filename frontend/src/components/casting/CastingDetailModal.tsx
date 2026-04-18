@@ -1,6 +1,7 @@
 import React from 'react';
 import { castingsAPI } from '@/services/api';
 import { X, CheckCircle2, AlertCircle, Users, FileText, ArrowRight, XCircle } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 // Status and type definitions (self-contained — no shared module import)
 type CastingStatus = 'request' | 'reviewing' | 'matching' | 'proposed' | 'confirmed' | 'completed' | 'cancelled';
@@ -50,6 +51,7 @@ interface Props {
 }
 
 export default function CastingDetailModal({ casting, onClose, onEdit, onDelete }: Props) {
+  const { toast } = useToast();
   const typeConfig = CASTING_TYPES[casting.type] || CASTING_TYPES.other;
   const statusConfig = STATUS_CONFIG[casting.status] || STATUS_CONFIG.request;
   const StatusIcon = statusConfig.icon;
@@ -61,7 +63,7 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
       await castingsAPI.delete(casting.id);
       onDelete();
     } catch {
-      alert('삭제에 실패했습니다.');
+      toast.error('삭제에 실패했습니다.');
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { castingsAPI } from '@/services/api';
 import { X, Sparkles } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 // Casting type definitions (self-contained — no shared module import)
 type CastingType = 'cf' | 'magazine' | 'event' | 'show' | 'drama' | 'movie' | 'other';
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export default function CastingFormModal({ mode, initial, onClose, onSuccess }: Props) {
+  const { toast } = useToast();
   const [form, setForm] = useState({
     title: initial?.title ?? '',
     type: initial?.type ?? 'cf',
@@ -45,7 +47,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
 
   const handleSubmit = async () => {
     if (!form.title.trim()) {
-      alert('제목을 입력해주세요.');
+      toast.warning('제목을 입력해주세요.');
       return;
     }
     setIsSaving(true);
@@ -66,10 +68,11 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
         await castingsAPI.create(payload);
       }
 
+      toast.success(mode === 'edit' ? '수정되었습니다.' : '등록되었습니다.');
       onSuccess();
       onClose();
     } catch (err: any) {
-      alert(err.message || (mode === 'edit' ? '수정에 실패했습니다.' : '등록에 실패했습니다.'));
+      toast.error(err.message || (mode === 'edit' ? '수정에 실패했습니다.' : '등록에 실패했습니다.'));
     } finally {
       setIsSaving(false);
     }

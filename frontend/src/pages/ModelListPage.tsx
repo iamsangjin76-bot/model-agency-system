@@ -3,10 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, ChevronLeft, ChevronRight, Users, AlertCircle } from 'lucide-react';
 import { ModelType } from '@/types/model';
 import { modelsAPI } from '@/services/api';
+import { useToast } from '@/contexts/ToastContext';
+import Spinner from '@/components/ui/Spinner';
 import ModelFilters from '@/components/model/ModelFilters';
 import ModelRow, { ModelItem } from '@/components/model/ModelRow';
 
 export default function ModelListPage() {
+  const { toast } = useToast();
   const [urlParams] = useSearchParams();
   const [models, setModels] = useState<ModelItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -51,7 +54,7 @@ export default function ModelListPage() {
   const toggleSelect = (id: number) => setSelectedModels(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   const handleDelete = async (id: number) => {
     if (!confirm('이 모델을 삭제하시겠습니까?')) return;
-    try { await modelsAPI.delete(id); fetchModels(); } catch (err: any) { alert(err.message || '삭제에 실패했습니다.'); }
+    try { await modelsAPI.delete(id); toast.success('삭제되었습니다.'); fetchModels(); } catch (err: any) { toast.error(err.message || '삭제에 실패했습니다.'); }
   };
 
   return (
@@ -95,7 +98,7 @@ export default function ModelListPage() {
 
         {isLoading && (
           <div className="py-16 text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent mx-auto mb-4" />
+            <Spinner size="lg" className="mb-4" />
             <p className="text-gray-500">불러오는 중...</p>
           </div>
         )}
