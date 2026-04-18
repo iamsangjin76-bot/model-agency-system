@@ -18,6 +18,7 @@ import SchedulePage from './SchedulePage';
 import ContractPage from './ContractPage';
 import SettlementPage from './SettlementPage';
 import AdminManagementPage from './AdminManagementPage';
+import NotFoundPage from './NotFoundPage';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -435,6 +436,7 @@ export default function DashboardPage() {
             <Route path="share" element={<PlaceholderPage title="외부 공유" />} />
             <Route path="admins" element={<AdminManagementPage />} />
             <Route path="settings" element={<PlaceholderPage title="시스템 설정" />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>
