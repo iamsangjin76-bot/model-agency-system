@@ -4,6 +4,8 @@ import {
   Building2, Phone, User, Globe, Briefcase, Star, Instagram, Youtube, Tag,
 } from 'lucide-react';
 import DetailSection from './DetailSection';
+import ModelNewsList from './ModelNewsList';
+import ModelImageGallery from './ModelImageGallery';
 
 // Format follower/subscriber count with Korean units (만)
 function fmtNum(n?: number): string {
@@ -226,6 +228,8 @@ export default function ModelInfoSections({ data }: Props) {
       {feeSection}
       {snsSection}
       {keywordsSection}
+      {data.id && <ModelNewsList modelId={data.id} />}
+      {data.id && <ModelImageGallery modelId={data.id} />}
     </>
   );
 }
