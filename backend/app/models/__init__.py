@@ -31,6 +31,8 @@ from .database import (  # noqa: F401
     DEFAULT_USER_PERMISSIONS,
     ROLE_PERMISSIONS,
 )
+# Import search models so Base.metadata includes them before init_db() is called.
+from .search import ModelNews, ModelSearchImage  # noqa: F401
 
 __all__ = [
     "Base", "engine", "SessionLocal", "get_db", "init_db",
@@ -39,4 +41,5 @@ __all__ = [
     "SNSData", "ShareLink", "ActivityLog", "Notification",
     "ALL_PERMISSIONS", "SUPER_ADMIN_PERMISSIONS",
     "DEFAULT_USER_PERMISSIONS", "ROLE_PERMISSIONS",
+    "ModelNews", "ModelSearchImage",
 ]

@@ -156,6 +156,8 @@ class Model(Base):
     files = relationship("ModelFile", back_populates="model")
     news_articles = relationship("NewsArticle", back_populates="model")
     sns_data = relationship("SNSData", back_populates="model")
+    saved_news = relationship("ModelNews", back_populates="model")
+    search_images = relationship("ModelSearchImage", back_populates="model")
 
 
 class ModelFile(Base):

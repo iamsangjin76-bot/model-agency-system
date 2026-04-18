@@ -10,7 +10,7 @@ from app.models.database import init_db
 from app.routers import (
     auth, models, clients, castings, contracts, settlements,
     schedules, files, media, stats, activity_logs, notifications,
-    token_refresh,
+    token_refresh, news, image_search,
 )
 from app.services.token_service import cleanup_expired_tokens
 
@@ -68,6 +68,8 @@ app.include_router(media.router, prefix="/api/media", tags=["media"])
 app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 app.include_router(activity_logs.router, prefix="/api/activity-logs", tags=["activity-logs"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
+app.include_router(news.router, prefix="/api/news", tags=["news"])
+app.include_router(image_search.router, prefix="/api/image-search", tags=["image-search"])
 
 
 @app.get("/")

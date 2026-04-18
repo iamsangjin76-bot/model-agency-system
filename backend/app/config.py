@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     
     # 모델 폴더
     MODEL_FILES_DIR: str = "./model_files"
+
+    # Search API credentials (optional — graceful degradation when unset)
+    NAVER_CLIENT_ID: Optional[str] = None
+    NAVER_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_API_KEY: Optional[str] = None
+    GOOGLE_CX: Optional[str] = None
+    SEARCH_REQUEST_TIMEOUT: int = 5
+    SEARCH_IMAGE_MAX_SIZE: int = 10 * 1024 * 1024  # 10MB
     
     class Config:
         env_file = ".env"
