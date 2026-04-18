@@ -1,447 +1,284 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Search,
-  Image as ImageIcon,
-  Download,
-  Check,
-  Loader2,
-  FolderOpen,
-  X,
-  ChevronDown,
-  Grid3X3,
-  LayoutGrid,
-  ZoomIn,
-  ExternalLink,
+  Search, Image as ImageIcon, Download, Loader2,
+  ChevronDown, ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import { Model } from '@/types/model';
+import { modelsAPI, imageSearchAPI, SearchImage, Model } from '@/services/domain-api';
 import { useToast } from '@/contexts/ToastContext';
+import ImageResultCard from '@/components/search/ImageResultCard';
+import ImagePreviewModal from '@/components/search/ImagePreviewModal';
 
-// 이미지 결과 타입
-interface ImageResult {
-  id: string;
-  url: string;
-  thumbnailUrl: string;
-  title: string;
-  source: string;
-  width: number;
-  height: number;
-  saved?: boolean;
-}
-
-// 더미 모델 데이터
-const dummyModels: Partial<Model>[] = [
-  { id: 1, name: '한서주', nameEnglish: 'Han Seoju' },
-  { id: 2, name: '윤하영', nameEnglish: 'Yoon Hayoung' },
-  { id: 3, name: '박제니', nameEnglish: 'Park Jenny' },
-  { id: 4, name: '소지섭', nameEnglish: 'So Ji-sub' },
-  { id: 5, name: '차승원', nameEnglish: 'Cha Seung-won' },
-];
-
-// 더미 이미지 데이터 생성
-const generateDummyImages = (searchQuery: string): ImageResult[] => {
-  const unsplashImages = [
-    'photo-1534528741775-53994a69daeb',
-    'photo-1517841905240-472988babdf9',
-    'photo-1524504388940-b1c1722653e1',
-    'photo-1529626455594-4ff0802cfb7e',
-    'photo-1507003211169-0a1dd7228f2d',
-    'photo-1506794778202-cad84cf45f1d',
-    'photo-1531746020798-e6953c6e8e04',
-    'photo-1488426862026-3ee34a7d66df',
-    'photo-1494790108377-be9c29b29330',
-    'photo-1531123897727-8f129e1688ce',
-    'photo-1544005313-94ddf0286df2',
-    'photo-1502823403499-6ccfcf4fb453',
-    'photo-1519699047748-de8e457a634e',
-    'photo-1524638431109-93d95c968f03',
-    'photo-1515886657613-9f3515b0c78f',
-    'photo-1529139574466-a303027c1d8b',
-  ];
-
-  return unsplashImages.map((img, index) => ({
-    id: `img-${index + 1}`,
-    url: `https://images.unsplash.com/${img}?w=800&h=1200&fit=crop`,
-    thumbnailUrl: `https://images.unsplash.com/${img}?w=300&h=400&fit=crop`,
-    title: `${searchQuery} 이미지 ${index + 1}`,
-    source: index % 3 === 0 ? 'Instagram' : index % 3 === 1 ? 'Getty Images' : 'Pinterest',
-    width: 800,
-    height: 1200,
-  }));
-};
+const DISPLAY = 10;
 
 export default function ImageSearchPage() {
   const { toast } = useToast();
+
+  // Search state
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedModel, setSelectedModel] = useState<Partial<Model> | null>(null);
-  const [images, setImages] = useState<ImageResult[]>([]);
+  const [provider, setProvider] = useState<'google' | 'naver'>('google');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const [images, setImages] = useState<SearchImage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+
+  // Selection & save state
+  const [checkedImages, setCheckedImages] = useState<Set<number>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+
+  // Model state
+  const [models, setModels] = useState<Model[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const [savedImages, setSavedImages] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'large'>('grid');
-  const [previewImage, setPreviewImage] = useState<ImageResult | null>(null);
 
-  // 모델 선택
-  const handleModelSelect = (model: Partial<Model>) => {
-    setSelectedModel(model);
-    setSearchQuery(model.name || '');
-    setShowModelDropdown(false);
-  };
+  // Preview modal
+  const [previewImage, setPreviewImage] = useState<SearchImage | null>(null);
 
-  // 검색 실행
-  const handleSearch = async () => {
+  // Load model list on mount
+  useEffect(() => {
+    modelsAPI.list({ size: 200 })
+      .then(res => setModels(res.items))
+      .catch(() => {});
+  }, []);
+
+  const handleSearch = async (page = 1) => {
     if (!searchQuery.trim()) return;
-    
     setIsSearching(true);
-    setImages([]);
-    
+    setCheckedImages(new Set());
     try {
-      // TODO: 실제 이미지 검색 API 호출로 대체
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const results = generateDummyImages(searchQuery);
-      setImages(results);
-    } catch (error) {
-      console.error('Search failed:', error);
+      const res = await imageSearchAPI.search({ query: searchQuery, page, display: DISPLAY, provider });
+      setImages(res.items);
+      setTotalResults(res.total);
+      setCurrentPage(page);
+    } catch {
+      toast.error('이미지 검색에 실패했습니다.');
     } finally {
       setIsSearching(false);
     }
   };
 
-  // 이미지 선택/해제
-  const toggleImageSelect = (imageId: string) => {
-    setSelectedImages(prev =>
-      prev.includes(imageId)
-        ? prev.filter(id => id !== imageId)
-        : [...prev, imageId]
+  const toggleCheck = (index: number) => {
+    setCheckedImages(prev => {
+      const next = new Set(prev);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setCheckedImages(
+      checkedImages.size === images.length
+        ? new Set()
+        : new Set(images.map((_, i) => i))
     );
   };
 
-  // 전체 선택/해제
-  const toggleSelectAll = () => {
-    if (selectedImages.length === images.length) {
-      setSelectedImages([]);
-    } else {
-      setSelectedImages(images.map(img => img.id));
-    }
-  };
+  const handleSave = async () => {
+    if (checkedImages.size === 0) { toast.error('저장할 이미지를 선택해주세요.'); return; }
+    if (!selectedModelId) { toast.error('저장할 모델을 선택해주세요.'); return; }
 
-  // 선택한 이미지 저장
-  const handleSaveImages = async () => {
-    if (selectedImages.length === 0) return;
-    
     setIsSaving(true);
-    
     try {
-      // TODO: 실제 저장 API 호출
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setSavedImages(prev => [...prev, ...selectedImages]);
-      setSelectedImages([]);
-      
-      toast.success(`${selectedImages.length}개의 이미지가 "${selectedModel?.name || searchQuery}" 폴더에 저장되었습니다.`);
-    } catch (error) {
-      console.error('Save failed:', error);
+      const selected = [...checkedImages].map(i => images[i]);
+      const result = await imageSearchAPI.save({ model_id: selectedModelId, images: selected }) as unknown as { saved?: number; failed?: number } | void;
+      const modelName = models.find(m => m.id === selectedModelId)?.name ?? '';
+      if (result && typeof result === 'object' && 'failed' in result && (result.failed ?? 0) > 0) {
+        toast.warning?.(`${result.saved ?? 0}개 저장, ${result.failed}개 실패`);
+      } else {
+        toast.success(`${checkedImages.size}개의 이미지가 ${modelName}에 저장되었습니다`);
+      }
+      setCheckedImages(new Set());
+    } catch {
       toast.error('이미지 저장에 실패했습니다.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Enter 키로 검색
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
+  const selectedModel = models.find(m => m.id === selectedModelId);
+  const totalPages = Math.ceil(totalResults / DISPLAY);
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">이미지 검색</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">모델 이름으로 이미지를 검색하고 저장하세요</p>
       </div>
 
-      {/* 검색 영역 */}
+      {/* Search area */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        {/* Provider toggle */}
+        <div className="flex gap-2 mb-4">
+          {(['google', 'naver'] as const).map(p => (
+            <button
+              key={p}
+              onClick={() => setProvider(p)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                provider === p
+                  ? p === 'google' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {p === 'google' ? '구글' : '네이버'}
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* 모델 선택 드롭다운 */}
+          {/* Model dropdown */}
           <div className="relative lg:w-64">
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
             >
-              <span className={selectedModel ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400'}>
+              <span className={selectedModel ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}>
                 {selectedModel ? selectedModel.name : '모델 선택 (선택사항)'}
               </span>
               <ChevronDown className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
             </button>
-            
+
             {showModelDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20 max-h-60 overflow-auto">
-                {dummyModels.map(model => (
+                <button
+                  onClick={() => { setSelectedModelId(null); setShowModelDropdown(false); }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  선택 안함
+                </button>
+                {models.map(m => (
                   <button
-                    key={model.id}
-                    onClick={() => handleModelSelect(model)}
+                    key={m.id}
+                    onClick={() => { setSelectedModelId(m.id); setShowModelDropdown(false); }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                   >
-                    <span>{model.name}</span>
-                    <span className="text-sm text-gray-400 dark:text-gray-500">{model.nameEnglish}</span>
+                    <span className="dark:text-gray-100">{m.name}</span>
+                    {m.english_name && <span className="text-sm text-gray-400 dark:text-gray-500">{m.english_name}</span>}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* 검색 입력 */}
+          {/* Search input */}
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch(1)}
               placeholder="검색할 이름을 입력하세요..."
               className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
             />
           </div>
 
-          {/* 검색 버튼 */}
+          {/* Search button */}
           <button
-            onClick={handleSearch}
+            onClick={() => handleSearch(1)}
             disabled={isSearching || !searchQuery.trim()}
             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {isSearching ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                검색 중...
-              </>
-            ) : (
-              <>
-                <Search className="w-5 h-5" />
-                검색
-              </>
-            )}
+            {isSearching
+              ? <><Loader2 className="w-5 h-5 animate-spin" />검색 중...</>
+              : <><Search className="w-5 h-5" />검색</>
+            }
           </button>
         </div>
-
-        {/* 선택된 모델 표시 */}
-        {selectedModel && (
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">저장 위치:</span>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm">
-              <FolderOpen className="w-4 h-4" />
-              data/models/{selectedModel.name}/images/
-              <button
-                onClick={() => setSelectedModel(null)}
-                className="ml-1 hover:text-purple-900"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* 검색 결과 */}
+      {/* Results */}
       {images.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          {/* 결과 헤더 */}
+          {/* Results header */}
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={selectedImages.length === images.length}
-                  onChange={toggleSelectAll}
+                  checked={checkedImages.size === images.length && images.length > 0}
+                  onChange={toggleAll}
                   className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
                 />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">전체 선택</span>
               </label>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {images.length}개 검색결과 | {selectedImages.length}개 선택됨
+                {totalResults.toLocaleString()}개 결과 | {checkedImages.size}개 선택됨
               </span>
             </div>
-            
-            <div className="flex items-center gap-3">
-              {/* 뷰 모드 토글 */}
-              <div className="flex items-center bg-gray-200 dark:bg-gray-600 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-gray-800 shadow-sm' : ''}`}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('large')}
-                  className={`p-2 rounded-md transition-colors ${viewMode === 'large' ? 'bg-white dark:bg-gray-800 shadow-sm' : ''}`}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-              </div>
-              
-              {selectedImages.length > 0 && (
-                <button
-                  onClick={handleSaveImages}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      저장 중...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4" />
-                      선택 이미지 저장 ({selectedImages.length})
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+
+            {checkedImages.size > 0 && (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isSaving
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />저장 중...</>
+                  : <><Download className="w-4 h-4" />선택 이미지 저장 ({checkedImages.size}개)</>
+                }
+              </button>
+            )}
           </div>
 
-          {/* 이미지 그리드 */}
-          <div className={`p-4 grid gap-4 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`}>
-            {images.map((image) => {
-              const isSelected = selectedImages.includes(image.id);
-              const isSaved = savedImages.includes(image.id);
-              
-              return (
-                <div
-                  key={image.id}
-                  className={`relative group rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-[3/4] cursor-pointer
-                    ${isSelected ? 'ring-4 ring-purple-500' : ''}
-                    ${isSaved ? 'opacity-60' : ''}`}
-                  onClick={() => !isSaved && toggleImageSelect(image.id)}
-                >
-                  <img
-                    src={image.thumbnailUrl}
-                    alt={image.title}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* 오버레이 */}
-                  <div className={`absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors ${isSelected ? 'bg-black/20' : ''}`}>
-                    {/* 체크박스 */}
-                    <div className="absolute top-2 left-2">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
-                        ${isSelected ? 'bg-purple-600 border-purple-600' : 'border-white bg-black/30 group-hover:bg-white dark:bg-gray-800/30'}`}
-                      >
-                        {isSelected && <Check className="w-4 h-4 text-white" />}
-                      </div>
-                    </div>
-                    
-                    {/* 확대 버튼 */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewImage(image);
-                      }}
-                      className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                    >
-                      <ZoomIn className="w-4 h-4" />
-                    </button>
-                    
-                    {/* 저장됨 표시 */}
-                    {isSaved && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-full">
-                          저장됨
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 출처표시 */}
-                  <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-gradient-to-t from-black/60 to-transparent">
-                    <p className="text-white text-xs truncate">{image.source}</p>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Image grid */}
+          <div className="p-4 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {images.map((image, i) => (
+              <ImageResultCard
+                key={i}
+                image={image}
+                index={i}
+                isChecked={checkedImages.has(i)}
+                onToggle={toggleCheck}
+                onPreview={setPreviewImage}
+              />
+            ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <button
+                onClick={() => handleSearch(currentPage - 1)}
+                disabled={currentPage <= 1 || isSearching}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />이전
+              </button>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{currentPage} / {totalPages}</span>
+              <button
+                onClick={() => handleSearch(currentPage + 1)}
+                disabled={currentPage >= totalPages || isSearching}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                다음<ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* 초기 상태 */}
+      {/* Empty / initial state */}
       {!isSearching && images.length === 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-          <div className="max-w-md mx-auto">
-            <ImageIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">이미지 검색</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              모델 이름을 입력하거나 등록된 모델을 선택하여 관련 이미지를 검색하세요.
-              검색된 이미지는 해당 모델의 폴더에 저장됩니다.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {dummyModels.slice(0, 4).map(model => (
-                <button
-                  key={model.id}
-                  onClick={() => handleModelSelect(model)}
-                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors"
-                >
-                  {model.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ImageIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">이미지 검색</h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            모델 이름을 입력하여 관련 이미지를 검색하고 해당 모델에 저장하세요.
+          </p>
         </div>
       )}
 
-      {/* 이미지 미리보기 모달 */}
+      {/* Preview modal */}
       {previewImage && (
-        <div 
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setPreviewImage(null)}
-        >
-          <button 
-            className="absolute top-4 right-4 p-2 text-white hover:bg-white dark:bg-gray-800/20 rounded-lg transition-colors"
-            onClick={() => setPreviewImage(null)}
-          >
-            <X className="w-8 h-8" />
-          </button>
-          
-          <div className="max-w-4xl max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
-            <img
-              src={previewImage.url}
-              alt={previewImage.title}
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
-            />
-            <div className="mt-4 flex items-center justify-between text-white">
-              <div>
-                <p className="font-medium">{previewImage.title}</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500">{previewImage.source} • {previewImage.width} x {previewImage.height}</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    toggleImageSelect(previewImage.id);
-                  }}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selectedImages.includes(previewImage.id)
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white dark:bg-gray-800/20 hover:bg-white dark:bg-gray-800/30'
-                  }`}
-                >
-                  {selectedImages.includes(previewImage.id) ? '선택됨' : '선택'}
-                </button>
-                <a
-                  href={previewImage.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-white dark:bg-gray-800/20 hover:bg-white dark:bg-gray-800/30 rounded-lg flex items-center gap-2 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  원본
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ImagePreviewModal
+          image={previewImage}
+          isChecked={images.some((img, i) => img === previewImage && checkedImages.has(i))}
+          onClose={() => setPreviewImage(null)}
+          onToggleCheck={() => {
+            const idx = images.indexOf(previewImage);
+            if (idx !== -1) toggleCheck(idx);
+          }}
+        />
       )}
     </div>
   );

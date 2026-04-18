@@ -202,6 +202,69 @@ export const notificationsAPI = {
     request('/notifications/read-all', { method: 'PATCH' }),
 };
 
+// ---------------------------------------------------------------------------
+// News search types
+// ---------------------------------------------------------------------------
+
+export interface NewsArticle {
+  title: string; link: string; description: string; pubDate: string;
+  source: string; imageUrl: string | null; provider: 'naver' | 'google';
+}
+
+export interface NewsSearchResult {
+  total: number; page: number; display: number;
+  provider: 'naver' | 'google'; items: NewsArticle[];
+}
+
+export interface SavedNews {
+  id: number; modelId: number; title: string; link: string;
+  description: string; pubDate: string; source: string;
+  imageUrl: string | null; provider: string; memo: string | null; createdAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Image search types
+// ---------------------------------------------------------------------------
+
+export interface SearchImage {
+  thumbnailUrl: string; originalUrl: string; width: number; height: number;
+  source: string; provider: 'naver' | 'google';
+}
+
+export interface ImageSearchResult {
+  total: number; page: number; display: number;
+  provider: 'naver' | 'google'; items: SearchImage[];
+}
+
+export interface SavedSearchImage {
+  id: number; modelId: number; originalUrl: string; localPath: string;
+  filename: string; width: number; height: number; fileSize: number;
+  source: string; provider: string; memo: string | null;
+  isPortfolio: boolean; createdAt: string;
+}
+
+export const newsAPI = {
+  search: (params: { query: string; page?: number; display?: number; provider?: string }) =>
+    request<NewsSearchResult>(`/news/search?${buildQuery(params as Record<string, string | number | undefined>)}`),
+  save: (body: { model_id: number; articles: NewsArticle[] }) =>
+    request<SavedNews[]>('/news/save', { method: 'POST', body: JSON.stringify(body) }),
+  getByModel: (modelId: number, page?: number, size?: number) =>
+    request<{ items: SavedNews[]; total: number }>(`/news/model/${modelId}?${buildQuery({ page, size })}`),
+  delete: (newsId: number) => request(`/news/${newsId}`, { method: 'DELETE' }),
+};
+
+export const imageSearchAPI = {
+  search: (params: { query: string; page?: number; display?: number; provider?: string }) =>
+    request<ImageSearchResult>(`/image-search/search?${buildQuery(params as Record<string, string | number | undefined>)}`),
+  save: (body: { model_id: number; images: SearchImage[] }) =>
+    request<SavedSearchImage[]>('/image-search/save', { method: 'POST', body: JSON.stringify(body) }),
+  getByModel: (modelId: number, page?: number, size?: number) =>
+    request<{ items: SavedSearchImage[]; total: number }>(`/image-search/model/${modelId}?${buildQuery({ page, size })}`),
+  delete: (imageId: number) => request(`/image-search/${imageId}`, { method: 'DELETE' }),
+  toPortfolio: (imageId: number) =>
+    request(`/image-search/${imageId}/to-portfolio`, { method: 'POST' }),
+};
+
 /** Direct localStorage read needed for multipart upload (bypasses request helper). */
 const getStoredToken = (): string | null => localStorage.getItem('access_token');
 
@@ -231,6 +294,7 @@ const domainApi = {
   contracts: contractsAPI, settlements: settlementsAPI,
   schedules: schedulesAPI, files: filesAPI, activityLogs: activityLogsAPI,
   notifications: notificationsAPI,
+  news: newsAPI, imageSearch: imageSearchAPI,
 };
 
 export default domainApi;
