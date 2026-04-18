@@ -185,15 +185,15 @@ function AdminModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl my-8">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl my-8">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold">
             {admin ? '관리자 수정' : '새 관리자 등록'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -205,18 +205,18 @@ function AdminModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 아이디 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 아이디 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   disabled={!!admin}
-                  className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    admin ? 'bg-gray-100 cursor-not-allowed' : ''
+                  className={`w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 ${
+                    admin ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''
                   }`}
                   placeholder="아이디"
                 />
@@ -226,16 +226,16 @@ function AdminModal({
             {/* 비밀번호 (등록 시에만) */}
             {!admin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   비밀번호 <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                     placeholder="비밀번호"
                   />
                 </div>
@@ -244,16 +244,16 @@ function AdminModal({
 
             {/* 이름 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 이름 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                   placeholder="이름"
                 />
               </div>
@@ -261,14 +261,14 @@ function AdminModal({
 
             {/* 이메일 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">이메일</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                   placeholder="이메일"
                 />
               </div>
@@ -276,14 +276,14 @@ function AdminModal({
 
             {/* 연락처 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">연락처</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">연락처</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                   placeholder="연락처"
                 />
               </div>
@@ -292,7 +292,7 @@ function AdminModal({
 
           {/* 역할 선택 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               역할 <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -304,15 +304,15 @@ function AdminModal({
                   className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
                     formData.role === role.value
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <role.icon className={`w-6 h-6 ${formData.role === role.value ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <role.icon className={`w-6 h-6 ${formData.role === role.value ? 'text-purple-600' : 'text-gray-400 dark:text-gray-500'}`} />
                   <div className="text-left">
-                    <span className={`font-medium block ${formData.role === role.value ? 'text-purple-700' : 'text-gray-600'}`}>
+                    <span className={`font-medium block ${formData.role === role.value ? 'text-purple-700' : 'text-gray-600 dark:text-gray-300'}`}>
                       {role.label}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {role.value === 'super_admin' ? '모든 권한' : '선택된 권한만'}
                     </span>
                   </div>
@@ -325,7 +325,7 @@ function AdminModal({
           {formData.role === 'user' && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                   권한 설정
                 </label>
                 <div className="flex gap-2">
@@ -339,7 +339,7 @@ function AdminModal({
                   <button
                     type="button"
                     onClick={handleDeselectAll}
-                    className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                    className="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                   >
                     전체 해제
                   </button>
@@ -352,7 +352,7 @@ function AdminModal({
                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                       formData.permissions.includes(perm.key)
                         ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     }`}
                   >
                     <input
@@ -361,8 +361,8 @@ function AdminModal({
                       onChange={() => handlePermissionToggle(perm.key)}
                       className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                     />
-                    <perm.icon className={`w-4 h-4 ${formData.permissions.includes(perm.key) ? 'text-purple-600' : 'text-gray-400'}`} />
-                    <span className={`text-sm ${formData.permissions.includes(perm.key) ? 'text-purple-700 font-medium' : 'text-gray-600'}`}>
+                    <perm.icon className={`w-4 h-4 ${formData.permissions.includes(perm.key) ? 'text-purple-600' : 'text-gray-400 dark:text-gray-500'}`} />
+                    <span className={`text-sm ${formData.permissions.includes(perm.key) ? 'text-purple-700 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
                       {perm.label}
                     </span>
                   </label>
@@ -393,7 +393,7 @@ function AdminModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               취소
             </button>
@@ -493,8 +493,8 @@ export default function AdminManagementPage() {
       {/* 헤더 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">관리자 설정</h1>
-          <p className="text-gray-500 mt-1">시스템 사용자를 관리하고 권한을 설정합니다.</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">관리자 설정</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">시스템 사용자를 관리하고 권한을 설정합니다.</p>
         </div>
         <button
           onClick={() => { setEditingAdmin(null); setModalOpen(true); }}
@@ -514,15 +514,15 @@ export default function AdminManagementPage() {
       )}
 
       {/* 검색 */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="이름, 아이디, 이메일로 검색..."
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
           />
         </div>
       </div>
@@ -532,14 +532,14 @@ export default function AdminManagementPage() {
         {ROLES.map((role) => {
           const count = admins.filter((a) => a.role === role.value).length;
           return (
-            <div key={role.value} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div key={role.value} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${role.color}`}>
                   <role.icon className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{count}</p>
-                  <p className="text-sm text-gray-500">{role.label}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{role.label}</p>
                 </div>
               </div>
             </div>
@@ -548,48 +548,48 @@ export default function AdminManagementPage() {
       </div>
 
       {/* 관리자 목록 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredAdmins.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <Users className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <p>등록된 관리자가 없습니다.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">사용자</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">역할</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">권한</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">상태</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500">마지막 로그인</th>
-                  <th className="text-right px-6 py-4 text-sm font-medium text-gray-500">관리</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">사용자</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">역할</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">권한</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">상태</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">마지막 로그인</th>
+                  <th className="text-right px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">관리</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {filteredAdmins.map((admin) => {
                   const roleInfo = getRoleInfo(admin.role);
                   const isCurrentUser = user?.id === admin.id;
                   return (
-                    <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={admin.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
                             {admin.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-800">
+                            <p className="font-medium text-gray-800 dark:text-gray-100">
                               {admin.name}
                               {isCurrentUser && (
                                 <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">나</span>
                               )}
                             </p>
-                            <p className="text-sm text-gray-500">@{admin.username}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">@{admin.username}</p>
                           </div>
                         </div>
                       </td>
@@ -600,7 +600,7 @@ export default function AdminManagementPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">{getPermissionCount(admin)}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{getPermissionCount(admin)}</span>
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -615,19 +615,19 @@ export default function AdminManagementPage() {
                             </>
                           ) : (
                             <>
-                              <ToggleLeft className="w-6 h-6 text-gray-400" />
-                              <span className="text-sm text-gray-500">비활성</span>
+                              <ToggleLeft className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                              <span className="text-sm text-gray-500 dark:text-gray-400">비활성</span>
                             </>
                           )}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {admin.last_login ? new Date(admin.last_login).toLocaleString('ko-KR') : '-'}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => { setEditingAdmin(admin); setModalOpen(true); }}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-purple-600"
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-600 dark:text-gray-300 hover:text-purple-600"
                           title="수정"
                         >
                           <Edit2 className="w-5 h-5" />
@@ -643,16 +643,16 @@ export default function AdminManagementPage() {
       </div>
 
       {/* 권한 설명 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <h3 className="text-lg font-semibold mb-4">사용 가능한 권한 목록</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {PERMISSIONS.map((perm) => (
-            <div key={perm.key} className="p-3 bg-gray-50 rounded-xl">
+            <div key={perm.key} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
               <div className="flex items-center gap-2 mb-1">
                 <perm.icon className="w-4 h-4 text-purple-600" />
-                <span className="font-medium text-gray-800">{perm.label}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100">{perm.label}</span>
               </div>
-              <p className="text-xs text-gray-500">{perm.description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{perm.description}</p>
             </div>
           ))}
         </div>

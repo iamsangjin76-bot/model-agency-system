@@ -76,27 +76,27 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
   };
 
   const inputCls =
-    'w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500';
+    'w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100';
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                 {mode === 'edit' ? '캐스팅 수정' : '새 캐스팅 등록'}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {mode === 'edit' ? '캐스팅 정보를 수정합니다' : '새로운 캐스팅 요청을 등록합니다'}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -104,7 +104,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
         {/* Body */}
         <div className="p-6 overflow-y-auto max-h-[60vh] space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">캐스팅 제목 *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">캐스팅 제목 *</label>
             <input
               type="text"
               value={form.title}
@@ -115,7 +115,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">캐스팅 유형</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">캐스팅 유형</label>
               <select
                 value={form.type}
                 onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
@@ -127,7 +127,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">예산 (원)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">예산 (원)</label>
               <input
                 type="number"
                 value={form.budget}
@@ -137,7 +137,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">촬영 예정일</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">촬영 예정일</label>
               <input
                 type="date"
                 value={form.shoot_date}
@@ -146,7 +146,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">마감일</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">마감일</label>
               <input
                 type="date"
                 value={form.deadline}
@@ -156,7 +156,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">촬영 장소</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">촬영 장소</label>
             <input
               type="text"
               value={form.location}
@@ -166,7 +166,7 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">설명</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">설명</label>
             <textarea
               rows={3}
               value={form.description}
@@ -178,10 +178,10 @@ export default function CastingFormModal({ mode, initial, onClose, onSuccess }: 
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
             취소
           </button>

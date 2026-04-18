@@ -56,7 +56,7 @@ export default function KeywordTagInput({ value, onChange }: Props) {
   };
 
   return (
-    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all flex flex-wrap gap-2 min-h-[44px]">
+    <div className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all flex flex-wrap gap-2 min-h-[44px]">
       {tags.map((tag, i) => (
         <span
           key={`${tag}-${i}`}

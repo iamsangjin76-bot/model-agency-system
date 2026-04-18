@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import ThemeToggle from '@/components/ThemeToggle';
 import { ROLE_LABELS, ROLE_COLORS, AdminRole } from '@/types/auth';
 import { modelsAPI, castingsAPI, settlementsAPI, activityLogsAPI, ActivityLogEntry } from '@/services/api';
 import NotificationBell from '@/components/notification/NotificationBell';
@@ -170,12 +171,12 @@ function DashboardHome() {
           <Link
             key={index}
             to={stat.path}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">{stat.label}</p>
-                <p className="text-3xl font-bold mt-1">{stat.value}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">{stat.label}</p>
+                <p className="text-3xl font-bold mt-1 dark:text-gray-100">{stat.value}</p>
               </div>
               <div className={`p-4 rounded-xl bg-gradient-to-br ${stat.color}`}>
                 <stat.icon className="w-6 h-6 text-white" />
@@ -187,54 +188,54 @@ function DashboardHome() {
 
       {/* 퀵 액션 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">빠른 작업</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">빠른 작업</h3>
           <div className="grid grid-cols-2 gap-4">
             <Link
               to="/dashboard/models/new"
-              className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-3"
+              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center gap-3"
             >
               <Users className="w-5 h-5 text-blue-500" />
-              <span className="font-medium">모델 등록</span>
+              <span className="font-medium dark:text-gray-100">모델 등록</span>
             </Link>
             <Link
               to="/dashboard/news-search"
-              className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-3"
+              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center gap-3"
             >
               <Search className="w-5 h-5 text-green-500" />
-              <span className="font-medium">뉴스 검색</span>
+              <span className="font-medium dark:text-gray-100">뉴스 검색</span>
             </Link>
             <Link
               to="/dashboard/image-search"
-              className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-3"
+              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center gap-3"
             >
               <Image className="w-5 h-5 text-purple-500" />
-              <span className="font-medium">이미지 검색</span>
+              <span className="font-medium dark:text-gray-100">이미지 검색</span>
             </Link>
             <Link
               to="/dashboard/profile-export"
-              className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-3"
+              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center gap-3"
             >
               <FileText className="w-5 h-5 text-orange-500" />
-              <span className="font-medium">프로필 내보내기</span>
+              <span className="font-medium dark:text-gray-100">프로필 내보내기</span>
             </Link>
           </div>
         </div>
 
         {/* 최근 활동 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">최근 활동</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">최근 활동</h3>
           <div className="space-y-4">
             {recentActivity.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">최근 활동이 없습니다.</p>
             ) : (
               recentActivity.map((log) => (
-                <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                <div key={log.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
                   <div>
-                    <p className="font-medium text-gray-800">{formatAction(log.action, log.target_type)}</p>
-                    <p className="text-sm text-gray-500">{log.target_name ?? '-'}</p>
+                    <p className="font-medium text-gray-800 dark:text-gray-100">{formatAction(log.action, log.target_type)}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{log.target_name ?? '-'}</p>
                   </div>
-                  <span className="text-xs text-gray-400">{formatRelativeTime(log.created_at)}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{formatRelativeTime(log.created_at)}</span>
                 </div>
               ))
             )}
@@ -243,24 +244,24 @@ function DashboardHome() {
       </div>
       {/* 통계 차트 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">모델 성별 분포</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">모델 성별 분포</h3>
           {modelChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart><Pie data={modelChartData} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({name,value})=>`${name} ${value}`}>{modelChartData.map((_,i) => (<Cell key={i} fill={['#6366f1','#ec4899','#a3e635'][i%3]} />))}</Pie><Tooltip /></PieChart>
             </ResponsiveContainer>
           ) : (<div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">데이터 없음</div>)}
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">캐스팅 현황</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">캐스팅 현황</h3>
           {castingChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={castingChartData} barSize={28}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" tick={{fontSize:12}} /><YAxis allowDecimals={false} tick={{fontSize:12}} /><Tooltip /><Bar dataKey="value" name="건수" fill="#818cf8" radius={[4,4,0,0]} /></BarChart>
             </ResponsiveContainer>
           ) : (<div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">데이터 없음</div>)}
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold mb-4">정산 요약</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">정산 요약</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={[{name:'수입',value:settlementData.income},{name:'지출',value:settlementData.expense}]} barSize={40}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" tick={{fontSize:13}} /><YAxis tickFormatter={(v)=>`${(v/10000).toFixed(0)}만`} tick={{fontSize:11}} /><Tooltip formatter={(v:any)=>`${Number(v).toLocaleString()}원`} /><Bar dataKey="value" name="금액" radius={[4,4,0,0]}><Cell fill="#34d399" /><Cell fill="#f87171" /></Bar></BarChart>
           </ResponsiveContainer>
@@ -299,7 +300,7 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 모바일 메뉴 오버레이 */}
       {mobileMenuOpen && (
         <div
@@ -310,28 +311,28 @@ export default function DashboardPage() {
 
       {/* 사이드바 */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transition-all duration-300
+        className={`fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-50 transition-all duration-300
           ${sidebarOpen ? 'w-64 xl:w-72' : 'w-20'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* 로고 */}
-        <div className={`h-16 flex items-center border-b border-gray-200 ${sidebarOpen ? 'justify-between px-4' : 'justify-center'}`}>
+        <div className={`h-16 flex items-center border-b border-gray-200 dark:border-gray-700 ${sidebarOpen ? 'justify-between px-4' : 'justify-center'}`}>
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl">
               <Camera className="w-5 h-5 text-white" />
             </div>
             {sidebarOpen && (
               <div>
-                <h1 className="font-bold text-gray-800">MODEL AGENCY</h1>
-                <p className="text-xs text-gray-500">Management System</p>
+                <h1 className="font-bold text-gray-800 dark:text-gray-100">MODEL AGENCY</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Management System</p>
               </div>
             )}
           </Link>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 dark:text-gray-300" />
           </button>
         </div>
 
@@ -348,7 +349,7 @@ export default function DashboardPage() {
                   ${sidebarOpen ? 'gap-3 px-4 py-3' : 'justify-center py-3'}
                   ${isActive
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -361,46 +362,49 @@ export default function DashboardPage() {
         {/* 사이드바 토글 (데스크톱) */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="hidden lg:flex absolute -right-4 top-20 w-8 h-8 bg-white border border-gray-200 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 hover:shadow-md transition-shadow"
+          className="hidden lg:flex absolute -right-4 top-20 w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full items-center justify-center shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-shadow"
         >
-          <ChevronDown className={`w-4 h-4 transition-transform ${sidebarOpen ? '-rotate-90' : 'rotate-90'}`} />
+          <ChevronDown className={`w-4 h-4 dark:text-gray-300 transition-transform ${sidebarOpen ? '-rotate-90' : 'rotate-90'}`} />
         </button>
       </aside>
 
       {/* 메인 콘텐츠 */}
       <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64 xl:ml-72' : 'lg:ml-20'}`}>
         {/* 헤더 */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8">
+        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 dark:text-gray-300" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
               {filteredMenuItems.find(item => item.path === location.pathname)?.label || '대시보드'}
             </h2>
           </div>
 
           <div className="flex items-center gap-4">
+            {/* 테마 토글 */}
+            <ThemeToggle />
+
             {/* 알림 */}
             <NotificationBell />
 
             {/* 사용자 메뉴 */}
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-700">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-800">{admin?.name}</p>
-                <p className="text-xs text-gray-500">{ROLE_LABELS[admin?.role as AdminRole]}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{admin?.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{ROLE_LABELS[admin?.role as AdminRole]}</p>
               </div>
               <div className="relative group">
-                <button className="p-2 bg-gray-100 rounded-full">
-                  <UserCircle className="w-6 h-6 text-gray-600" />
+                <button className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
+                  <UserCircle className="w-6 h-6 text-gray-600 dark:text-gray-300" />
                 </button>
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
                   >
                     <LogOut className="w-4 h-4" />
                     로그아웃

@@ -31,7 +31,7 @@ const EVENT_TYPE_CONFIG: Record<EventType, { label: string; color: string; bgCol
   event: { label: '이벤트', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: Mic },
   audition: { label: '오디션', color: 'text-green-600', bgColor: 'bg-green-100', icon: Video },
   fitting: { label: '피팅', color: 'text-orange-600', bgColor: 'bg-orange-100', icon: User },
-  other: { label: '기타', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: Briefcase },
+  other: { label: '기타', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700', icon: Briefcase },
 };
 
 const getEventTypeKey = (type?: string): EventType => {
@@ -201,14 +201,14 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       {/* 상단 헤더 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
           <div className="flex items-center gap-4">
             {/* 월 네비게이션 */}
             <div className="flex items-center gap-2">
               <button
                 onClick={goToPrevMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -217,14 +217,14 @@ export default function SchedulePage() {
               </h2>
               <button
                 onClick={goToNextMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
             <button
               onClick={goToToday}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
             >
               오늘
             </button>
@@ -235,7 +235,7 @@ export default function SchedulePage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as EventType | 'all')}
-              className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">모든 일정</option>
               {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => (
@@ -244,16 +244,16 @@ export default function SchedulePage() {
             </select>
 
             {/* 뷰 모드 토글 */}
-            <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+            <div className="flex rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`p-2 ${viewMode === 'calendar' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-50'}`}
+                className={`p-2 ${viewMode === 'calendar' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
               >
                 <Grid3X3 className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-50'}`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
               >
                 <List className="w-5 h-5" />
               </button>
@@ -272,9 +272,9 @@ export default function SchedulePage() {
 
         {/* 이번 달 통계 */}
         <div className="mt-4 flex items-center gap-6 text-sm flex-wrap">
-          <span className="text-gray-500 flex items-center gap-1">
+          <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
             {isLoading && <RefreshCw className="w-3 h-3 animate-spin" />}
-            이번 달 일정: <span className="font-semibold text-gray-800">{thisMonthEvents.length}건</span>
+            이번 달 일정: <span className="font-semibold text-gray-800 dark:text-gray-100">{thisMonthEvents.length}건</span>
           </span>
           {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => {
             const count = thisMonthEvents.filter(s => s.schedule_type === key).length;
@@ -290,14 +290,14 @@ export default function SchedulePage() {
 
       {/* 캘린더 뷰 */}
       {viewMode === 'calendar' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           {/* 요일 헤더 */}
-          <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+          <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             {WEEKDAYS.map((day, idx) => (
               <div
                 key={day}
                 className={`py-3 text-center text-sm font-medium ${
-                  idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-600'
+                  idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-600 dark:text-gray-300'
                 }`}
               >
                 {day}
@@ -309,8 +309,8 @@ export default function SchedulePage() {
           <div className="grid grid-cols-7">
             {/* 이전 달 날짜 */}
             {Array.from({ length: firstDay }, (_, i) => (
-              <div key={`prev-${i}`} className="min-h-[120px] p-2 border-b border-r border-gray-100 bg-gray-50/50">
-                <span className="text-gray-300 text-sm">{prevMonthDays - firstDay + i + 1}</span>
+              <div key={`prev-${i}`} className="min-h-[120px] p-2 border-b border-r border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <span className="text-gray-300 dark:text-gray-600 text-sm">{prevMonthDays - firstDay + i + 1}</span>
               </div>
             ))}
 
@@ -326,7 +326,7 @@ export default function SchedulePage() {
                 <div
                   key={day}
                   onClick={() => setSelectedDate(dateStr)}
-                  className={`min-h-[120px] p-2 border-b border-r border-gray-100 cursor-pointer hover:bg-purple-50/50 transition-colors ${
+                  className={`min-h-[120px] p-2 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-purple-50/50 transition-colors ${
                     selectedDate === dateStr ? 'bg-purple-50' : ''
                   }`}
                 >
@@ -339,13 +339,13 @@ export default function SchedulePage() {
                           ? 'text-red-500'
                           : dayOfWeek === 6
                           ? 'text-blue-500'
-                          : 'text-gray-700'
+                          : 'text-gray-700 dark:text-gray-200'
                       }`}
                     >
                       {day}
                     </span>
                     {events.length > 0 && (
-                      <span className="text-xs text-gray-400">{events.length}건</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{events.length}건</span>
                     )}
                   </div>
                   <div className="space-y-1">
@@ -365,7 +365,7 @@ export default function SchedulePage() {
                       );
                     })}
                     {events.length > 3 && (
-                      <div className="text-xs text-gray-400 pl-1">+{events.length - 3}개 더보기</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 pl-1">+{events.length - 3}개 더보기</div>
                     )}
                   </div>
                 </div>
@@ -374,8 +374,8 @@ export default function SchedulePage() {
 
             {/* 다음 달 날짜 */}
             {Array.from({ length: (7 - ((firstDay + daysInMonth) % 7)) % 7 }, (_, i) => (
-              <div key={`next-${i}`} className="min-h-[120px] p-2 border-b border-r border-gray-100 bg-gray-50/50">
-                <span className="text-gray-300 text-sm">{i + 1}</span>
+              <div key={`next-${i}`} className="min-h-[120px] p-2 border-b border-r border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <span className="text-gray-300 dark:text-gray-600 text-sm">{i + 1}</span>
               </div>
             ))}
           </div>
@@ -384,15 +384,15 @@ export default function SchedulePage() {
 
       {/* 리스트 뷰 */}
       {viewMode === 'list' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="divide-y divide-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                 <RefreshCw className="w-8 h-8 mx-auto mb-2 animate-spin opacity-40" />
                 <p>일정을 불러오는 중...</p>
               </div>
             ) : filteredEvents.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
                 <p>등록된 일정이 없습니다</p>
                 <button
@@ -415,7 +415,7 @@ export default function SchedulePage() {
                   <div
                     key={schedule.id}
                     onClick={() => setSelectedEvent(schedule)}
-                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${isPast ? 'opacity-60' : ''}`}
+                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${isPast ? 'opacity-60' : ''}`}
                   >
                     <div className="flex items-start gap-4">
                       <div className={`p-3 rounded-xl ${config.bgColor}`}>
@@ -430,8 +430,8 @@ export default function SchedulePage() {
                             <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-600 rounded">대기중</span>
                           )}
                         </div>
-                        <h3 className="font-semibold text-gray-800 truncate">{schedule.title}</h3>
-                        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-100 truncate">{schedule.title}</h3>
+                        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="w-4 h-4" />{date}
                           </div>
@@ -454,8 +454,8 @@ export default function SchedulePage() {
                           </div>
                         )}
                       </div>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="w-4 h-4 text-gray-400" />
+                      <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <MoreVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       </button>
                     </div>
                   </div>
@@ -474,17 +474,17 @@ export default function SchedulePage() {
         const { time: endTime } = parseScheduleDate(selectedEvent.end_datetime);
         return (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg overflow-hidden">
               <div className={`p-6 ${config.bgColor}`}>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     {React.createElement(config.icon, { className: `w-6 h-6 ${config.color}` })}
                     <div>
                       <span className={`text-sm font-medium ${config.color}`}>{config.label}</span>
-                      <h2 className="text-xl font-bold text-gray-800">{selectedEvent.title}</h2>
+                      <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{selectedEvent.title}</h2>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedEvent(null)} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
+                  <button onClick={() => setSelectedEvent(null)} className="p-2 hover:bg-white dark:bg-gray-800/50 rounded-lg transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -492,18 +492,18 @@ export default function SchedulePage() {
 
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <CalendarIcon className="w-5 h-5 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                    <CalendarIcon className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
-                      <p className="text-xs text-gray-500">날짜</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">날짜</p>
                       <p className="font-medium">{date}</p>
                     </div>
                   </div>
                   {startTime && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                      <Clock className="w-5 h-5 text-gray-400" />
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                      <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                       <div>
-                        <p className="text-xs text-gray-500">시간</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">시간</p>
                         <p className="font-medium">{startTime}{endTime ? ` - ${endTime}` : ''}</p>
                       </div>
                     </div>
@@ -511,29 +511,29 @@ export default function SchedulePage() {
                 </div>
 
                 {selectedEvent.location && (
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                    <MapPin className="w-5 h-5 text-gray-400 dark:text-gray-500 mt-0.5" />
                     <div>
-                      <p className="text-xs text-gray-500">장소</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">장소</p>
                       <p className="font-medium">{selectedEvent.location}</p>
                     </div>
                   </div>
                 )}
 
                 {selectedEvent.model_name && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <User className="w-5 h-5 text-gray-400" />
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                    <User className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
-                      <p className="text-xs text-gray-500">참여 모델</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">참여 모델</p>
                       <p className="font-medium">{selectedEvent.model_name}</p>
                     </div>
                   </div>
                 )}
 
                 {selectedEvent.memo && (
-                  <div className="p-3 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 mb-1">메모</p>
-                    <p className="text-gray-700">{selectedEvent.memo}</p>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">메모</p>
+                    <p className="text-gray-700 dark:text-gray-200">{selectedEvent.memo}</p>
                   </div>
                 )}
 
@@ -550,7 +550,7 @@ export default function SchedulePage() {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
                 <button onClick={() => setSelectedEvent(null)} className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all">
                   닫기
                 </button>
@@ -563,40 +563,40 @@ export default function SchedulePage() {
       {/* 새 일정 등록 모달 */}
       {showNewModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl">
                   <CalendarIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">일정 추가</h2>
-                  <p className="text-sm text-gray-500">새로운 일정을 등록합니다</p>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">일정 추가</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">새로운 일정을 등록합니다</p>
                 </div>
               </div>
-              <button onClick={() => setShowNewModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={() => setShowNewModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[60vh] space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">일정 제목 *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">일정 제목 *</label>
                 <input
                   type="text"
                   placeholder="일정 제목을 입력하세요"
                   value={newEvent.title}
                   onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">일정 유형 *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">일정 유형 *</label>
                 <select
                   value={newEvent.schedule_type}
                   onChange={e => setNewEvent(p => ({ ...p, schedule_type: e.target.value as EventType }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                 >
                   {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => (
                     <option key={key} value={key}>{config.label}</option>
@@ -606,61 +606,61 @@ export default function SchedulePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">날짜 *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">날짜 *</label>
                   <input
                     type="date"
                     value={newEvent.date}
                     onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">시작</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">시작</label>
                     <input
                       type="time"
                       value={newEvent.start_time}
                       onChange={e => setNewEvent(p => ({ ...p, start_time: e.target.value }))}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">종료</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">종료</label>
                     <input
                       type="time"
                       value={newEvent.end_time}
                       onChange={e => setNewEvent(p => ({ ...p, end_time: e.target.value }))}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">장소</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">장소</label>
                 <input
                   type="text"
                   placeholder="장소를 입력하세요"
                   value={newEvent.location}
                   onChange={e => setNewEvent(p => ({ ...p, location: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">메모</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">메모</label>
                 <textarea
                   rows={3}
                   placeholder="상세 내용을 입력하세요"
                   value={newEvent.memo}
                   onChange={e => setNewEvent(p => ({ ...p, memo: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100 resize-none"
                 />
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-              <button onClick={() => setShowNewModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
+              <button onClick={() => setShowNewModal(false)} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
                 취소
               </button>
               <button

@@ -183,8 +183,8 @@ export default function ModelFormPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">{isEdit ? '모델 정보 수정' : '새 모델 등록'}</h1>
-            <p className="text-gray-500 mt-1">{isEdit ? '모델 프로필 정보를 수정합니다.' : '새로운 모델을 등록합니다.'}</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{isEdit ? '모델 정보 수정' : '새 모델 등록'}</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{isEdit ? '모델 프로필 정보를 수정합니다.' : '새로운 모델을 등록합니다.'}</p>
           </div>
         </div>
         <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50">
@@ -212,8 +212,8 @@ export default function ModelFormPage() {
       </div>
 
       {/* Footer save */}
-      <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-        <Link to="/dashboard/models" className="px-6 py-2.5 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors">취소</Link>
+      <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <Link to="/dashboard/models" className="px-6 py-2.5 text-gray-600 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">취소</Link>
         <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50">
           <Save className="w-5 h-5" />
           <span className="hidden sm:inline">{isSaving ? '저장 중...' : '저장'}</span>

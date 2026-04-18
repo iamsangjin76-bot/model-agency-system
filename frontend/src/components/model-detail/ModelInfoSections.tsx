@@ -19,8 +19,8 @@ function Field({ label, value }: { label: string; value?: string | number | null
   const display = value !== undefined && value !== null && value !== '' ? String(value) : '-';
   return (
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm text-gray-800 mt-0.5">{display}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm text-gray-800 dark:text-gray-100 mt-0.5">{display}</p>
     </div>
   );
 }
@@ -71,9 +71,9 @@ export default function ModelInfoSections({ data }: Props) {
         <Field label="집 전화" value={data.home_phone} />
       </FieldGrid>
       {data.contact_note && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-500">연락시 유의점</p>
-          <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-line">{data.contact_note}</p>
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400">연락시 유의점</p>
+          <p className="text-sm text-gray-800 dark:text-gray-100 mt-0.5 whitespace-pre-line">{data.contact_note}</p>
         </div>
       )}
     </DetailSection>
@@ -102,9 +102,9 @@ export default function ModelInfoSections({ data }: Props) {
         <Field label="출국일" value={data.departure_date} />
       </FieldGrid>
       {data.languages && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-500">외국어 능력</p>
-          <p className="text-sm text-gray-800 mt-0.5">{data.languages}</p>
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400">외국어 능력</p>
+          <p className="text-sm text-gray-800 dark:text-gray-100 mt-0.5">{data.languages}</p>
         </div>
       )}
     </DetailSection>
@@ -128,8 +128,8 @@ export default function ModelInfoSections({ data }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {careerItems.filter(([, v]) => v).map(([label, value]) => (
           <div key={label}>
-            <p className="text-xs text-gray-500">{label}</p>
-            <p className="text-sm text-gray-800 mt-0.5 whitespace-pre-line">{value}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+            <p className="text-sm text-gray-800 dark:text-gray-100 mt-0.5 whitespace-pre-line">{value}</p>
           </div>
         ))}
       </div>
@@ -165,7 +165,7 @@ export default function ModelInfoSections({ data }: Props) {
             <a href={`https://instagram.com/${data.instagram_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
               @{data.instagram_id}
             </a>
-            <span className="text-sm text-gray-500">{fmtNum(data.instagram_followers)} followers</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{fmtNum(data.instagram_followers)} followers</span>
           </div>
         )}
         {data.youtube_id && (
@@ -174,7 +174,7 @@ export default function ModelInfoSections({ data }: Props) {
             <a href={`https://youtube.com/@${data.youtube_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
               {data.youtube_id}
             </a>
-            <span className="text-sm text-gray-500">{fmtNum(data.youtube_subscribers)} subscribers</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{fmtNum(data.youtube_subscribers)} subscribers</span>
           </div>
         )}
         {data.tiktok_id && (
@@ -183,7 +183,7 @@ export default function ModelInfoSections({ data }: Props) {
             <a href={`https://tiktok.com/@${data.tiktok_id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">
               @{data.tiktok_id}
             </a>
-            <span className="text-sm text-gray-500">{fmtNum(data.tiktok_followers)} followers</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{fmtNum(data.tiktok_followers)} followers</span>
           </div>
         )}
       </div>
@@ -211,7 +211,7 @@ export default function ModelInfoSections({ data }: Props) {
         </div>
       )}
       {data.memo && (
-        <p className="text-sm text-gray-700 whitespace-pre-line">{data.memo}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-line">{data.memo}</p>
       )}
     </DetailSection>
   ) : null;

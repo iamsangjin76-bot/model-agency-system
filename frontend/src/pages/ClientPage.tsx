@@ -32,7 +32,7 @@ type ClientGrade = 'vip' | 'gold' | 'silver' | 'normal';
 const GRADE_CONFIG: Record<ClientGrade, { label: string; color: string; bgColor: string }> = {
   vip: { label: 'VIP', color: 'text-amber-600', bgColor: 'bg-amber-100' },
   gold: { label: 'Gold', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  silver: { label: 'Silver', color: 'text-gray-500', bgColor: 'bg-gray-200' },
+  silver: { label: 'Silver', color: 'text-gray-500 dark:text-gray-400', bgColor: 'bg-gray-200 dark:bg-gray-600' },
   normal: { label: 'Normal', color: 'text-blue-600', bgColor: 'bg-blue-100' },
 };
 
@@ -261,10 +261,10 @@ export default function ClientPage() {
           { label: '총 거래액', value: stats.totalAmount, icon: DollarSign, color: 'from-green-500 to-green-600', small: true },
           { label: '진행중 프로젝트', value: stats.activeProjects, icon: Briefcase, color: 'from-purple-500 to-purple-600' },
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div key={idx} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
                 <p className={`${stat.small ? 'text-lg' : 'text-2xl'} font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                   {stat.value}
                 </p>
@@ -278,18 +278,18 @@ export default function ClientPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             {/* 검색 */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="회사명, 담당자 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
 
@@ -297,7 +297,7 @@ export default function ClientPage() {
             <select
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value as ClientGrade | 'all')}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">모든 등급</option>
               {Object.entries(GRADE_CONFIG).map(([key, config]) => (
@@ -309,7 +309,7 @@ export default function ClientPage() {
             <select
               value={industryFilter}
               onChange={(e) => setIndustryFilter(e.target.value as Industry | 'all')}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+              className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">모든 업종</option>
               {Object.entries(INDUSTRIES).map(([key, label]) => (
@@ -323,7 +323,7 @@ export default function ClientPage() {
               className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 ${
                 showFavorites 
                   ? 'bg-amber-100 border-amber-300 text-amber-700' 
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <Star className={`w-4 h-4 ${showFavorites ? 'fill-amber-500' : ''}`} />
@@ -346,12 +346,12 @@ export default function ClientPage() {
       {isLoading ? (
         <div className="py-16 text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-500 border-t-transparent mx-auto mb-4" />
-          <p className="text-gray-500">불러오는 중...</p>
+          <p className="text-gray-500 dark:text-gray-400">불러오는 중...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredClients.length === 0 ? (
-            <div className="col-span-3 py-16 text-center text-gray-500">
+            <div className="col-span-3 py-16 text-center text-gray-500 dark:text-gray-400">
               <Building2 className="w-16 h-16 mx-auto mb-4 opacity-30" />
               <p>등록된 고객이 없습니다.</p>
               <button onClick={() => setShowNewModal(true)} className="mt-4 px-4 py-2 text-purple-600 border border-purple-300 rounded-lg hover:bg-purple-50">새 고객 등록</button>
@@ -363,7 +363,7 @@ export default function ClientPage() {
               <div
                 key={client.id}
                 onClick={() => setSelectedClient(client)}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-purple-200 transition-all cursor-pointer group"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-purple-200 transition-all cursor-pointer group"
               >
                 {/* 헤더 */}
                 <div className="flex items-start justify-between mb-4">
@@ -373,7 +373,7 @@ export default function ClientPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-purple-600 transition-colors">
                           {client.name}
                         </h3>
                         {client.is_favorite && (
@@ -384,45 +384,45 @@ export default function ClientPage() {
                         <span className={`px-2 py-0.5 text-xs font-medium rounded ${gradeConfig.bgColor} ${gradeConfig.color}`}>
                           {gradeConfig.label}
                         </span>
-                        <span className="text-xs text-gray-500">{INDUSTRIES[(client.industry as Industry) || 'other']}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{INDUSTRIES[(client.industry as Industry) || 'other']}</span>
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={(e) => handleToggleFavorite(client.id, e)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     title="즐겨찾기"
                   >
-                    <Star className={`w-4 h-4 ${client.is_favorite ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} />
+                    <Star className={`w-4 h-4 ${client.is_favorite ? 'text-amber-500 fill-amber-500' : 'text-gray-400 dark:text-gray-500'}`} />
                   </button>
                 </div>
 
                 {/* 담당자 정보 */}
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
                   {client.contact_name && (
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
+                      <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       <span>{client.contact_name}{client.contact_position ? ` (${client.contact_position})` : ''}</span>
                     </div>
                   )}
                   {client.phone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-400" />
+                      <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       <span>{client.phone}</span>
                     </div>
                   )}
                   {client.email && (
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-400" />
+                      <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       <span className="truncate">{client.email}</span>
                     </div>
                   )}
                 </div>
 
                 {/* 거래 정보 */}
-                <div className="pt-4 border-t border-gray-100">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-gray-500">
+                    <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                       <Briefcase className="w-4 h-4" />
                       <span>프로젝트 {client.total_projects || 0}건</span>
                     </div>
@@ -440,9 +440,9 @@ export default function ClientPage() {
       {/* 고객 상세 모달 */}
       {selectedClient && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
             {/* 모달 헤더 */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-2xl font-bold">
@@ -450,12 +450,12 @@ export default function ClientPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-xl font-bold text-gray-800">{selectedClient.name}</h2>
-                      <button className="p-1 hover:bg-gray-100 rounded">
+                      <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{selectedClient.name}</h2>
+                      <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                         {selectedClient.is_favorite ? (
                           <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
                         ) : (
-                          <StarOff className="w-5 h-5 text-gray-400" />
+                          <StarOff className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                         )}
                       </button>
                     </div>
@@ -466,18 +466,18 @@ export default function ClientPage() {
                         </span>
                       )}
                       {selectedClient.industry && (
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 rounded">{INDUSTRIES[selectedClient.industry as Industry] || selectedClient.industry}</span>
+                        <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded">{INDUSTRIES[selectedClient.industry as Industry] || selectedClient.industry}</span>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">
+                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300">
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setSelectedClient(null)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -490,35 +490,35 @@ export default function ClientPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 연락처 정보 */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <User className="w-5 h-5 text-purple-500" />
                     연락처 정보
                   </h3>
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 space-y-3">
                     {selectedClient.contact_name && (
                       <div className="flex items-center gap-3">
-                        <User className="w-5 h-5 text-gray-400" />
+                        <User className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                         <div>
                           <p className="font-medium">{selectedClient.contact_name}</p>
-                          {selectedClient.contact_position && <p className="text-sm text-gray-500">{selectedClient.contact_position}</p>}
+                          {selectedClient.contact_position && <p className="text-sm text-gray-500 dark:text-gray-400">{selectedClient.contact_position}</p>}
                         </div>
                       </div>
                     )}
                     {selectedClient.phone && (
                       <div className="flex items-center gap-3">
-                        <Phone className="w-5 h-5 text-gray-400" />
+                        <Phone className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                         <span>{selectedClient.phone}</span>
                       </div>
                     )}
                     {selectedClient.email && (
                       <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-gray-400" />
+                        <Mail className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                         <span>{selectedClient.email}</span>
                       </div>
                     )}
                     {selectedClient.address && (
                       <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-gray-400" />
+                        <MapPin className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                         <span className="text-sm">{selectedClient.address}</span>
                       </div>
                     )}
@@ -527,17 +527,17 @@ export default function ClientPage() {
 
                 {/* 거래 정보 */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-purple-500" />
                     거래 정보
                   </h3>
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-gray-200">
-                      <span className="text-gray-500">총 프로젝트</span>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-gray-500 dark:text-gray-400">총 프로젝트</span>
                       <span className="font-semibold text-lg">{selectedClient.total_projects || 0}건</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500">누적 거래액</span>
+                      <span className="text-gray-500 dark:text-gray-400">누적 거래액</span>
                       <span className="font-semibold text-lg text-green-600">{(selectedClient.total_amount || 0).toLocaleString()}원</span>
                     </div>
                   </div>
@@ -546,12 +546,12 @@ export default function ClientPage() {
                 {/* 메모 */}
                 {selectedClient.memo && (
                   <div className="md:col-span-2 space-y-4">
-                    <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                       <FileText className="w-5 h-5 text-purple-500" />
                       메모
                     </h3>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                      <p className="text-gray-600">{selectedClient.memo}</p>
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+                      <p className="text-gray-600 dark:text-gray-300">{selectedClient.memo}</p>
                     </div>
                   </div>
                 )}
@@ -559,13 +559,13 @@ export default function ClientPage() {
             </div>
 
             {/* 모달 푸터 */}
-            <div className="p-6 border-t border-gray-200 flex justify-between bg-gray-50">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-gray-50 dark:bg-gray-900">
               <button className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2">
                 <Trash2 className="w-4 h-4" />
                 삭제
               </button>
               <div className="flex gap-3">
-                <button className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                <button className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
                   캐스팅 요청
                 </button>
                 <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all">
@@ -580,20 +580,20 @@ export default function ClientPage() {
       {/* 새 고객 등록 모달 */}
       {showNewModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl">
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">고객 등록</h2>
-                  <p className="text-sm text-gray-500">새로운 광고주를 등록합니다</p>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">고객 등록</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">새로운 광고주를 등록합니다</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowNewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -602,30 +602,30 @@ export default function ClientPage() {
             <div className="p-6 overflow-y-auto max-h-[60vh] space-y-6">
               {/* 회사 정보 */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                   <Building2 className="w-5 h-5 text-purple-500" />
                   회사 정보
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">회사명 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">회사명 *</label>
                     <input type="text" value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
                       placeholder="광고주 회사명"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">업종</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">업종</label>
                     <select value={newClient.industry} onChange={e => setNewClient(p => ({ ...p, industry: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100">
                       {Object.entries(INDUSTRIES).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">고객 등급</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">고객 등급</label>
                     <select value={newClient.grade} onChange={e => setNewClient(p => ({ ...p, grade: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100">
                       {Object.entries(GRADE_CONFIG).map(([key, config]) => (
                         <option key={key} value={key}>{config.label}</option>
                       ))}
@@ -636,43 +636,43 @@ export default function ClientPage() {
 
               {/* 담당자 정보 */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                   <User className="w-5 h-5 text-purple-500" />
                   담당자 정보
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">담당자명 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">담당자명 *</label>
                     <input type="text" value={newClient.contact_name} onChange={e => setNewClient(p => ({ ...p, contact_name: e.target.value }))}
                       placeholder="담당자 이름"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">연락처 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">연락처 *</label>
                     <input type="text" value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))}
                       placeholder="02-1234-5678"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">이메일</label>
                     <input type="email" value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))}
                       placeholder="email@company.com"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
+                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100" />
                   </div>
                 </div>
               </div>
 
               {/* 메모 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">메모</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">메모</label>
                 <textarea rows={3} value={newClient.memo} onChange={e => setNewClient(p => ({ ...p, memo: e.target.value }))}
                   placeholder="고객에 대한 메모를 입력하세요"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 resize-none" />
+                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100 resize-none" />
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-              <button onClick={() => setShowNewModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
+              <button onClick={() => setShowNewModal(false)} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
                 취소
               </button>
               <button onClick={handleCreateClient} disabled={isSaving}

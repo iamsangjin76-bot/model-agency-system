@@ -156,35 +156,35 @@ export default function ImageSearchPage() {
     <div className="space-y-6">
       {/* 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">이미지 검색</h1>
-        <p className="text-gray-500 mt-1">모델 이름으로 이미지를 검색하고 저장하세요</p>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">이미지 검색</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">모델 이름으로 이미지를 검색하고 저장하세요</p>
       </div>
 
       {/* 검색 영역 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* 모델 선택 드롭다운 */}
           <div className="relative lg:w-64">
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-left flex items-center justify-between hover:bg-gray-100 transition-colors"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl text-left flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <span className={selectedModel ? 'text-gray-800' : 'text-gray-400'}>
+              <span className={selectedModel ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400'}>
                 {selectedModel ? selectedModel.name : '모델 선택 (선택사항)'}
               </span>
-              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {showModelDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20 max-h-60 overflow-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20 max-h-60 overflow-auto">
                 {dummyModels.map(model => (
                   <button
                     key={model.id}
                     onClick={() => handleModelSelect(model)}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                   >
                     <span>{model.name}</span>
-                    <span className="text-sm text-gray-400">{model.nameEnglish}</span>
+                    <span className="text-sm text-gray-400 dark:text-gray-500">{model.nameEnglish}</span>
                   </button>
                 ))}
               </div>
@@ -193,14 +193,14 @@ export default function ImageSearchPage() {
 
           {/* 검색 입력 */}
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="검색할 이름을 입력하세요..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
             />
           </div>
 
@@ -227,7 +227,7 @@ export default function ImageSearchPage() {
         {/* 선택된 모델 표시 */}
         {selectedModel && (
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-gray-500">저장 위치:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">저장 위치:</span>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm">
               <FolderOpen className="w-4 h-4" />
               data/models/{selectedModel.name}/images/
@@ -244,36 +244,36 @@ export default function ImageSearchPage() {
 
       {/* 검색 결과 */}
       {images.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           {/* 결과 헤더 */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedImages.length === images.length}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-gray-300 text-purple-600"
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
                 />
-                <span className="text-sm font-medium text-gray-600">전체 선택</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">전체 선택</span>
               </label>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {images.length}개 검색결과 | {selectedImages.length}개 선택됨
               </span>
             </div>
             
             <div className="flex items-center gap-3">
               {/* 뷰 모드 토글 */}
-              <div className="flex items-center bg-gray-200 rounded-lg p-1">
+              <div className="flex items-center bg-gray-200 dark:bg-gray-600 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
+                  className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-gray-800 shadow-sm' : ''}`}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('large')}
-                  className={`p-2 rounded-md transition-colors ${viewMode === 'large' ? 'bg-white shadow-sm' : ''}`}
+                  className={`p-2 rounded-md transition-colors ${viewMode === 'large' ? 'bg-white dark:bg-gray-800 shadow-sm' : ''}`}
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
@@ -310,7 +310,7 @@ export default function ImageSearchPage() {
               return (
                 <div
                   key={image.id}
-                  className={`relative group rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] cursor-pointer
+                  className={`relative group rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-[3/4] cursor-pointer
                     ${isSelected ? 'ring-4 ring-purple-500' : ''}
                     ${isSaved ? 'opacity-60' : ''}`}
                   onClick={() => !isSaved && toggleImageSelect(image.id)}
@@ -326,7 +326,7 @@ export default function ImageSearchPage() {
                     {/* 체크박스 */}
                     <div className="absolute top-2 left-2">
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
-                        ${isSelected ? 'bg-purple-600 border-purple-600' : 'border-white bg-black/30 group-hover:bg-white/30'}`}
+                        ${isSelected ? 'bg-purple-600 border-purple-600' : 'border-white bg-black/30 group-hover:bg-white dark:bg-gray-800/30'}`}
                       >
                         {isSelected && <Check className="w-4 h-4 text-white" />}
                       </div>
@@ -366,11 +366,11 @@ export default function ImageSearchPage() {
 
       {/* 초기 상태 */}
       {!isSearching && images.length === 0 && (
-        <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
           <div className="max-w-md mx-auto">
-            <ImageIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">이미지 검색</h3>
-            <p className="text-gray-500 mb-6">
+            <ImageIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">이미지 검색</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               모델 이름을 입력하거나 등록된 모델을 선택하여 관련 이미지를 검색하세요.
               검색된 이미지는 해당 모델의 폴더에 저장됩니다.
             </p>
@@ -379,7 +379,7 @@ export default function ImageSearchPage() {
                 <button
                   key={model.id}
                   onClick={() => handleModelSelect(model)}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors"
                 >
                   {model.name}
                 </button>
@@ -396,7 +396,7 @@ export default function ImageSearchPage() {
           onClick={() => setPreviewImage(null)}
         >
           <button 
-            className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+            className="absolute top-4 right-4 p-2 text-white hover:bg-white dark:bg-gray-800/20 rounded-lg transition-colors"
             onClick={() => setPreviewImage(null)}
           >
             <X className="w-8 h-8" />
@@ -411,7 +411,7 @@ export default function ImageSearchPage() {
             <div className="mt-4 flex items-center justify-between text-white">
               <div>
                 <p className="font-medium">{previewImage.title}</p>
-                <p className="text-sm text-gray-400">{previewImage.source} • {previewImage.width} x {previewImage.height}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">{previewImage.source} • {previewImage.width} x {previewImage.height}</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -421,7 +421,7 @@ export default function ImageSearchPage() {
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     selectedImages.includes(previewImage.id)
                       ? 'bg-purple-600 text-white'
-                      : 'bg-white/20 hover:bg-white/30'
+                      : 'bg-white dark:bg-gray-800/20 hover:bg-white dark:bg-gray-800/30'
                   }`}
                 >
                   {selectedImages.includes(previewImage.id) ? '선택됨' : '선택'}
@@ -430,7 +430,7 @@ export default function ImageSearchPage() {
                   href={previewImage.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors"
+                  className="px-4 py-2 bg-white dark:bg-gray-800/20 hover:bg-white dark:bg-gray-800/30 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
                   원본

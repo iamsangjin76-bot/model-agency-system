@@ -15,12 +15,12 @@ export default function AgencyContactFields({ formData, onChange }: Props) {
       <FormSection title="소속사 정보" icon={Building2}>
         <div className="flex gap-6 mb-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={formData.hasAgency} onChange={e => onChange('hasAgency', e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-purple-600" />
-            <span className="text-gray-700">소속사 있음</span>
+            <input type="checkbox" checked={formData.hasAgency} onChange={e => onChange('hasAgency', e.target.checked)} className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600" />
+            <span className="text-gray-700 dark:text-gray-200">소속사 있음</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={formData.hasManager} onChange={e => onChange('hasManager', e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-purple-600" />
-            <span className="text-gray-700">매니저 있음</span>
+            <input type="checkbox" checked={formData.hasManager} onChange={e => onChange('hasManager', e.target.checked)} className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600" />
+            <span className="text-gray-700 dark:text-gray-200">매니저 있음</span>
           </label>
         </div>
         {formData.hasAgency && (

@@ -95,8 +95,8 @@ export default function ModelDetailPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <p className="text-xs text-gray-400 mb-0.5">Models &rsaquo; {data.name}</p>
-            <h1 className="text-2xl font-bold text-gray-800">{data.name}</h1>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Models &rsaquo; {data.name}</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{data.name}</h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -118,15 +118,15 @@ export default function ModelDetailPage() {
       </div>
 
       {/* Hero section: profile image + core stats */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <div className="flex gap-6">
           {/* Profile image */}
           <div className="flex-shrink-0 w-48">
-            <div className="w-48 h-64 bg-gray-100 rounded-xl overflow-hidden relative">
+            <div className="w-48 h-64 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden relative">
               {data.profile_image ? (
                 <img src={data.profile_image} alt={data.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                   <User className="w-16 h-16 mb-2" />
                   <p className="text-sm">이미지 없음</p>
                 </div>
@@ -144,9 +144,9 @@ export default function ModelDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-3 mb-3">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{data.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{data.name}</h2>
                 {data.name_english && (
-                  <p className="text-gray-500 mt-0.5">{data.name_english}</p>
+                  <p className="text-gray-500 dark:text-gray-400 mt-0.5">{data.name_english}</p>
                 )}
               </div>
               <span className={`mt-1 px-3 py-1 rounded-full text-xs font-medium text-white flex-shrink-0 ${typeColor}`}>
@@ -155,7 +155,7 @@ export default function ModelDetailPage() {
             </div>
 
             {/* Gender, birth, age */}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
               {data.gender && <span>{GENDER_LABELS[data.gender] || data.gender}</span>}
               {data.birth_date && <span>{data.birth_date}</span>}
               {data.birth_date && <span>{calcAge(data.birth_date)}</span>}
@@ -164,27 +164,27 @@ export default function ModelDetailPage() {
             {/* Body measurements */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {data.height && (
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-500">키</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-0.5">{data.height}<span className="text-xs font-normal ml-0.5">cm</span></p>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">키</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{data.height}<span className="text-xs font-normal ml-0.5">cm</span></p>
                 </div>
               )}
               {data.weight && (
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-500">체중</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-0.5">{data.weight}<span className="text-xs font-normal ml-0.5">kg</span></p>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">체중</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{data.weight}<span className="text-xs font-normal ml-0.5">kg</span></p>
                 </div>
               )}
               {data.shoe_size && (
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-500">신발</p>
-                  <p className="text-lg font-semibold text-gray-800 mt-0.5">{data.shoe_size}<span className="text-xs font-normal ml-0.5">mm</span></p>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">신발</p>
+                  <p className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-0.5">{data.shoe_size}<span className="text-xs font-normal ml-0.5">mm</span></p>
                 </div>
               )}
               {(data.bust || data.waist || data.hip) && (
-                <div className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-500">쓰리사이즈</p>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">쓰리사이즈</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mt-0.5">
                     {[data.bust, data.waist, data.hip].map((v) => v ?? '-').join(' / ')}
                   </p>
                 </div>

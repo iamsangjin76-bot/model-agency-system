@@ -58,8 +58,8 @@ export default function ModelListPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">모델 관리</h1>
-          <p className="text-gray-500 mt-1">총 {total}명의 모델</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">모델 관리</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">총 {total}명의 모델</p>
         </div>
         <Link to="/dashboard/models/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all">
           <Plus className="w-5 h-5" /> 새 모델 등록
@@ -81,8 +81,8 @@ export default function ModelListPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-600">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
           <div className="col-span-1 flex items-center">
             <input type="checkbox" checked={selectedModels.length === models.length && models.length > 0} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300" />
           </div>
@@ -101,7 +101,7 @@ export default function ModelListPage() {
         )}
 
         {!isLoading && (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {models.map(model => (
               <ModelRow key={model.id} model={model} selected={selectedModels.includes(model.id)} onToggle={toggleSelect} onDelete={handleDelete} />
             ))}
@@ -119,8 +119,8 @@ export default function ModelListPage() {
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <p className="text-sm text-gray-500">총 {total}명 중 {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, total)}</p>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-500 dark:text-gray-400">총 {total}명 중 {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, total)}</p>
             <div className="flex items-center gap-2">
               <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
                 <ChevronLeft className="w-5 h-5" />
@@ -128,7 +128,7 @@ export default function ModelListPage() {
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 const page = Math.max(1, Math.min(currentPage - 2, totalPages - 4)) + i;
                 return (
-                  <button key={page} onClick={() => setCurrentPage(page)} className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page ? 'bg-purple-600 text-white' : 'hover:bg-gray-100'}`}>
+                  <button key={page} onClick={() => setCurrentPage(page)} className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page ? 'bg-purple-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'}`}>
                     {page}
                   </button>
                 );

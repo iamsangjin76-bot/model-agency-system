@@ -85,10 +85,10 @@ export default function NotificationBell() {
     <div ref={containerRef} className="relative">
       <button
         onClick={handleOpen}
-        className="p-2 hover:bg-gray-100 rounded-lg relative"
+        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg relative"
         aria-label="알림"
       >
-        <Bell className="w-5 h-5 text-gray-600" />
+        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold leading-none">
             {unreadCount > 99 ? '99+' : unreadCount}

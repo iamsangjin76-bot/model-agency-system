@@ -12,7 +12,7 @@ const STATUS_CONFIG: Record<CastingStatus, { label: string; color: string; bgCol
   matching: { label: '모델매칭', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: Users },
   proposed: { label: '제안완료', color: 'text-indigo-600', bgColor: 'bg-indigo-100', icon: ArrowRight },
   confirmed: { label: '확정', color: 'text-green-600', bgColor: 'bg-green-100', icon: CheckCircle2 },
-  completed: { label: '완료', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: CheckCircle2 },
+  completed: { label: '완료', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700', icon: CheckCircle2 },
   cancelled: { label: '취소', color: 'text-red-600', bgColor: 'bg-red-100', icon: XCircle },
 };
 
@@ -67,9 +67,9 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className={`px-2 py-0.5 text-xs font-medium text-white rounded ${typeConfig.color}`}>
@@ -80,9 +80,9 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
                 {statusConfig.label}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-gray-800">{casting.title}</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{casting.title}</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -91,16 +91,16 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] space-y-4">
           {casting.description && (
             <div>
-              <h3 className="font-semibold mb-2">설명</h3>
-              <p className="text-gray-600 text-sm">{casting.description}</p>
+              <h3 className="font-semibold mb-2 dark:text-gray-100">설명</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">{casting.description}</p>
             </div>
           )}
           {casting.requirements && casting.requirements.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2">요구사항</h3>
+              <h3 className="font-semibold mb-2 dark:text-gray-100">요구사항</h3>
               <ul className="space-y-1">
                 {casting.requirements.map((req, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-gray-600 text-sm">
+                  <li key={idx} className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                     {req}
                   </li>
@@ -110,21 +110,21 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
           )}
           <div className="grid grid-cols-2 gap-4 text-sm">
             {casting.shoot_date && (
-              <div><span className="text-gray-500">촬영일:</span> {casting.shoot_date}</div>
+              <div><span className="text-gray-500 dark:text-gray-400">촬영일:</span> {casting.shoot_date}</div>
             )}
             {casting.deadline && (
-              <div><span className="text-gray-500">마감일:</span> {casting.deadline}</div>
+              <div><span className="text-gray-500 dark:text-gray-400">마감일:</span> {casting.deadline}</div>
             )}
             {casting.budget && (
-              <div><span className="text-gray-500">예산:</span> {casting.budget.toLocaleString()}원</div>
+              <div><span className="text-gray-500 dark:text-gray-400">예산:</span> {casting.budget.toLocaleString()}원</div>
             )}
             {casting.location && (
-              <div><span className="text-gray-500">장소:</span> {casting.location}</div>
+              <div><span className="text-gray-500 dark:text-gray-400">장소:</span> {casting.location}</div>
             )}
           </div>
           {casting.proposed_models && casting.proposed_models.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2">제안 모델 ({casting.proposed_models.length}명)</h3>
+              <h3 className="font-semibold mb-2 dark:text-gray-100">제안 모델 ({casting.proposed_models.length}명)</h3>
               <div className="flex -space-x-2">
                 {casting.proposed_models.slice(0, 5).map((model, idx) => (
                   <div
@@ -135,7 +135,7 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
                   </div>
                 ))}
                 {casting.proposed_models.length > 5 && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-medium">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 text-xs font-medium">
                     +{casting.proposed_models.length - 5}
                   </div>
                 )}
@@ -145,10 +145,10 @@ export default function CastingDetailModal({ casting, onClose, onEdit, onDelete 
         </div>
 
         {/* Footer: close (left) | edit (middle, purple) | delete (right, red outline) */}
-        <div className="p-6 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-900">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
             닫기
           </button>

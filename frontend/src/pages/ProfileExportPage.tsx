@@ -234,23 +234,23 @@ export default function ProfileExportPage() {
     <div className="space-y-6">
       {/* 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">프로필 다운로드</h1>
-        <p className="text-gray-500 mt-1">모델 프로필을 PPT 또는 PDF로 내보내기</p>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">프로필 다운로드</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">모델 프로필을 PPT 또는 PDF로 내보내기</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 왼쪽: 모델 선택 */}
         <div className="lg:col-span-2 space-y-6">
           {/* 필터 */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-medium text-gray-600">유형:</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">유형:</span>
               <button
                 onClick={() => setFilterType('all')}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   filterType === 'all'
                     ? 'bg-gray-800 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 전체
@@ -262,7 +262,7 @@ export default function ProfileExportPage() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     filterType === type
                       ? 'bg-gray-800 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   {label}
@@ -272,23 +272,23 @@ export default function ProfileExportPage() {
           </div>
 
           {/* 모델 목록 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedModels.length === filteredModels.length && filteredModels.length > 0}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-gray-300 text-purple-600"
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
                 />
-                <span className="text-sm font-medium text-gray-600">전체 선택</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">전체 선택</span>
               </label>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {selectedModels.length}개 선택됨
               </span>
             </div>
 
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredModels.map((model) => {
                 const isSelected = selectedModels.includes(model.id);
                 const template = templates.find(t => t.modelType === model.modelType);
@@ -298,7 +298,7 @@ export default function ProfileExportPage() {
                     key={model.id}
                     onClick={() => toggleModelSelect(model.id)}
                     className={`p-4 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-purple-50' : 'hover:bg-gray-50'
+                      isSelected ? 'bg-purple-50' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -306,11 +306,11 @@ export default function ProfileExportPage() {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleModelSelect(model.id)}
-                        className="w-5 h-5 rounded border-gray-300 text-purple-600"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-purple-600"
                         onClick={e => e.stopPropagation()}
                       />
                       
-                      <div className="w-12 h-12 rounded-xl bg-gray-200 overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-600 overflow-hidden flex-shrink-0">
                         {model.profileImageUrl ? (
                           <img
                             src={model.profileImageUrl}
@@ -318,7 +318,7 @@ export default function ProfileExportPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
                             <User className="w-6 h-6" />
                           </div>
                         )}
@@ -326,12 +326,12 @@ export default function ProfileExportPage() {
                       
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-800">{model.name}</h3>
+                          <h3 className="font-semibold text-gray-800 dark:text-gray-100">{model.name}</h3>
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${MODEL_TYPE_COLORS[model.modelType]}`}>
                             {MODEL_TYPE_LABELS[model.modelType]}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {model.height}cm
                           {model.modelType === ModelType.CELEBRITY && model.modelFee1year && 
                             ` • 연 ${formatMoney(model.modelFee1year)}`
@@ -342,7 +342,7 @@ export default function ProfileExportPage() {
                         </p>
                       </div>
                       
-                      <div className="text-right text-sm text-gray-400">
+                      <div className="text-right text-sm text-gray-400 dark:text-gray-500">
                         <p>템플릿: {template?.name}</p>
                         <p>{template?.pages}페이지</p>
                       </div>
@@ -357,55 +357,55 @@ export default function ProfileExportPage() {
         {/* 오른쪽: 설정 및 미리보기 */}
         <div className="space-y-6">
           {/* 내보내기 설정 */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
               <Settings className="w-5 h-5 text-purple-600" />
               내보내기 설정
             </h3>
             
             {/* 형식 선택 */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-600">파일 형식</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">파일 형식</p>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setExportFormat('pdf')}
                   className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
                     exportFormat === 'pdf'
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <FileText className={`w-8 h-8 ${exportFormat === 'pdf' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <span className={`font-medium ${exportFormat === 'pdf' ? 'text-purple-600' : 'text-gray-600'}`}>PDF</span>
+                  <FileText className={`w-8 h-8 ${exportFormat === 'pdf' ? 'text-purple-600' : 'text-gray-400 dark:text-gray-500'}`} />
+                  <span className={`font-medium ${exportFormat === 'pdf' ? 'text-purple-600' : 'text-gray-600 dark:text-gray-300'}`}>PDF</span>
                 </button>
                 <button
                   onClick={() => setExportFormat('ppt')}
                   className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
                     exportFormat === 'ppt'
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <FileImage className={`w-8 h-8 ${exportFormat === 'ppt' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <span className={`font-medium ${exportFormat === 'ppt' ? 'text-purple-600' : 'text-gray-600'}`}>PPT</span>
+                  <FileImage className={`w-8 h-8 ${exportFormat === 'ppt' ? 'text-purple-600' : 'text-gray-400 dark:text-gray-500'}`} />
+                  <span className={`font-medium ${exportFormat === 'ppt' ? 'text-purple-600' : 'text-gray-600 dark:text-gray-300'}`}>PPT</span>
                 </button>
               </div>
             </div>
 
             {/* 선택된 모델 요약 */}
             {selectedModels.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <p className="text-sm font-medium text-gray-600 mb-3">선택된 모델</p>
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">선택된 모델</p>
                 <div className="space-y-2 max-h-40 overflow-auto">
                   {getSelectedModelData().map(model => (
                     <div key={model.id} className="flex items-center gap-2 text-sm">
-                      <div className="w-6 h-6 rounded bg-gray-200 overflow-hidden">
+                      <div className="w-6 h-6 rounded bg-gray-200 dark:bg-gray-600 overflow-hidden">
                         {model.profileImageUrl && (
                           <img src={model.profileImageUrl} alt="" className="w-full h-full object-cover" />
                         )}
                       </div>
-                      <span className="text-gray-800">{model.name}</span>
-                      <span className="text-gray-400 text-xs">({MODEL_TYPE_LABELS[model.modelType]})</span>
+                      <span className="text-gray-800 dark:text-gray-100">{model.name}</span>
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">({MODEL_TYPE_LABELS[model.modelType]})</span>
                     </div>
                   ))}
                 </div>
@@ -433,8 +433,8 @@ export default function ProfileExportPage() {
           </div>
 
           {/* 템플릿 안내 */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4">템플릿 안내</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">템플릿 안내</h3>
             <div className="space-y-4">
               {templates.map(template => {
                 const Icon = template.icon;
@@ -444,8 +444,8 @@ export default function ProfileExportPage() {
                       <Icon className={`w-4 h-4 ${MODEL_TYPE_COLORS[template.modelType].replace('bg-', 'text-')}`} />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800 text-sm">{template.name}</p>
-                      <p className="text-xs text-gray-500">{template.description}</p>
+                      <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{template.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{template.description}</p>
                     </div>
                   </div>
                 );

@@ -35,7 +35,7 @@ function TypeIcon({ type }: { type?: string | null }) {
   if (type === 'casting') return <Camera className={`${cls} text-purple-500`} />;
   if (type === 'settlement') return <DollarSign className={`${cls} text-green-500`} />;
   if (type === 'model') return <Users className={`${cls} text-blue-500`} />;
-  return <Bell className={`${cls} text-gray-400`} />;
+  return <Bell className={`${cls} text-gray-400 dark:text-gray-500`} />;
 }
 
 export default function NotificationItem({ notification: n, onRead, onClose }: Props) {
@@ -53,16 +53,16 @@ export default function NotificationItem({ notification: n, onRead, onClose }: P
   return (
     <div
       onClick={handleClick}
-      className={`flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${!n.is_read ? 'bg-blue-50/50' : ''}`}
+      className={`flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${!n.is_read ? 'bg-blue-50/50' : ''}`}
     >
       <div className="mt-0.5">
         <TypeIcon type={n.notification_type} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm truncate ${!n.is_read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+        <p className={`text-sm truncate ${!n.is_read ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700'}`}>
           {n.title}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">{relativeTime(n.created_at)}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{relativeTime(n.created_at)}</p>
       </div>
       {!n.is_read && (
         <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />

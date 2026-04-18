@@ -38,8 +38,8 @@ export default function SettlementCharts() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-6">월별 수입/지출</h3>
+      <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-6">월별 수입/지출</h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={monthly}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -52,8 +52,8 @@ export default function SettlementCharts() {
         </ResponsiveContainer>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="font-semibold text-gray-800 mb-6">지출 구성</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-6">지출 구성</h3>
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
@@ -77,7 +77,7 @@ export default function SettlementCharts() {
             <div key={i} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                <span className="text-gray-600">{cat.name}</span>
+                <span className="text-gray-600 dark:text-gray-300">{cat.name}</span>
               </div>
               <span className="font-medium">{cat.percentage}%</span>
             </div>

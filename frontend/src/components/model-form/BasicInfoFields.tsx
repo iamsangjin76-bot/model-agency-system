@@ -31,8 +31,8 @@ export default function BasicInfoFields({ formData, onChange }: Props) {
       </div>
 
       {/* Body measurements */}
-      <div className="mt-6 pt-6 border-t border-gray-100">
-        <h4 className="font-medium text-gray-700 mb-4">신체 정보</h4>
+      <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-4">신체 정보</h4>
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           <FormField label="키 (cm)">
             <input type="number" value={formData.height || ''} onChange={e => onChange('height', parseInt(e.target.value) || undefined)} className={inputClass} placeholder="170" />

@@ -10,7 +10,7 @@ const STATUS_CONFIG: Record<CastingStatus, { label: string; color: string; bgCol
   matching: { label: '모델매칭', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: Users },
   proposed: { label: '제안완료', color: 'text-indigo-600', bgColor: 'bg-indigo-100', icon: ArrowRight },
   confirmed: { label: '확정', color: 'text-green-600', bgColor: 'bg-green-100', icon: CheckCircle2 },
-  completed: { label: '완료', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: CheckCircle2 },
+  completed: { label: '완료', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700', icon: CheckCircle2 },
   cancelled: { label: '취소', color: 'text-red-600', bgColor: 'bg-red-100', icon: XCircle },
 };
 
@@ -55,7 +55,7 @@ export default function CastingCard({ casting, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-purple-200 transition-all cursor-pointer group"
+      className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-purple-200 transition-all cursor-pointer group"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -68,36 +68,36 @@ export default function CastingCard({ casting, onClick }: Props) {
               {statusConfig.label}
             </span>
           </div>
-          <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors line-clamp-2">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-purple-600 transition-colors line-clamp-2">
             {casting.title}
           </h3>
         </div>
       </div>
 
-      <div className="space-y-2 text-sm text-gray-600 mb-4">
+      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
         {casting.shoot_date && (
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
+            <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <span>촬영일: {casting.shoot_date}</span>
           </div>
         )}
         {casting.budget && (
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-gray-400" />
+            <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <span>{casting.budget.toLocaleString()}원</span>
           </div>
         )}
         {casting.location && (
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-400" />
+            <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <span className="line-clamp-1">{casting.location}</span>
           </div>
         )}
       </div>
 
       {proposed.length > 0 && (
-        <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-          <span className="text-xs text-gray-500">제안 모델:</span>
+        <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <span className="text-xs text-gray-500 dark:text-gray-400">제안 모델:</span>
           <div className="flex -space-x-2">
             {proposed.slice(0, 3).map((model, idx) => (
               <div key={idx} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 border-2 border-white flex items-center justify-center text-white text-xs font-medium">
@@ -105,7 +105,7 @@ export default function CastingCard({ casting, onClick }: Props) {
               </div>
             ))}
             {proposed.length > 3 && (
-              <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-600 text-xs font-medium">
+              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 border-2 border-white flex items-center justify-center text-gray-600 dark:text-gray-300 text-xs font-medium">
                 +{proposed.length - 3}
               </div>
             )}

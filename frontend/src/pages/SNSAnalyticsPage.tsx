@@ -95,8 +95,8 @@ const formatNumber = (num: number) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-4 py-2 rounded-lg shadow-lg border border-gray-200">
-        <p className="font-medium text-gray-800">{label}</p>
+      <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <p className="font-medium text-gray-800 dark:text-gray-100">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {entry.name}: {entry.value}%
@@ -131,8 +131,8 @@ export default function SNSAnalyticsPage() {
       {/* 헤더 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">SNS 분석</h1>
-          <p className="text-gray-500 mt-1">모델의 SNS 데이터와 인기도를 분석합니다</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">SNS 분석</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">모델의 SNS 데이터와 인기도를 분석합니다</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -140,22 +140,22 @@ export default function SNSAnalyticsPage() {
           <div className="relative">
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl flex items-center gap-3 hover:bg-gray-50 transition-colors min-w-[200px]"
+              className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-[200px]"
             >
-              <span className="font-medium text-gray-800">{selectedModel?.name || '모델 선택'}</span>
-              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
+              <span className="font-medium text-gray-800 dark:text-gray-100">{selectedModel?.name || '모델 선택'}</span>
+              <ChevronDown className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {showModelDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20">
                 {dummyModels.map(model => (
                   <button
                     key={model.id}
                     onClick={() => handleModelSelect(model)}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                   >
                     <span>{model.name}</span>
-                    <span className="text-sm text-gray-400">{formatNumber(model.instagramFollowers || 0)}</span>
+                    <span className="text-sm text-gray-400 dark:text-gray-500">{formatNumber(model.instagramFollowers || 0)}</span>
                   </button>
                 ))}
               </div>
@@ -166,9 +166,9 @@ export default function SNSAnalyticsPage() {
           <button
             onClick={handleRefresh}
             disabled={isLoading}
-            className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-5 h-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 text-gray-600 dark:text-gray-300 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -177,56 +177,56 @@ export default function SNSAnalyticsPage() {
         <>
           {/* 상단 KPI 카드 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-pink-100 rounded-lg">
                   <Instagram className="w-5 h-5 text-pink-600" />
                 </div>
-                <span className="text-sm text-gray-500">팔로워</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">팔로워</span>
               </div>
-              <p className="text-2xl font-bold text-gray-800">{formatNumber(selectedModel.instagramFollowers || 0)}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{formatNumber(selectedModel.instagramFollowers || 0)}</p>
               <div className="flex items-center gap-1 mt-2 text-green-600 text-sm">
                 <ArrowUp className="w-4 h-4" />
                 <span>12.5% 이번 달</span>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Eye className="w-5 h-5 text-blue-600" />
                 </div>
-                <span className="text-sm text-gray-500">평균 조회수</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">평균 조회수</span>
               </div>
-              <p className="text-2xl font-bold text-gray-800">991.9K</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">991.9K</p>
               <div className="flex items-center gap-1 mt-2 text-green-600 text-sm">
                 <ArrowUp className="w-4 h-4" />
                 <span>8.3% 이번 달</span>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <Heart className="w-5 h-5 text-red-600" />
                 </div>
-                <span className="text-sm text-gray-500">평균 좋아요</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">평균 좋아요</span>
               </div>
-              <p className="text-2xl font-bold text-gray-800">245.3K</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">245.3K</p>
               <div className="flex items-center gap-1 mt-2 text-red-600 text-sm">
                 <ArrowDown className="w-4 h-4" />
                 <span>2.1% 이번 달</span>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <MessageCircle className="w-5 h-5 text-purple-600" />
                 </div>
-                <span className="text-sm text-gray-500">참여율</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">참여율</span>
               </div>
-              <p className="text-2xl font-bold text-gray-800">3.2%</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">3.2%</p>
               <div className="flex items-center gap-1 mt-2 text-green-600 text-sm">
                 <ArrowUp className="w-4 h-4" />
                 <span>0.5% 이번 달</span>
@@ -237,8 +237,8 @@ export default function SNSAnalyticsPage() {
           {/* 차트 영역 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* 국가별 팔로워 분포 - 도넛 차트 */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Globe className="w-5 h-5 text-purple-600" />
                 국가별 팔로워 분포
               </h3>
@@ -266,16 +266,16 @@ export default function SNSAnalyticsPage() {
                 {followersByCountry.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-gray-600">{item.country}</span>
-                    <span className="text-gray-800 font-medium">{item.value}%</span>
+                    <span className="text-gray-600 dark:text-gray-300">{item.country}</span>
+                    <span className="text-gray-800 dark:text-gray-100 font-medium">{item.value}%</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* 국가별 검색량 - 막대 차트 */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-600" />
                 국가별 검색량 (최근 90일)
               </h3>
@@ -293,8 +293,8 @@ export default function SNSAnalyticsPage() {
             </div>
 
             {/* 연령/성별 분포 - 막대 차트 */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-green-600" />
                 팔로워 연령 및 성별 분포
               </h3>
@@ -314,18 +314,18 @@ export default function SNSAnalyticsPage() {
               <div className="flex justify-center gap-6 mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-pink-500" />
-                  <span className="text-gray-600">여성 65.4%</span>
+                  <span className="text-gray-600 dark:text-gray-300">여성 65.4%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <span className="text-gray-600">남성 34.6%</span>
+                  <span className="text-gray-600 dark:text-gray-300">남성 34.6%</span>
                 </div>
               </div>
             </div>
 
             {/* 최근 관심도 추이 - 영역 차트 */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-orange-600" />
                 최근 관심도 추이
               </h3>
@@ -377,10 +377,10 @@ export default function SNSAnalyticsPage() {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-          <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">모델을 선택해주세요</h3>
-          <p className="text-gray-500">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+          <BarChart3 className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">모델을 선택해주세요</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             상단에서 모델을 선택하면 해당 모델의 SNS 데이터와 분석 결과를 확인할 수 있습니다.
           </p>
         </div>
