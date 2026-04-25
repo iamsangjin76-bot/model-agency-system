@@ -220,7 +220,15 @@ async def search_news(
 
     if not google_ok:
         raise HTTPException(status_code=503, detail="Google API credentials not configured")
-    items, total = await _search_google_news(query, start, display)
+    try:
+        items, total = await _search_google_news(query, start, display)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Google Search API 일시 장애 (HTTP {e.response.status_code})",
+        )
+    except httpx.RequestError:
+        raise HTTPException(status_code=503, detail="Google Search API 연결 실패")
     return NewsSearchResult(total=total, page=page, display=display, provider="google", items=items)
 
 
@@ -250,5 +258,13 @@ async def search_images(
 
     if not naver_ok:
         raise HTTPException(status_code=503, detail="Naver API credentials not configured")
-    items, total = await _search_naver_images(query, start, display)
+    try:
+        items, total = await _search_naver_images(query, start, display)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Naver Search API 일시 장애 (HTTP {e.response.status_code})",
+        )
+    except httpx.RequestError:
+        raise HTTPException(status_code=503, detail="Naver Search API 연결 실패")
     return ImageSearchResult(total=total, page=page, display=display, provider="naver", items=items)
