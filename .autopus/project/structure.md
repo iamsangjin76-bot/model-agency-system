@@ -1,153 +1,223 @@
 # Structure — Model Agency Management System
 
-> Updated by `/auto sync` on 2026-04-15 (SPEC-AUTH-001).
+> 갱신: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
 
-## Repository Layout
+## 저장소 레이아웃 (옵션 B 후 G드라이브 기준)
 
 ```
-model-agency-system/
-├── backend/                    # Python FastAPI backend
-│   ├── app/
-│   │   ├── config.py           # Settings (pydantic-settings, reads .env)
-│   │   ├── main.py             # FastAPI app, CORS, lifespan startup + token cleanup
-│   │   ├── models/             # SQLAlchemy ORM models (package, split by domain)
-│   │   │   ├── __init__.py     # Backward-compat re-exports from database.py
-│   │   │   ├── database.py     # Core models: Admin, Model, Client, etc. (320 lines, kept intact)
-│   │   │   ├── auth.py         # RefreshToken model; imports Base from database.py
-│   │   │   └── agency.py       # Pure re-export of agency models from database.py
-│   │   ├── schemas/            # Pydantic schemas (package, split by domain)
-│   │   │   ├── __init__.py     # Full re-export for backward compat
-│   │   │   ├── auth.py         # Token, RefreshRequest, Admin schemas
-│   │   │   ├── agency.py       # Model, Client, Casting schemas
-│   │   │   └── agency_financial.py  # Contract, Settlement, Schedule, Pagination schemas
-│   │   ├── schemas.py          # Original monolithic schemas (kept for backward compat)
-│   │   ├── routers/            # FastAPI route handlers
-│   │   │   ├── __init__.py
-│   │   │   ├── auth.py         # Login, /me, admins CRUD (208 lines)
-│   │   │   ├── token_refresh.py  # POST /refresh, POST /logout (99 lines) [SPEC-AUTH-001]
-│   │   │   ├── models.py       # Model profile CRUD
-│   │   │   ├── clients.py      # Client CRM CRUD
-│   │   │   ├── castings.py     # Casting workflow CRUD
-│   │   │   ├── contracts.py    # Contract management
-│   │   │   ├── settlements.py  # Payment settlements
-│   │   │   ├── schedules.py    # Calendar schedules
-│   │   │   ├── files.py        # File upload/download
-│   │   │   ├── media.py        # News/image/SNS search
-│   │   │   ├── stats.py        # Dashboard statistics
-│   │   │   ├── activity_logs.py
-│   │   │   └── notifications.py
-│   │   ├── services/           # Business logic services [SPEC-AUTH-001]
-│   │   │   ├── __init__.py
-│   │   │   └── token_service.py  # Refresh token lifecycle: generate, hash, rotate, revoke, cleanup
-│   │   └── utils/
-│   │       ├── __init__.py
-│   │       └── activity_log.py
-│   ├── .env                    # Environment config (SECRET_KEY, DB URL, token TTLs)
-│   ├── requirements.txt
-│   └── model_agency.db         # SQLite database (runtime artifact)
-│
-├── frontend/                   # React + TypeScript + Electron frontend
-│   ├── src/
-│   │   ├── App.tsx             # Router setup (react-router-dom v6)
-│   │   ├── main.tsx            # Entry point
-│   │   ├── contexts/
-│   │   │   └── AuthContext.tsx # Auth state, login/logout with dual-token lifecycle
-│   │   ├── services/
-│   │   │   ├── auth-api.ts     # Token storage, request() interceptor, authAPI [SPEC-AUTH-001]
-│   │   │   ├── domain-api.ts   # Domain API namespaces (modelsAPI, clientsAPI, etc.)
-│   │   │   └── api.ts          # Barrel re-export (backward compat)
-│   │   ├── pages/              # 14 page components
-│   │   │   ├── LoginPage.tsx
-│   │   │   ├── DashboardPage.tsx
-│   │   │   ├── ModelListPage.tsx
-│   │   │   ├── ModelFormPage.tsx
-│   │   │   ├── CastingPage.tsx
-│   │   │   ├── ClientPage.tsx
-│   │   │   ├── ContractPage.tsx
-│   │   │   ├── SettlementPage.tsx
-│   │   │   ├── SchedulePage.tsx
-│   │   │   ├── AdminManagementPage.tsx
-│   │   │   ├── NewsSearchPage.tsx
-│   │   │   ├── ImageSearchPage.tsx
-│   │   │   ├── SNSAnalyticsPage.tsx
-│   │   │   └── ProfileExportPage.tsx
-│   │   └── types/
-│   │       ├── auth.ts
-│   │       └── model.ts
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── tsconfig.json
-│
-├── ARCHITECTURE.md             # Domains, layers, dependency map
-├── CLAUDE.md                   # Autopus-ADK harness configuration
-├── CHANGELOG.md                # Release notes and SPEC history
-├── .autopus/
-│   ├── project/
-│   │   ├── product.md          # Project description and features
-│   │   ├── structure.md        # This file
-│   │   ├── tech.md             # Tech stack details
-│   │   ├── scenarios.md        # E2E test scenarios
-│   │   └── canary.md           # Health check configuration
-│   └── specs/
-│       └── SPEC-AUTH-001/      # JWT Token Refresh System (completed)
-│           ├── spec.md
-│           ├── plan.md
-│           └── acceptance.md
-└── .claude/, .gemini/, .codex/ # AI assistant harness configs
+G:\Project M\
+├── _archive_local_v13_20260423\         # 옵션 B로 격리한 로컬 Phase 13 라인 (참고용, 건드리지 않음)
+├── _backup_20260423_211541.zip          # 1.7GB 완전 백업 (옵션 B 직전 시점)
+└── model-agency-system\                  # ★ 현재 작업 폴더 (원격 GitHub clone)
+    │
+    ├── handover\                         # 인수인계 자산 31개 .md (언더스코어 없음)
+    │   ├── Project-M 인수인계 문서 v17.md  # 옵션 B 마이그레이션 기록 (2026-04-24)
+    │   ├── 인수인계_문서_20260419_v17.md   # J-6 Call-1+1b 결과 (옵션 B 이전)
+    │   ├── Project-M_개발계획서_v1.md       # 누적 정리본
+    │   ├── Project-M_향후개발지시서_v1.md   # 세션 A~O 로드맵
+    │   ├── autopus_jarvis_integration_analysis_v2.md
+    │   ├── WORKFLOW_v3.md                  # = .autopus/WORKFLOW.md
+    │   ├── 기타 SPEC/설계/진단 문서 8개 (Phase_D-2_설계문서.md, autopus_jarvis_integration_analysis.md, constraints_yaml_replacement_design.md, project_m_actual_state_diagnosis.md, session_A_step_A2_contract_v2.md, 구현계획서_Model_Agency_System.md, WORKFLOW.md, WORKFLOW_v2.md)
+    │   └── 인수인계_문서.md + 인수인계_문서_20260416.md (무번호 2개) + v2~v16 시리즈 (15개) = 17개 (옵션 B 이전 역사 자료. v17 두 개는 위 14·15줄에 별도 명시)
+    │
+    ├── backend\                          # Python FastAPI (port 8000)
+    │   ├── venv\                         # Python 가상환경
+    │   ├── .env                          # NAVER 키 활성, line 29 파싱 경고
+    │   ├── model_agency.db               # SQLite (seed 22건)
+    │   ├── requirements.txt
+    │   └── app\
+    │       ├── main.py                   # FastAPI 진입점 + CORS + 시작 훅
+    │       ├── config.py                 # Settings (case_sensitive=True)
+    │       ├── seed.py                   # 시드 스크립트 (admin/admin1234, manager1/manager1234, activity_logs 포함 총 22건)
+    │       ├── models\                   # SQLAlchemy ORM
+    │       │   ├── database.py           # Admin/Model/Client/... (330줄, 분리 대기)
+    │       │   ├── auth.py               # RefreshToken (SPEC-AUTH-001)
+    │       │   └── agency.py             # 재수출
+    │       ├── schemas\                  # Pydantic 검증
+    │       │   ├── auth.py
+    │       │   ├── agency.py
+    │       │   └── agency_financial.py
+    │       ├── schemas.py                # 모놀리식 (573줄, 하위 호환)
+    │       ├── routers\                  # 15개 엔드포인트 핸들러 (__init__.py 제외)
+    │       │   ├── auth.py               # /api/auth/login, /me, admins CRUD
+    │       │   ├── token_refresh.py      # /api/auth/refresh, /logout
+    │       │   ├── models.py
+    │       │   ├── clients.py
+    │       │   ├── castings.py
+    │       │   ├── contracts.py
+    │       │   ├── settlements.py
+    │       │   ├── schedules.py
+    │       │   ├── files.py
+    │       │   ├── media.py              # 531줄 (분리 대기)
+    │       │   ├── news.py               # 4 엔드포인트 (Naver)
+    │       │   ├── image_search.py       # 5 엔드포인트 (Naver/Google)
+    │       │   ├── stats.py
+    │       │   ├── activity_logs.py
+    │       │   └── notifications.py
+    │       ├── services\
+    │       │   ├── token_service.py      # SPEC-AUTH-001 토큰 라이프사이클
+    │       │   ├── notification_service.py
+    │       │   └── search_service.py     # Naver/Google 통합
+    │       └── utils\
+    │           ├── activity_log.py
+    │           └── security.py           # SSRF 방어 + 매직 바이트 검증
+    │
+    ├── frontend\                         # React + TypeScript + Electron (port 5173)
+    │   ├── node_modules\                 # 502 패키지
+    │   ├── package.json
+    │   ├── vite.config.ts                # `/uploads` 프록시 필수 (R23)
+    │   ├── tsconfig.json
+    │   └── src\
+    │       ├── main.tsx                  # React 마운트
+    │       ├── App.tsx                   # react-router-dom v6 라우트
+    │       ├── contexts\
+    │       │   └── AuthContext.tsx       # 토큰 상태 + login/logout
+    │       ├── services\
+    │       │   ├── auth-api.ts           # 401 인터셉터 + silent refresh + refreshPromise 싱글톤
+    │       │   ├── domain-api.ts         # modelsAPI/clientsAPI/...
+    │       │   └── api.ts                # 배럴 재수출
+    │       ├── pages\                    # 14개 페이지
+    │       │   ├── LoginPage.tsx
+    │       │   ├── DashboardPage.tsx                # 445줄
+    │       │   ├── ModelListPage.tsx
+    │       │   ├── ModelFormPage.tsx
+    │       │   ├── ModelDetailPage.tsx              # 뉴스 + 이미지 갤러리 통합 (J-5)
+    │       │   ├── CastingPage.tsx
+    │       │   ├── ClientPage.tsx                   # 692줄
+    │       │   ├── ContractPage.tsx                 # 692줄
+    │       │   ├── SettlementPage.tsx
+    │       │   ├── SchedulePage.tsx                 # 679줄
+    │       │   ├── AdminManagementPage.tsx          # 671줄
+    │       │   ├── NewsSearchPage.tsx               # Naver + 자동 모델 매칭 (J-2/J-4)
+    │       │   ├── ImageSearchPage.tsx              # Naver/Google + SSRF 방어 (J-3/J-4)
+    │       │   ├── SNSAnalyticsPage.tsx             # 390줄, 껍데기 (SNS-1 미착수)
+    │       │   └── ProfileExportPage.tsx            # 476줄, 껍데기 (K-1 미착수)
+    │       ├── components\
+    │       │   ├── search\               # 검색 결과 카드, 모달
+    │       │   ├── model-detail\         # ModelNewsList, ModelImageGallery (J-5)
+    │       │   ├── model-form\
+    │       │   ├── notification\         # NotificationBell, Dropdown (G-1)
+    │       │   ├── casting\
+    │       │   ├── settlement\
+    │       │   └── ui\
+    │       └── types\
+    │           ├── auth.ts
+    │           └── model.ts
+    │
+    ├── docs\
+    │   ├── BACKEND_TEST.md
+    │   └── PROGRESS.md                   # 2026-02-22 시점 (구버전, E드라이브 표기)
+    │
+    ├── templates\                        # 이메일/리포트 템플릿
+    ├── ARCHITECTURE.md                   # ★ /auto setup 으로 생성 (2026-04-25)
+    ├── CHANGELOG.md                      # 0.2.0 (2026-04-15) SPEC-AUTH-001
+    ├── CLAUDE.md                         # Autopus-ADK 하네스 진입점
+    ├── AGENTS.md                         # 16 에이전트 정의
+    ├── IMPLEMENTATION_PLAN.md            # 2026-02-22 초기 계획 (구버전)
+    ├── autopus.yaml                      # 하네스 설정
+    ├── config.toml
+    ├── opencode.json
+    │
+    ├── .autopus\
+    │   ├── WORKFLOW.md                   # = WORKFLOW_v3 (Phase C v2)
+    │   ├── project\
+    │   │   ├── product.md
+    │   │   ├── structure.md              # 본 문서
+    │   │   ├── tech.md
+    │   │   ├── scenarios.md              # ★ /auto setup 으로 생성
+    │   │   └── canary.md                 # ★ /auto setup 으로 생성
+    │   └── specs\
+    │       └── SPEC-AUTH-001\            # ✅ completed
+    │           ├── spec.md
+    │           ├── plan.md
+    │           ├── prd.md
+    │           ├── research.md
+    │           ├── acceptance.md
+    │           └── review.md
+    │
+    └── .claude\, .codex\, .gemini\       # AI CLI 하네스 미러 3종 (autopus.yaml `platforms`는 4종이지만 OpenCode는 root의 `opencode.json`로만 통합 — `.opencode\` 폴더 부재)
 ```
 
-## Package Roles
+## 패키지 역할
 
-| Package | Role | Key Files |
-|---------|------|-----------|
-| `backend/app/models/` | ORM model definitions | `database.py` (core), `auth.py` (RefreshToken) |
-| `backend/app/schemas/` | Request/response validation | `auth.py`, `agency.py`, `agency_financial.py` |
-| `backend/app/routers/` | HTTP endpoint handlers | `auth.py`, `token_refresh.py`, domain routers |
-| `backend/app/services/` | Business logic | `token_service.py` |
-| `backend/app/utils/` | Shared utilities | `activity_log.py` |
-| `frontend/src/services/` | API layer | `auth-api.ts` (interceptor), `domain-api.ts` |
-| `frontend/src/contexts/` | Global state | `AuthContext.tsx` |
-| `frontend/src/pages/` | UI pages | 14 page components |
+| 패키지 | 역할 | 핵심 파일 |
+|--------|------|-----------|
+| `backend/app/models/` | SQLAlchemy ORM | `database.py` (Admin/Model/ModelFile/NewsArticle/SNSData/ShareLink/ActivityLog/Notification 8개), `auth.py` (RefreshToken). 도메인 5개(Client/Casting/Contract/Schedule/Settlement)는 `routers/*.py`에 분산 — 시스템 총 14개 테이블 |
+| `backend/app/schemas/` | Pydantic 요청/응답 검증 | `auth.py`, `agency.py`, `agency_financial.py` |
+| `backend/app/routers/` | 15개 HTTP 핸들러 (`__init__.py` 제외) | 도메인별 분리 |
+| `backend/app/services/` | 비즈니스 로직 | `token_service.py`, `notification_service.py`, `search_service.py` |
+| `backend/app/utils/` | 보안 + 활동 로그 | `security.py` (SSRF/매직바이트), `activity_log.py` |
+| `frontend/src/services/` | API 계층 + 토큰 관리 | `auth-api.ts` (R13 싱글톤), `domain-api.ts` |
+| `frontend/src/contexts/` | 전역 상태 | `AuthContext.tsx` |
+| `frontend/src/pages/` | 14 페이지 | LoginPage 외 13개 |
+| `frontend/src/components/` | 재사용 UI | search/, model-detail/, notification/ |
 
-## Entry Points
+## 진입점
 
-| Entry Point | Path | Description |
-|-------------|------|-------------|
-| Backend | `backend/app/main.py` | FastAPI app, CORS config, router registration, startup hook |
-| Frontend | `frontend/src/main.tsx` | React app mount |
-| Frontend Router | `frontend/src/App.tsx` | react-router-dom route definitions |
+| 진입점 | 경로 | 설명 |
+|--------|------|------|
+| Backend | `backend/app/main.py` | FastAPI 앱 + CORS + 시작 훅 (`cleanup_expired_tokens`) |
+| Frontend | `frontend/src/main.tsx` | React 마운트 |
+| Frontend Router | `frontend/src/App.tsx` | react-router-dom v6, PrivateRoute 가드 |
+| Electron | `frontend/electron/main.js` | 데스크톱 래퍼 |
+| Seed | `backend/app/seed.py` | `python -m app.seed` (idempotent, 총 22건 시드) |
 
-## File Size Status (Post SPEC-AUTH-001)
+## 워크플로 분류 (WORKFLOW_v3 = `.autopus/WORKFLOW.md`)
 
-| File | Lines | Status |
-|------|-------|--------|
-| `backend/app/models/database.py` | ~320 | Legacy — over limit, kept intact for compat |
-| `backend/app/schemas.py` | ~545 | Legacy — over limit, kept intact for compat |
-| `backend/app/models/auth.py` | ~55 | OK |
-| `backend/app/models/agency.py` | ~20 | OK |
-| `backend/app/schemas/auth.py` | ~80 | OK |
-| `backend/app/schemas/agency.py` | ~120 | OK |
-| `backend/app/schemas/agency_financial.py` | ~140 | OK |
-| `backend/app/services/token_service.py` | ~100 | OK |
-| `backend/app/routers/token_refresh.py` | ~99 | OK |
-| `backend/app/routers/auth.py` | ~208 | OK |
-| `frontend/src/services/auth-api.ts` | ~218 | OK |
-| `frontend/src/services/domain-api.ts` | ~170 | OK |
-| `frontend/src/services/api.ts` | ~20 | OK (barrel re-export) |
+| 난이도 | 트리거 예시 | 워크플로 |
+|--------|-----------|----------|
+| 🟢 **Simple** | 의존성 추가, 오타·주석 수정, 설정값 변경, 에러 메시지 문구, README 업데이트, 단일 파일 포맷팅 | `executor` 직행 → 커밋 |
+| 🟡 **Medium** | 기존 API 필드 추가, 단일 버그 수정 (1~2 파일), 컴포넌트 리팩토링, 테스트 추가, UI 디자인 조정 | `planner → executor → reviewer` |
+| 🔴 **Complex** | 새 SPEC, DB 스키마 변경, 인증·권한 수정, 성능 개선, 외부 서비스 연동, 다중 모듈 교차 변경 | `architect → planner → executor → reviewer → security-auditor` |
 
-## SPEC-AUTH-001 New Files (2026-04-15)
+결정 트리: DB 스키마 / API 계약 / 인증 중 하나라도 건드리면 → **Complex**. 새 파일 3개 이상 또는 여러 군데 수정 → **Medium**. 둘 다 아니면 → **Simple**.
 
-| File | Type | Purpose |
-|------|------|---------|
-| `backend/app/models/auth.py` | New | RefreshToken ORM model |
-| `backend/app/models/agency.py` | New | Agency model re-exports |
-| `backend/app/models/__init__.py` | New | Package backward-compat re-exports |
-| `backend/app/schemas/auth.py` | New | Auth schema split |
-| `backend/app/schemas/agency.py` | New | Agency schema split |
-| `backend/app/schemas/agency_financial.py` | New | Financial schema split |
-| `backend/app/schemas/__init__.py` | New | Schema package re-exports |
-| `backend/app/services/__init__.py` | New | Services package init |
-| `backend/app/services/token_service.py` | New | Token lifecycle service |
-| `backend/app/routers/token_refresh.py` | New | Refresh + logout endpoints |
-| `frontend/src/services/auth-api.ts` | New | Auth API + silent refresh interceptor |
-| `frontend/src/services/domain-api.ts` | New | Domain API split |
+## 에이전트 팀 16개
+
+### 주력 5 (매 작업마다 등장)
+
+| 에이전트 | 역할 |
+|----------|------|
+| **explorer** | 코드베이스 빠르게 훑기, 구조 파악 |
+| **executor** | TDD 기반 코드 구현 |
+| **debugger** | 근본 원인 분석 + 최소 수정 |
+| **reviewer** | TRUST 5 코드 리뷰 (Testability/Readability/Unambiguous/Scope/Truthfulness) |
+| **architect** | 시스템 설계, 기술 결정, 새 SPEC |
+
+### 보조 11 (필요 시 호출)
+
+`planner` (Medium 이상에서 태스크 분해), `tester` (테스트 설계), `spec-writer` (SPEC 문서), `security-auditor` (OWASP Top 10), `devops`, `deep-worker`, `validator` (LSP/lint 경량), `annotator` (@AX 태그), `frontend-specialist` (Playwright E2E), `perf-engineer`, `ux-validator` (Vision 기반).
+
+### Complex 워크플로 핵심 4
+
+```
+architect → planner → executor → reviewer → security-auditor
+```
+
+이 4개가 반드시 등장하는 핵심: **planner / executor / reviewer / security-auditor**.
+
+## Worker Contract 4행 템플릿
+
+모든 서브에이전트 지시에 다음 4줄 포함 (반환 형식은 전역 표준 자동 적용):
+
+```markdown
+**목표**: [한 문장, 결과 상태로 표현]
+**범위**: [파일·모듈·화면 구체 경로]
+**완료 기준**: [검증 가능한 형태]
+**금지**: [범위 안에서도 건들면 안 되는 항목 / 없으면 "해당 없음 (범위 밖은 자동 금지)"]
+```
+
+## 파일 크기 정책
+
+- 모든 소스 파일은 **300줄 이하** 유지 (목표 200 이하). 제외: 생성 파일 + .md/.yaml/.json.
+- 현재 10개 파일이 한도 초과 (ARCHITECTURE.md `Known Issues #9` 참조 — `seed.py` 311줄은 시드 모음으로 의도된 길이라 제외). 도메인별 분리 SPEC 대기.
+
+## SPEC-AUTH-001 신규 추가 파일 (2026-04-15)
+
+`backend/app/services/token_service.py`, `backend/app/routers/token_refresh.py`, `backend/app/models/auth.py`, `backend/app/schemas/auth.py` 외 6개. CHANGELOG 0.2.0 참조.
+
+## 참고
+
+- 표준 워크플로 상세: `.autopus/WORKFLOW.md`
+- 에이전트 정의: `AGENTS.md` + `.claude/agents/autopus/` (각 16개 에이전트별 .md)
+- 제약 룰: `.autopus/context/constraints.yaml`

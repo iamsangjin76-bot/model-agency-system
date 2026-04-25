@@ -1,112 +1,161 @@
 # Tech Stack — Model Agency Management System
 
-> Updated by `/auto sync` on 2026-04-15.
+> 갱신: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
 
-## Backend
+## 언어 및 런타임
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Language | Python | 3.11 |
-| Web Framework | FastAPI | 0.109.0 |
-| ASGI Server | uvicorn[standard] | 0.27.0 |
+| 계층 | 언어 | 버전 |
+|------|------|------|
+| Backend | Python | 3.12.10 |
+| Frontend | TypeScript | 5.3.2 |
+| Runtime | Node.js | v24.14.1 (현재 운영 환경, `package.json` engines 미지정·`.nvmrc` 부재) |
+| Desktop | Electron | 28.0.0 |
+
+## Backend (FastAPI)
+
+| 구성 요소 | 기술 | 버전 |
+|-----------|------|------|
+| Web 프레임워크 | FastAPI | 0.109.0 |
+| ASGI 서버 | uvicorn[standard] | 0.27.0 |
 | ORM | SQLAlchemy | 2.0.25 |
-| Database | SQLite | (bundled) |
-| Auth / JWT | python-jose[cryptography] | 3.3.0 |
-| Password Hashing | passlib[bcrypt] | 1.7.4 |
-| Settings | pydantic-settings | 2.1.0 |
-| File Uploads | python-multipart | 0.0.6 |
-| Async File IO | aiofiles | 23.2.1 |
+| Database | SQLite (`model_agency.db`) | bundled |
+| JWT | python-jose[cryptography] | 3.3.0 |
+| 비밀번호 해싱 | passlib[bcrypt] | 1.7.4 |
+| 설정 | pydantic-settings | 2.1.0 |
+| 파일 업로드 | python-multipart | 0.0.6 |
+| 비동기 파일 IO | aiofiles | 23.2.1 |
+| HTTP 클라이언트 | httpx | 0.28.1 |
+| 이미지 처리 | Pillow | ≥10.0.0 |
 
-### Backend Structure
-```
-backend/app/
-  config.py              # Settings (pydantic-settings, reads .env)
-  main.py                # FastAPI app, CORS, lifespan startup
-  models/
-    database.py          # Original 320-line models (Admin, Model, etc.) — kept for backward compat
-    auth.py              # RefreshToken model + re-exports from database.py
-    agency.py            # Re-exports of agency models from database.py
-    __init__.py          # Package re-exports (database.py symbols only)
-  schemas/
-    auth.py              # Token, RefreshRequest, Admin schemas
-    agency.py            # Model/Client/Casting schemas
-    agency_financial.py  # Contract/Settlement/Schedule schemas
-    __init__.py          # Full re-export for backward compat
-  schemas.py             # Original monolithic schemas file (kept for backward compat)
-  routers/
-    auth.py              # Login, me, admins CRUD (208 lines)
-    token_refresh.py     # POST /refresh, POST /logout (99 lines)
-    models.py, clients.py, castings.py, contracts.py
-    settlements.py, schedules.py, files.py, media.py
-    stats.py, activity_logs.py, notifications.py
-  services/
-    token_service.py     # Refresh token lifecycle (generate, hash, rotate, revoke, cleanup)
-  utils/
-    activity_log.py
-```
+## Frontend (React + Electron)
 
-### Auth Architecture (SPEC-AUTH-001)
-- Access token: JWT, 15-minute TTL (down from 24 hours)
-- Refresh token: opaque UUID4, 7-day TTL, SHA-256 hashed in DB
-- Single-use rotation: consuming a token issues a new one and marks the old as revoked
-- Family revocation: reuse of a consumed token triggers full session revocation for the user
-- Startup cleanup: expired tokens deleted on app start
+| 구성 요소 | 기술 | 버전 |
+|-----------|------|------|
+| Framework | React | 18.2.0 |
+| Build Tool | Vite | 5.0.6 |
+| Routing | react-router-dom | 6.20.0 |
+| HTTP | axios | 1.6.2 |
+| Server State | @tanstack/react-query | 5.12.2 |
+| Client State | zustand | 4.4.7 |
+| Forms | react-hook-form + zod | 7.48.2 / 3.22.4 |
+| Charts | recharts | 2.10.3 |
+| Icons | lucide-react | 0.294.0 |
+| Styling | Tailwind CSS | 3.3.6 |
+| Desktop | Electron | 28.0.0 |
+| Packaging | electron-builder | 24.9.1 |
 
-## Frontend
+## 인증 아키텍처 (SPEC-AUTH-001 ✅ completed)
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Language | TypeScript | 5.x |
-| Framework | React | 18.2 |
-| Build Tool | Vite | 5.x |
-| Routing | react-router-dom | 6.20 |
-| State (auth) | React Context | — |
-| HTTP | fetch (custom wrapper) | — |
-| Desktop | Electron | — |
-| Charts | recharts | 2.10 |
-| Forms | react-hook-form + zod | 7.48 / 3.22 |
-| Styling | Tailwind CSS + clsx | — |
+- **Access token**: JWT (HS256), 15분 TTL (이전 24시간에서 단축)
+- **Refresh token**: opaque UUID4, 7일 TTL, SHA-256 해시로 DB 저장
+- **Single-use rotation**: 토큰 소비 시 새 토큰 발급, 이전은 revoked 표시
+- **Family revocation**: 소비된 refresh token 재사용 감지 시 사용자 전체 세션 폐기
+- **Startup cleanup**: 앱 시작 시 만료 토큰 자동 삭제
+- **Frontend silent refresh**: `auth-api.ts` 401 인터셉터 + `refreshPromise` 싱글톤 (R13)
 
-### Frontend Structure
-```
-frontend/src/
-  App.tsx                # Router setup
-  main.tsx               # App entry point
-  contexts/
-    AuthContext.tsx       # Auth state, login/logout with refresh token lifecycle
-  services/
-    auth-api.ts          # Token storage, request() with silent refresh interceptor, authAPI
-    domain-api.ts        # modelsAPI, clientsAPI, castingsAPI, contractsAPI, etc.
-    api.ts               # Barrel re-export (backward compat)
-  pages/                 # 14 page components (Dashboard, Login, Model*, Casting*, etc.)
-  components/            # Shared UI components
-  hooks/, utils/, types/ # Utilities
-```
+## 빌드 및 실행
 
-### Auth Architecture (Frontend)
-- Tokens stored in localStorage (`access_token`, `refresh_token`)
-- 401 interceptor: auto-calls `/api/auth/refresh`, retries original request once
-- `refreshPromise` singleton prevents concurrent refresh storms
-- AuthContext clears both tokens on logout and calls `POST /api/auth/logout`
-
-## Build & Run
-
-```bash
-# Backend
-cd backend && pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+```powershell
+# Backend (PowerShell, G드라이브 기준)
+cd "G:\Project M\model-agency-system\backend"
+.\venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --reload    # port 8000
 
 # Frontend
-cd frontend && npm install
-npm run dev          # Vite dev server (port 5173)
-npm run build        # Production build
-npm run electron:dev # Electron + Vite concurrent
+cd "G:\Project M\model-agency-system\frontend"
+npm install                                  # 502개 패키지 (1회, 2026-04-24 옵션 B 시점 카운트)
+npm run dev                                  # Vite, port 5173
+npm run build                                # tsc + vite build (production)
+npm run electron:dev                         # Electron + Vite concurrent
+npm run electron:build                       # NSIS (Windows .exe)
 ```
 
-## Testing
-- Backend: no formal test suite yet (manual integration testing)
-- Frontend: TypeScript type checking via `tsc --noEmit`
+3개 PowerShell 창 패턴 (v17 원칙 35): Backend / Frontend / Claude Code CLI 각각 독립 창.
 
-## File Size Policy
-All source files must stay under 300 lines (target: under 200).
-Excluded: *.md, *.yaml, *.json config files.
+## 환경변수 (`.env`)
+
+| 키 | 상태 | 용도 |
+|----|------|------|
+| `APP_NAME` | 설정됨 | 앱 이름 |
+| `APP_VERSION=1.0.0` | 설정됨 | 버전 |
+| `DEBUG=true` | 설정됨 | 디버그 모드 |
+| `HOST=0.0.0.0` | 설정됨 | 바인드 주소 |
+| `PORT=8000` | 설정됨 | API 포트 |
+| `DATABASE_URL` | 설정됨 | `sqlite:///./model_agency.db` |
+| `SECRET_KEY` | 설정됨 | JWT 비밀키 (운영 시 교체 필요) |
+| `ALGORITHM=HS256` | 설정됨 | JWT 알고리즘 |
+| `ACCESS_TOKEN_EXPIRE_MINUTES=15` | 설정됨 | SPEC-AUTH-001 |
+| `REFRESH_TOKEN_EXPIRE_DAYS=7` | 설정됨 | SPEC-AUTH-001 |
+| `CORS_ORIGINS` | ⚠️ list 직접 정의 (`config.py:34`, 아래 알려진 환경 이슈 참조) | Vite 5173 + Electron + 192.168 LAN |
+| `UPLOAD_DIR=./uploads` | 설정됨 | 파일 업로드 |
+| `MODEL_FILES_DIR=./model_files` | 설정됨 | 모델 파일 |
+| **`NAVER_CLIENT_ID`** | ✅ **활성** | 뉴스/이미지 검색 (25,000 req/일 무료) |
+| **`NAVER_CLIENT_SECRET`** | ✅ 활성 | Naver API 시크릿 |
+| `GOOGLE_API_KEY` | ❌ **비활성 (403)** | Google Custom Search |
+| `GOOGLE_CX` | ❌ 비활성 | Google CSE ID |
+| `SEARCH_REQUEST_TIMEOUT=5` | 설정됨 | httpx 타임아웃 |
+| `SEARCH_IMAGE_MAX_SIZE` | 설정됨 | 10MB |
+| `UNSPLASH_ACCESS_KEY` | 미설정 | 이미지 검색 후보 |
+| `BING_SEARCH_API_KEY` | 미설정 | 이미지 검색 후보 |
+| `AZURE_COMPUTER_VISION_KEY` | 미설정 | 이미지 분석 |
+| **`OPENAI_API_KEY`** | 미설정 | **Phase K-1 프로필 내보내기 대비** |
+| **`GEMINI_API_KEY`** | 미설정 | **Autopus `--multi` 멀티프로바이더 활용 대비** |
+
+> **삭제됨**: `NEWS_API_KEY` (옵션 B 마이그레이션 시 Pydantic 충돌 해결을 위해 .env에서 삭제. config.py에 정의 없음).
+
+### ⚠️ 알려진 환경 이슈
+
+- **`.env` line 29 파싱 경고**: `python-dotenv could not parse statement starting at line 29`. 서버 동작 영향 없음. 형식 점검 권장.
+- **`CORS_ORIGINS` 분리 권장**: `config.py:34` 의 list 직접 정의 + `case_sensitive=True` 가 .env 파싱과 충돌 가능. 향후 SPEC으로 환경변수 분리 검토.
+- **`SECRET_KEY` 디폴트값**: `your-secret-key-change-in-production-model-agency-2025` 가 박혀 있음. 배포 전 반드시 교체.
+
+## 헬스체크 엔드포인트
+
+```python
+@app.get("/api/health")
+async def health_check():
+    return {"status": "healthy", "version": settings.APP_VERSION}
+```
+
+`backend/app/main.py` 정의. `/auto canary` H3 헬스 체크가 이 엔드포인트를 사용.
+
+## 테스트 / 린팅 (현재 상태)
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| Backend 테스트 (pytest) | **미구성** | Phase I-3 에서 도입 예정 |
+| Frontend 테스트 (vitest) | **미구성** | Phase I-3 에서 도입 예정 |
+| E2E (Playwright) | **미구성** | Phase I-3 또는 Frontend Specialist 에이전트 사용 시 |
+| ESLint | **미구성** | Phase I-3 검토 |
+| Prettier | **미구성** | Phase I-3 검토 |
+| TypeScript strict | ✅ 활성 | `tsconfig.json` |
+
+검증은 현재 다음 수단으로 수행:
+- `auto test run` — `.autopus/project/scenarios.md` 기반 E2E 시나리오
+- 수동 curl + 브라우저 확인
+- reviewer 에이전트의 코드 직접 읽기 (R15)
+
+## 배포 환경 (현재 미구성)
+
+| 항목 | 상태 |
+|------|------|
+| Dockerfile / docker-compose | ❌ 없음 |
+| GitHub Actions | ❌ 없음 |
+| Railway/Vercel/Fly | ❌ 없음 |
+| K8s/Helm | ❌ 없음 |
+| 로컬 실행 | ✅ Vite 5173 + uvicorn 8000 |
+| 목표 | Electron 단일 .exe (Phase I-1) |
+
+## 주요 라이브러리 의사결정
+
+- **httpx 동기 + 비동기 클라이언트**: 외부 검색 API 호출 시 타임아웃·SSL 검증 일관성 확보.
+- **Pillow 이미지 검증**: 매직 바이트 + 디코딩 가능 여부로 이미지 신뢰성 검증 (`utils/security.py`).
+- **Naver API 우선**: 한국어 검색 품질 + 무료 한도 풍부 (25,000 req/일). Google 키는 향후 옵션.
+- **zustand vs Redux**: 단순 상태 + 비개발자 운영 → 보일러플레이트 적은 zustand 선택.
+- **react-query v5**: 서버 상태 캐싱 + 자동 재요청. 알림 30초 폴링에 활용.
+
+## 파일 크기 정책
+
+- 모든 소스 파일은 **300줄 이하** 유지 (목표 200 이하).
+- 현재 10개 파일이 한도 초과 (ARCHITECTURE.md `Known Issues #9` 참조 — `seed.py` 311줄은 시드 모음으로 의도된 길이라 제외).
+- 제외: *.md, *.yaml, *.json 설정 파일.
