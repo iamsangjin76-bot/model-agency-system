@@ -85,3 +85,6 @@ backend/model_files/
 
 # Deprecated one-shot scripts (Phase D-2)
 patch_dashboard.py
+
+# Image proxy disk cache (J-8a)
+proxy_cache/

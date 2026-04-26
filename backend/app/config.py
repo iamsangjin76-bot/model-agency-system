@@ -61,7 +61,24 @@ class Settings(BaseSettings):
     GOOGLE_CX: Optional[str] = None
     SEARCH_REQUEST_TIMEOUT: int = 5
     SEARCH_IMAGE_MAX_SIZE: int = 10 * 1024 * 1024  # 10MB
-    
+
+    # ── Image proxy (J-8a) ────────────────────────────────────────────────
+    IMAGE_PROXY_ALLOWED_DOMAINS: str = (
+        "imgnews.naver.net,naver.net,blogfiles.naver.net,"
+        "postfiles.pstatic.net,ssl.pstatic.net,"
+        "i1.ruliweb.com,i2.ruliweb.com,i3.ruliweb.com,"
+        "image.fmkorea.com,img.insight.co.kr"
+    )
+    IMAGE_PROXY_MAX_SIZE: int = 10_485_760   # 10 MB
+    IMAGE_PROXY_TIMEOUT: float = 5.0          # seconds
+    IMAGE_PROXY_CACHE_DIR: str = "proxy_cache"
+    IMAGE_PROXY_CACHE_TTL: int = 604800        # 7 days (SPEC §3.2)
+
+    @property
+    def image_proxy_allowed_suffixes(self) -> list[str]:
+        """Parse comma-separated domain list into a list of suffix strings."""
+        return [d.strip() for d in self.IMAGE_PROXY_ALLOWED_DOMAINS.split(",") if d.strip()]
+
     class Config:
         env_file = ".env"
         case_sensitive = True

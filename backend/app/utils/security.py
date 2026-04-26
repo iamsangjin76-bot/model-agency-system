@@ -76,3 +76,59 @@ def validate_magic_bytes(data: bytes) -> bool:
             if data[8:8 + len(suffix)] == suffix:
                 return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Image Proxy SSRF defense (added for J-8a)
+# ---------------------------------------------------------------------------
+
+_PRIVATE_NETS = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("169.254.0.0/16"),   # link-local / APIPA
+    ipaddress.ip_network("0.0.0.0/8"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+]
+
+
+def _is_private_ip(ip_str: str) -> bool:
+    """Return True if the IP falls within any private/reserved range."""
+    try:
+        addr = ipaddress.ip_address(ip_str)
+        return any(addr in net for net in _PRIVATE_NETS)
+    except ValueError:
+        return True  # unparseable → block
+
+
+def validate_proxy_host(hostname: str, allowed_suffixes: list[str]) -> bool:
+    """
+    Return True only if:
+      1. hostname matches an allowed suffix (suffix-only, no glob wildcard abuse)
+      2. all resolved IPs are non-private
+
+    Caller converts False → HTTP 403.
+    """
+    # Step 1: suffix whitelist (suffix-only matching)
+    hostname_lower = hostname.lower()
+    matched = any(
+        hostname_lower == s.lower().lstrip(".")
+        or hostname_lower.endswith("." + s.lower().lstrip("."))
+        for s in allowed_suffixes
+    )
+    if not matched:
+        return False
+
+    # Step 2: DNS resolve + private IP check (re-resolved every request, no cache)
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        return False   # DNS failure → block
+    for info in infos:
+        ip = info[4][0]
+        if _is_private_ip(ip):
+            return False
+
+    return True
