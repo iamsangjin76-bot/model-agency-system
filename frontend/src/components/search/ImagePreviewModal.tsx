@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { SearchImage } from '@/services/domain-api';
-import { proxify, handleImgError } from '@/utils/imageProxy';
+import { handleImgError } from '@/utils/imageProxy';
 
 interface Props {
   image: SearchImage;
@@ -25,7 +25,7 @@ export default function ImagePreviewModal({ image, isChecked, onClose, onToggleC
 
       <div className="max-w-4xl max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
         <img
-          src={proxify(image.original_url)}
+          src={image.original_url || ""}
           alt={image.source}
           className="max-w-full max-h-[80vh] object-contain rounded-lg"
           onError={handleImgError}
