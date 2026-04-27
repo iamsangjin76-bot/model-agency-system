@@ -286,6 +286,8 @@ export const filesAPI = {
     request<{ id: number; file_name: string; file_type: string; file_size: number }[]>(`/files/model/${modelId}`),
   downloadUrl: (fileId: number) => `/api/files/download/${fileId}`,
   deleteFile: (fileId: number) => request(`/files/${fileId}`, { method: 'DELETE' }),
+  setProfileImage: (modelId: number, fileId: number) =>
+    request<{ ok: boolean; profile_image: string }>(`/models/${modelId}/files/${fileId}/set-profile`, { method: 'PATCH' }),
 };
 
 /** Default export grouping all domain namespaces. */

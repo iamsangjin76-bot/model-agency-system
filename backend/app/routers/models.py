@@ -218,6 +218,28 @@ async def get_model_files(
     ]
 
 
+@router.patch("/{model_id}/files/{file_id}/set-profile")
+async def set_profile_image(
+    model_id: int,
+    file_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_permission("model", "update"))
+):
+    """Set a ModelFile as the profile image (unsets all others for this model)."""
+    target = db.query(ModelFile).filter(
+        ModelFile.id == file_id, ModelFile.model_id == model_id
+    ).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다")
+    db.query(ModelFile).filter(
+        ModelFile.model_id == model_id, ModelFile.is_profile_image == True  # noqa: E712
+    ).update({"is_profile_image": False})
+    target.is_profile_image = True
+    db.commit()
+    return {"ok": True, "profile_file_id": file_id,
+            "profile_image": f"/uploads/{target.file_path}"}
+
+
 @router.delete("/bulk")
 async def bulk_delete_models(
     model_ids: List[int],

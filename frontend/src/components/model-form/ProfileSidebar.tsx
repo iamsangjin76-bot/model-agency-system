@@ -18,6 +18,7 @@ interface Props {
   onDeleteAdditional: (e: React.MouseEvent, fileId: number) => void;
   onPreviewChange: (url: string | null) => void;
   onFieldChange: (field: keyof Model, value: any) => void;
+  onSetProfile?: (fileId: number) => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -29,6 +30,7 @@ export default function ProfileSidebar({
   isEdit, formData, profileImages, additionalImages,
   uploadingImage, uploadingAdditional, previewImage, currentFileInfo,
   onImageUpload, onAdditionalUpload, onDeleteAdditional, onPreviewChange, onFieldChange,
+  onSetProfile,
 }: Props) {
   const displayedImage = previewImage ?? profileImages[0] ?? null;
 
@@ -95,6 +97,7 @@ export default function ProfileSidebar({
                 {img ? (
                   <>
                     <img src={img.file_path} alt="" className="w-full h-full object-cover" />
+                    {/* Delete button */}
                     <button
                       type="button"
                       onClick={(e) => onDeleteAdditional(e, img.id)}
@@ -102,6 +105,17 @@ export default function ProfileSidebar({
                     >
                       <X className="w-3 h-3" />
                     </button>
+                    {/* Set as profile button */}
+                    {onSetProfile && isEdit && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onSetProfile(img.id); }}
+                        className="absolute bottom-0 left-0 right-0 py-1 bg-purple-600/80 text-white text-[9px] font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity leading-tight"
+                        title="대표이미지로 설정"
+                      >
+                        ★ 대표
+                      </button>
+                    )}
                   </>
                 ) : (
                   <label className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500 cursor-pointer" onClick={e => e.stopPropagation()}>

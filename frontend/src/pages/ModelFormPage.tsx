@@ -128,6 +128,19 @@ export default function ModelFormPage() {
     } catch { /* ignore */ }
   };
 
+  const handleSetProfile = async (fileId: number) => {
+    if (!id) return;
+    try {
+      const res = await filesAPI.setProfileImage(Number(id), fileId);
+      setProfileImages([res.profile_image]);
+      await loadModelFiles(Number(id));
+      setPreviewImage(null);
+      toast.success('대표이미지가 변경되었습니다.');
+    } catch {
+      toast.error('대표이미지 변경에 실패했습니다.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name?.trim()) { toast.warning('이름을 입력해주세요.'); return; }
@@ -206,7 +219,7 @@ export default function ModelFormPage() {
           previewImage={previewImage} currentFileInfo={currentFileInfo}
           onImageUpload={handleImageUpload} onAdditionalUpload={handleAdditionalUpload}
           onDeleteAdditional={handleDeleteAdditional} onPreviewChange={setPreviewImage}
-          onFieldChange={handleChange}
+          onFieldChange={handleChange} onSetProfile={handleSetProfile}
         />
         <div className="lg:col-span-2 xl:col-span-3 space-y-6">
           <BasicInfoFields formData={formData} onChange={handleChange} />

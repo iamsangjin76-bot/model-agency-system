@@ -156,13 +156,13 @@ async def save_images(
     db.commit()
 
     # Sync saved images → ModelFile so they appear in profile sidebar.
-    # Rule: 1st image = profile photo (if none exists), rest = sub images in order.
+    # ALL saved images become sub images (is_profile_image=False).
+    # If model has no profile photo, ALSO create a separate profile record for the 1st image.
     if saved > 0:
         has_profile = db.query(ModelFile).filter(
             ModelFile.model_id == body.model_id,
             ModelFile.is_profile_image == True,  # noqa: E712
         ).first()
-        # Next display_order after existing sub images
         max_order_row = (
             db.query(ModelFile)
             .filter(ModelFile.model_id == body.model_id,
@@ -170,18 +170,31 @@ async def save_images(
             .order_by(ModelFile.display_order.desc())
             .first()
         )
-        next_order = (max_order_row.display_order + 1) if max_order_row else 1
+        next_order = (max_order_row.display_order + 1) if max_order_row else 0
 
+        # All images → sub image slots (is_profile_image=False)
         for idx, img in enumerate(items):
-            is_profile = (idx == 0) and (not has_profile)
             db.add(ModelFile(
                 model_id=body.model_id,
                 file_name=img.filename,
                 file_path=img.local_path,
                 file_type="image",
                 file_size=img.file_size,
-                is_profile_image=is_profile,
-                display_order=0 if is_profile else next_order + (idx if has_profile else idx - 1),
+                is_profile_image=False,
+                display_order=next_order + idx,
+            ))
+
+        # If no profile exists, also register the 1st image as profile
+        if not has_profile:
+            first = items[0]
+            db.add(ModelFile(
+                model_id=body.model_id,
+                file_name=first.filename,
+                file_path=first.local_path,
+                file_type="image",
+                file_size=first.file_size,
+                is_profile_image=True,
+                display_order=0,
             ))
         db.commit()
 
