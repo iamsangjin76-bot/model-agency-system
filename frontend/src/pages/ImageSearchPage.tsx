@@ -6,7 +6,7 @@ import { useToast } from '@/contexts/ToastContext';
 import ImageResultCard from '@/components/search/ImageResultCard';
 import ImagePreviewModal from '@/components/search/ImagePreviewModal';
 
-const DISPLAY = 10;
+const DISPLAY = 12;
 
 export default function ImageSearchPage() {
   const { toast } = useToast();

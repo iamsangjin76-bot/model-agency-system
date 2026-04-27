@@ -207,8 +207,8 @@ export const notificationsAPI = {
 // ---------------------------------------------------------------------------
 
 export interface NewsArticle {
-  title: string; link: string; description: string; pubDate: string;
-  source: string; imageUrl: string | null; provider: 'naver' | 'google';
+  title: string; link: string; description: string; pub_date: string;
+  source: string; image_url: string | null; provider: 'naver' | 'google';
 }
 
 export interface NewsSearchResult {

@@ -8,6 +8,7 @@ Proxies requests to Naver Search API (primary) and Google Custom Search API
 
 from __future__ import annotations
 
+import asyncio
 import re
 from urllib.parse import urlparse
 from email.utils import parsedate_to_datetime
@@ -52,6 +53,23 @@ def _truncate(text: str, max_len: int = 300) -> str:
     return (text[:max_len] + "…") if len(text) > max_len else text
 
 
+_OG_IMAGE_RE = re.compile(
+    r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']'
+    r'|<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
+    re.IGNORECASE,
+)
+
+
+async def _fetch_og_image(client: httpx.AsyncClient, url: str) -> str | None:
+    """Fetch og:image from an article URL. Returns None on any failure."""
+    try:
+        resp = await client.get(url, timeout=1.5, follow_redirects=True)
+        m = _OG_IMAGE_RE.search(resp.text)
+        return next((g for g in (m.group(1), m.group(2)) if g), None) if m else None
+    except Exception:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Naver API calls
 # ---------------------------------------------------------------------------
@@ -86,6 +104,16 @@ async def _search_naver_news(query: str, start: int, display: int) -> tuple[list
             provider="naver",
         )
         for item in data.get("items", [])
+    ]
+    # Batch-fetch og:image from each article in parallel (1.5 s timeout each)
+    async with httpx.AsyncClient(headers={"User-Agent": "Mozilla/5.0"}) as og_client:
+        og_results = await asyncio.gather(
+            *[_fetch_og_image(og_client, a.link) for a in articles],
+            return_exceptions=True,
+        )
+    articles = [
+        a.model_copy(update={"image_url": img if isinstance(img, str) else None})
+        for a, img in zip(articles, og_results)
     ]
     return articles, total
 

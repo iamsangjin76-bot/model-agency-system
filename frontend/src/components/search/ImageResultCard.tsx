@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, ZoomIn } from 'lucide-react';
 import { SearchImage } from '@/services/domain-api';
-import { proxify, handleImgError } from '@/utils/imageProxy';
+import { handleImgError } from '@/utils/imageProxy';
 
 interface Props {
   image: SearchImage;
@@ -20,11 +20,20 @@ export default function ImageResultCard({ image, index, isChecked, onToggle, onP
       onClick={() => onToggle(index)}
     >
       <img
-        src={proxify(image.thumbnail_url)}
+        src={image.original_url || image.thumbnail_url.replace('type=b150', 'type=b300')}
         alt={image.source}
         className="w-full h-full object-cover"
         loading="lazy"
-        onError={handleImgError}
+        onError={e => {
+          const img = e.currentTarget;
+          if (!img.dataset.fb1) {
+            // Fallback 1: Naver CDN thumbnail (b300) — always available
+            img.dataset.fb1 = 'true';
+            img.src = image.thumbnail_url.replace('type=b150', 'type=b300');
+          } else {
+            handleImgError(e);
+          }
+        }}
       />
 
       {/* Hover overlay */}

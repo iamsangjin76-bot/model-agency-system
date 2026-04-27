@@ -48,11 +48,12 @@ export default function NewsResultCard({ article, index, isChecked, onToggle }: 
         </div>
 
         {/* Thumbnail */}
-        {article.imageUrl && (
+        {article.image_url && (
           <img
-            src={article.imageUrl}
+            src={article.image_url}
             alt=""
             className="flex-shrink-0 w-32 h-24 object-cover rounded-lg"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         )}
 
@@ -75,7 +76,7 @@ export default function NewsResultCard({ article, index, isChecked, onToggle }: 
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              {formatDate(article.pubDate)}
+              {formatDate(article.pub_date)}
             </span>
             <a
               href={article.link}
