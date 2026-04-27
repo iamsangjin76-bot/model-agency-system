@@ -155,26 +155,35 @@ async def save_images(
 
     db.commit()
 
-    # Auto-set profile photo: if model has no profile image and we saved at least one,
-    # promote the first saved image to profile photo automatically.
+    # Sync saved images → ModelFile so they appear in profile sidebar.
+    # Rule: 1st image = profile photo (if none exists), rest = sub images in order.
     if saved > 0:
         has_profile = db.query(ModelFile).filter(
             ModelFile.model_id == body.model_id,
             ModelFile.is_profile_image == True,  # noqa: E712
         ).first()
-        if not has_profile:
-            first = items[0]
-            profile_file = ModelFile(
+        # Next display_order after existing sub images
+        max_order_row = (
+            db.query(ModelFile)
+            .filter(ModelFile.model_id == body.model_id,
+                    ModelFile.is_profile_image == False)  # noqa: E712
+            .order_by(ModelFile.display_order.desc())
+            .first()
+        )
+        next_order = (max_order_row.display_order + 1) if max_order_row else 1
+
+        for idx, img in enumerate(items):
+            is_profile = (idx == 0) and (not has_profile)
+            db.add(ModelFile(
                 model_id=body.model_id,
-                file_name=first.filename,
-                file_path=first.local_path,
+                file_name=img.filename,
+                file_path=img.local_path,
                 file_type="image",
-                file_size=first.file_size,
-                is_profile_image=True,
-                display_order=0,
-            )
-            db.add(profile_file)
-            db.commit()
+                file_size=img.file_size,
+                is_profile_image=is_profile,
+                display_order=0 if is_profile else next_order + (idx if has_profile else idx - 1),
+            ))
+        db.commit()
 
     return ImageSaveResponse(saved=saved, failed=failed, duplicates=duplicates, items=items)
 
