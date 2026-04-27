@@ -237,10 +237,10 @@ export interface ImageSearchResult {
 }
 
 export interface SavedSearchImage {
-  id: number; modelId: number; originalUrl: string; localPath: string;
-  filename: string; width: number; height: number; fileSize: number;
+  id: number; model_id: number; original_url: string; local_path: string;
+  filename: string; width: number; height: number; file_size: number;
   source: string; provider: string; memo: string | null;
-  isPortfolio: boolean; createdAt: string;
+  is_portfolio: boolean; created_at: string;
 }
 
 export const newsAPI = {

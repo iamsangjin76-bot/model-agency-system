@@ -154,6 +154,28 @@ async def save_images(
         saved += 1
 
     db.commit()
+
+    # Auto-set profile photo: if model has no profile image and we saved at least one,
+    # promote the first saved image to profile photo automatically.
+    if saved > 0:
+        has_profile = db.query(ModelFile).filter(
+            ModelFile.model_id == body.model_id,
+            ModelFile.is_profile_image == True,  # noqa: E712
+        ).first()
+        if not has_profile:
+            first = items[0]
+            profile_file = ModelFile(
+                model_id=body.model_id,
+                file_name=first.filename,
+                file_path=first.local_path,
+                file_type="image",
+                file_size=first.file_size,
+                is_profile_image=True,
+                display_order=0,
+            )
+            db.add(profile_file)
+            db.commit()
+
     return ImageSaveResponse(saved=saved, failed=failed, duplicates=duplicates, items=items)
 
 

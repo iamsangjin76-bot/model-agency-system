@@ -1,5 +1,6 @@
 // @AX:NOTE SPEC-IMAGE-SEARCH-001 §3 — auto-match parity with NewsSearchPage
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Image as ImageIcon, Download, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { modelsAPI, imageSearchAPI, SearchImage, Model } from '@/services/domain-api';
 import { useToast } from '@/contexts/ToastContext';
@@ -10,6 +11,7 @@ const DISPLAY = 12;
 
 export default function ImageSearchPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [provider, setProvider] = useState<'naver' | 'google'>('naver');
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,12 +96,11 @@ export default function ImageSearchPage() {
       setModels(prev => [...prev, created]);
       const selected = [...checkedImages].map(i => images[i]);
       await imageSearchAPI.save({ model_id: created.id, images: selected });
-      toast.success(`'${created.name}' 모델이 생성되고 ${checkedImages.size}개의 이미지가 저장되었습니다`);
-      setCheckedImages(new Set());
-      setShowNameModal(false);
+      // Navigate to model edit page so user can complete the profile
+      // (first saved image is auto-set as profile photo by the backend)
+      navigate(`/dashboard/models/${created.id}/edit`);
     } catch {
       toast.error('모델 생성 또는 저장에 실패했습니다.');
-    } finally {
       setIsCreating(false);
     }
   };
@@ -216,7 +217,7 @@ export default function ImageSearchPage() {
             </div>
             {showNameModal ? (
               <>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">등록된 모델이 없습니다. 새 모델을 생성하고 이미지를 저장합니다.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">등록된 모델이 없습니다. 이름을 확인하고 등록하면 선택한 이미지와 함께 모델 프로필 페이지로 이동합니다.</p>
                 <input value={newModelName} onChange={e => setNewModelName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCreateAndSave()}
                   placeholder="모델 이름 입력" autoFocus
@@ -224,7 +225,7 @@ export default function ImageSearchPage() {
                 <div className="flex gap-2">
                   <button onClick={handleCreateAndSave} disabled={isCreating || !newModelName.trim()}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors disabled:opacity-50">
-                    {isCreating ? <><Loader2 className="w-4 h-4 animate-spin" />생성 중...</> : '생성 후 저장'}
+                    {isCreating ? <><Loader2 className="w-4 h-4 animate-spin" />생성 중...</> : '생성 후 프로필로 이동'}
                   </button>
                   <button onClick={() => setShowNameModal(false)}
                     className="px-4 py-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">취소</button>

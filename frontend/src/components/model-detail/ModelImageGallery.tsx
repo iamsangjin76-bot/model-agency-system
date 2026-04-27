@@ -43,8 +43,8 @@ export default function ModelImageGallery({ modelId }: Props) {
   const handleToPortfolio = async (imageId: number) => {
     try {
       await imageSearchAPI.toPortfolio(imageId);
-      setItems(prev => prev.map(img => img.id === imageId ? { ...img, isPortfolio: true } : img));
-      if (preview?.id === imageId) setPreview(prev => prev ? { ...prev, isPortfolio: true } : null);
+      setItems(prev => prev.map(img => img.id === imageId ? { ...img, is_portfolio: true } : img));
+      if (preview?.id === imageId) setPreview(prev => prev ? { ...prev, is_portfolio: true } : null);
       toast.success('포트폴리오에 등록되었습니다.');
     } catch {
       toast.error('포트폴리오 등록에 실패했습니다.');
@@ -70,7 +70,7 @@ export default function ModelImageGallery({ modelId }: Props) {
               <div key={img.id} className="relative group rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-[3/4]">
                 {/* Thumbnail */}
                 <img
-                  src={proxify(imageUrl(img.localPath))}
+                  src={proxify(imageUrl(img.local_path))}
                   alt={img.source}
                   className="w-full h-full object-cover cursor-pointer"
                   onClick={() => setPreview(img)}
@@ -79,7 +79,7 @@ export default function ModelImageGallery({ modelId }: Props) {
                 />
 
                 {/* Portfolio badge */}
-                {img.isPortfolio && (
+                {img.is_portfolio && (
                   <div className="absolute top-1.5 left-1.5">
                     <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-medium rounded-full">
                       <Star className="w-3 h-3" />포트폴리오
@@ -97,7 +97,7 @@ export default function ModelImageGallery({ modelId }: Props) {
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    {!img.isPortfolio && (
+                    {!img.is_portfolio && (
                       <button
                         onClick={e => { e.stopPropagation(); handleToPortfolio(img.id); }}
                         className="p-1.5 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
@@ -133,7 +133,7 @@ export default function ModelImageGallery({ modelId }: Props) {
           </button>
           <div className="max-w-3xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <img
-              src={proxify(imageUrl(preview.localPath))}
+              src={proxify(imageUrl(preview.local_path))}
               alt={preview.source}
               className="max-w-full max-h-[80vh] object-contain rounded-lg"
               onError={handleImgError}
@@ -142,11 +142,11 @@ export default function ModelImageGallery({ modelId }: Props) {
               <div>
                 <p className="text-sm text-gray-300">{preview.source}</p>
                 {preview.width > 0 && (
-                  <p className="text-xs text-gray-400">{preview.width} × {preview.height} · {(preview.fileSize / 1024).toFixed(0)}KB</p>
+                  <p className="text-xs text-gray-400">{preview.width} × {preview.height} · {(preview.file_size / 1024).toFixed(0)}KB</p>
                 )}
               </div>
               <div className="flex gap-2">
-                {!preview.isPortfolio && (
+                {!preview.is_portfolio && (
                   <button
                     onClick={() => handleToPortfolio(preview.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg transition-colors"
