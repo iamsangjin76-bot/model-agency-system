@@ -6,6 +6,26 @@
 
 ## [Unreleased]
 
+### SPEC-IMAGE-PROXY-002: 프론트엔드 이미지 프록시 통합 (J-8b)
+
+**Summary**: J-8a에서 구축된 `/api/proxy/image` 백엔드 엔드포인트를 프론트엔드에 실제 연결.
+외부 CDN(Naver·Ruliweb) 핫링크 차단으로 회색 placeholder로 떨어지던 이미지가
+4개 call site에서 정상 렌더링됨. `proxify()` 헬퍼가 same-origin URL은 프록시 우회,
+이중 프록시 방지 가드 포함. `handleImgError`가 네트워크 오류 시 인라인 SVG placeholder로
+graceful fallback (무한 루프 방지).
+
+#### Added
+
+- `frontend/src/utils/imageProxy.ts` — `proxify()`: HTTP(S) → `/api/proxy/image?url=...` 변환 헬퍼, 5가지 bypass 규칙 포함
+- `frontend/src/utils/imageProxy.ts` — `IMAGE_PROXY_PLACEHOLDER`: 인라인 SVG (네트워크 요청 0)
+- `frontend/src/utils/imageProxy.ts` — `handleImgError()`: onError 핸들러 (dataset.fallbackApplied 무한 루프 가드)
+
+#### Changed
+
+- `frontend/src/components/search/ImageResultCard.tsx` — `<img src>`: `proxify(image.thumbnail_url)` + `onError={handleImgError}`
+- `frontend/src/components/search/ImagePreviewModal.tsx` — `<img src>`: `proxify(image.original_url)` + `onError={handleImgError}`
+- `frontend/src/components/model-detail/ModelImageGallery.tsx` — `<img src>` 2곳 (썸네일 + 라이트박스): `proxify(imageUrl(...))` + `onError={handleImgError}`
+
 ---
 
 ## [0.2.0] — 2026-04-15

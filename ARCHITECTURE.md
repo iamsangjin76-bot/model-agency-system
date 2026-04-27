@@ -1,7 +1,8 @@
 # ARCHITECTURE — Model Agency Management System
 
 > 생성: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 직후)
-> 갱신: `/auto sync` 가 자동 갱신함
+> 최종 갱신: 2026-04-26 (`/auto setup`, J-6 graceful 503 + J-8a 이미지 프록시 완료 후)
+> 갱신 트리거: `/auto sync` 또는 `/auto setup`
 
 광고 모델 에이전시 1인 운영자(Jin)를 위한 데스크톱 + 로컬 API 시스템. FastAPI 백엔드와 React/Electron 프론트엔드를 단일 PC에서 함께 구동한다.
 
@@ -15,7 +16,8 @@
 | **Model** | 모델 프로필 (26필드), 포트폴리오, 파일 업로드 | `routers/models.py`, `models/database.py:Model` | ✅ J-1~J-5 완료 |
 | **Casting** | 공고 등록, 모델 N:N 제안, 상태 워크플로 | `routers/castings.py`, `routers/contracts.py` | ✅ F-2 완료 |
 | **Settlement** | 계약, 정산, 일정, 월별 통계 | `routers/settlements.py`, `routers/schedules.py` | ✅ F-3 완료 |
-| **Media** | 뉴스/이미지 검색, 자동 모델 매칭, 포트폴리오 승격 | `routers/news.py`, `routers/image_search.py`, `services/search_service.py` | ✅ J-1~J-5 완료, J-6 검증 대기 |
+| **Media** | 뉴스/이미지 검색, 자동 모델 매칭, 포트폴리오 승격 | `routers/news.py`, `routers/image_search.py`, `services/search_service.py` | ✅ J-1~J-5 완료, J-6 graceful 503 ✅ |
+| **Image Proxy** | 외부 이미지 SSRF 방어 프록시 + 디스크 캐시 (핫링크 우회) | `routers/proxy.py`, `services/image_proxy_service.py`, `utils/security.py:validate_proxy_host` | ✅ J-8a 백엔드 완료 (SPEC-IMAGE-PROXY-001 §1) |
 
 부가 도메인: **Notification** (`services/notification_service.py`, 30초 폴링), **Admin** (관리자 CRUD, SUPER_ADMIN 전용), **Stats** (대시보드 통계).
 
@@ -36,7 +38,7 @@
 ┌─ Backend ───────────────────────────────────────────────┐
 │  FastAPI 0.109 + Python 3.12                            │
 │                                                         │
-│  Routers (17)  →  Services  →  Models  →  SQLAlchemy   │
+│  Routers (16)  →  Services  →  Models  →  SQLAlchemy   │
 │                                              │          │
 │                                              ↓          │
 │                                          SQLite DB     │
@@ -79,7 +81,7 @@ Pages (14) / Components (search/, model-detail/, ui/)
 
 backend/app/main.py
    ↓
-register routers (17개)
+register routers (16개)
    ↓
 routers/{auth, models, casting, ...}
    ↓
@@ -106,19 +108,21 @@ SQLAlchemy → SQLite
 | **OpenAI** | Phase K-1 프로필 내보내기 대비 | `OPENAI_API_KEY` | 미설정 (예정) |
 | **Gemini** | Autopus `--multi` 멀티프로바이더 대비 | `GEMINI_API_KEY` | 미설정 (예정) |
 
-보안 방어: `utils/security.py` 에서 SSRF 차단 + 매직 바이트 검증, 이미지 다운로드 10MB 제한.
+보안 방어: `utils/security.py` 에서 SSRF 차단 + 매직 바이트 검증, 이미지 다운로드 10MB 제한. **J-8a 추가**: `validate_proxy_host()` (suffix-only 화이트리스트 + private IP CIDR 8개 차단), 헤더-매직 불일치 415 차단, 디스크 캐시 2-level fanout (TTL 7일).
 
 ---
 
-## 5. 파일 통계
+## 5. 파일 통계 (2026-04-26 갱신)
 
-- **소스 파일 96개 / 약 15,350 라인** (backend 39 + frontend 57)
-- **15개 백엔드 라우터** (`backend/app/routers/` 의 `__init__.py` 제외): `activity_logs`, `auth`, `castings`, `clients`, `contracts`, `files`, `image_search`, `media`, `models`, `news`, `notifications`, `schedules`, `settlements`, `stats`, `token_refresh`
-- **14개 프론트엔드 페이지**
+- **소스 파일 ~99개** (backend Python 41 + frontend pages 16 + components 31, J-8a 후 +3 신규)
+- **16개 백엔드 라우터** (`backend/app/routers/` 의 `__init__.py` 제외): `activity_logs`, `auth`, `castings`, `clients`, `contracts`, `files`, `image_search`, `media`, `models`, `news`, `notifications`, **`proxy`** (J-8a 신규), `schedules`, `settlements`, `stats`, `token_refresh`
+- **16개 프론트엔드 페이지** (이전 setup의 14는 카운트 오류 — 실제 15였음. `NotFoundPage.tsx` 추가 후 16개로 정합. commit `2cfe17bc` "fix(ux): add catch-all 404 route" 출처)
+- **12개 데이터베이스 모델** (grep `^class.*Base` 검증 2026-04-26): `auth.py` RefreshToken (1) + `database.py` Admin/Model/ModelFile/NewsArticle/SNSData/ShareLink/ActivityLog/Notification (8) + `search.py` ModelNews/ModelSearchImage (2) + `settlement.py` Settlement (1)
+- **백엔드 테스트 1건**: `backend/tests/test_image_proxy_mismatch.py` (S11 회귀, Poetry 환경 전제)
 
 ---
 
-## 6. Known Issues (10건, 인수인계 v17 기준)
+## 6. Known Issues (12건, 2026-04-26 J-8a 후 갱신)
 
 | # | 분류 | 항목 | 영향 | 처리 계획 |
 |---|------|------|------|-----------|
@@ -127,11 +131,13 @@ SQLAlchemy → SQLite
 | 3 | 기능 | TabletNews 페이지 부재 | 로컬 라인에만 있던 페이지 | 우선순위 낮음 |
 | 4 | 데이터 | 사용자 입력 데이터 부재 | DB seed 22건만 | 점진적 축적 |
 | 5 | API | **Google Custom Search 403** | `GOOGLE_API_KEY/CX` 미설정 → Naver fallback | Jin 키 발급 후 설정 |
-| 6 | UX | ImageSearchPage 모델 자동 매칭 미적용 | NewsSearchPage와 UX 불일치 | **J-8 에서 처리** |
+| 6 | UX | ImageSearchPage 모델 자동 매칭 미적용 | NewsSearchPage와 UX 불일치 | **J-8c 에서 처리** (J-8a 백엔드는 완료) |
 | 7 | 환경 | `.env` line 29 파싱 경고 | `python-dotenv could not parse statement` (NEWS_API_KEY 충돌은 해결됨) | 형식 점검 |
 | 8 | 구조 | `database.py` 330줄 | 300줄 한도 초과 | 도메인별 분리 SPEC |
-| 9 | 구조 | **300줄 초과 파일 10개** | 컨텍스트 윈도우 부담 | (아래 표 참조) |
+| 9 | 구조 | **300줄 초과 파일 10개** (seed.py 제외) | 컨텍스트 윈도우 부담 | (아래 표 참조) |
 | 10 | 문서 | v16의 SPEC-SEARCH-001 / SPEC-NOTIF-001 부재 | 코드만 있고 SPEC 문서 없음 | 역설계 SPEC 작성 |
+| 11 | 보안 (Low) | `_PRIVATE_NETS` 에 `fe80::/10` (IPv6 link-local) 누락 | 실질 위협 없음 (zone-ID 없으면 OS 라우팅 불가). suffix 화이트리스트가 1차 방어 | 향후 별도 fix (J-8a R1) |
+| 12 | 보안 (Low) | `/api/proxy/image` 응답에 `Content-Security-Policy: default-src 'none'` 미포함 | 추가 XSS 방어 강화 가능 (필수 아님) | 향후 별도 fix (J-8a R2) |
 
 ### 300줄 초과 파일 10개 (자동 검증 결과)
 
@@ -164,13 +170,16 @@ SQLAlchemy → SQLite
 
 ---
 
-## 8. SPEC 현황
+## 8. SPEC 현황 (2건)
 
 | SPEC | 상태 | 산출물 |
 |------|------|--------|
 | **SPEC-AUTH-001** | ✅ completed | JWT Token Refresh System (Access 15분 + Refresh 7일, family revocation) |
+| **SPEC-IMAGE-PROXY-001** | 🟡 J-8a 완료 / J-8b·c·d·e 미착수 | 외부 이미지 프록시 + UX 패리티 + PlaceholderPage + KPI 정책 (4대 범위 중 1개 구현 완료) |
 
 비공식 SPEC (코드만 존재, 문서 부재): SPEC-SEARCH-001 (J-1~J-5), SPEC-NOTIF-001 (G-1).
+
+PLAN 산출물: `.autopus/plans/PLAN-J-8a.md` v2 (정정 3건 반영본).
 
 ---
 
@@ -180,7 +189,9 @@ SQLAlchemy → SQLite
 - `.autopus/project/structure.md` — 디렉터리 / 에이전트 팀
 - `.autopus/project/tech.md` — 기술 스택 / 환경변수
 - `.autopus/project/scenarios.md` — E2E 시나리오 12개
-- `.autopus/project/canary.md` — 헬스체크 5개
+- `.autopus/project/canary.md` — 헬스체크 6개 (J-8a 후 H6 추가)
+- `.autopus/specs/SPEC-IMAGE-PROXY-001.md` — J-8 통합 SPEC (4대 범위)
+- `.autopus/plans/PLAN-J-8a.md` v2 — J-8a 백엔드 실행 계획 (정정 3건 반영)
 - `.autopus/WORKFLOW.md` — 표준 워크플로 (Phase C v2)
 - `handover/Project-M_개발계획서_v1.md` — 누적 개발 이력
 - `handover/Project-M_향후개발지시서_v1.md` — 세션 A~O 로드맵

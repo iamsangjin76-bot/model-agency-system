@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, ZoomIn } from 'lucide-react';
 import { SearchImage } from '@/services/domain-api';
+import { proxify, handleImgError } from '@/utils/imageProxy';
 
 interface Props {
   image: SearchImage;
@@ -19,10 +20,11 @@ export default function ImageResultCard({ image, index, isChecked, onToggle, onP
       onClick={() => onToggle(index)}
     >
       <img
-        src={image.thumbnailUrl}
+        src={proxify(image.thumbnail_url)}
         alt={image.source}
         className="w-full h-full object-cover"
         loading="lazy"
+        onError={handleImgError}
       />
 
       {/* Hover overlay */}

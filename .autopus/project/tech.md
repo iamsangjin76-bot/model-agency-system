@@ -1,6 +1,7 @@
 # Tech Stack — Model Agency Management System
 
-> 갱신: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 생성: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 최종 갱신: 2026-04-26 (`/auto setup`, J-6 + J-8a 완료 후)
 
 ## 언어 및 런타임
 
@@ -95,6 +96,11 @@ npm run electron:build                       # NSIS (Windows .exe)
 | `GOOGLE_CX` | ❌ 비활성 | Google CSE ID |
 | `SEARCH_REQUEST_TIMEOUT=5` | 설정됨 | httpx 타임아웃 |
 | `SEARCH_IMAGE_MAX_SIZE` | 설정됨 | 10MB |
+| **`IMAGE_PROXY_ALLOWED_DOMAINS`** | ✅ **활성 (J-8a)** | suffix 화이트리스트 (초기 9개 도메인: imgnews.naver.net, naver.net, blogfiles.naver.net, postfiles.pstatic.net, ssl.pstatic.net, i1~i3.ruliweb.com, image.fmkorea.com, img.insight.co.kr) |
+| **`IMAGE_PROXY_MAX_SIZE=10485760`** | ✅ 활성 (J-8a) | 응답 크기 한계 10MB |
+| **`IMAGE_PROXY_TIMEOUT=5.0`** | ✅ 활성 (J-8a) | 외부 fetch 타임아웃 (초) |
+| **`IMAGE_PROXY_CACHE_DIR=proxy_cache`** | ✅ 활성 (J-8a) | 디스크 캐시 루트 (.gitignore 등재) |
+| **`IMAGE_PROXY_CACHE_TTL=604800`** | ✅ 활성 (J-8a) | 7일 (SPEC §3.2) |
 | `UNSPLASH_ACCESS_KEY` | 미설정 | 이미지 검색 후보 |
 | `BING_SEARCH_API_KEY` | 미설정 | 이미지 검색 후보 |
 | `AZURE_COMPUTER_VISION_KEY` | 미설정 | 이미지 분석 |
@@ -123,7 +129,7 @@ async def health_check():
 
 | 항목 | 상태 | 비고 |
 |------|------|------|
-| Backend 테스트 (pytest) | **미구성** | Phase I-3 에서 도입 예정 |
+| Backend 테스트 (pytest) | 🟡 **부분 도입** | `backend/tests/test_image_proxy_mismatch.py` 1건 (J-8a S11). pytest+pytest-asyncio 시스템 Python 설치됨, Poetry venv에 `pydantic_settings` 의존. **Poetry 환경에서만 실행 가능** |
 | Frontend 테스트 (vitest) | **미구성** | Phase I-3 에서 도입 예정 |
 | E2E (Playwright) | **미구성** | Phase I-3 또는 Frontend Specialist 에이전트 사용 시 |
 | ESLint | **미구성** | Phase I-3 검토 |

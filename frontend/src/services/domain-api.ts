@@ -227,7 +227,7 @@ export interface SavedNews {
 // ---------------------------------------------------------------------------
 
 export interface SearchImage {
-  thumbnailUrl: string; originalUrl: string; width: number; height: number;
+  thumbnail_url: string; original_url: string; width: number; height: number;
   source: string; provider: 'naver' | 'google';
 }
 

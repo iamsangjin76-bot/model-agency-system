@@ -1,6 +1,7 @@
 # Structure — Model Agency Management System
 
-> 갱신: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 생성: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 최종 갱신: 2026-04-27 (`/auto sync SPEC-IMAGE-PROXY-002`, J-8b 완료 후)
 
 ## 저장소 레이아웃 (옵션 B 후 G드라이브 기준)
 
@@ -21,10 +22,13 @@ G:\Project M\
     │   └── 인수인계_문서.md + 인수인계_문서_20260416.md (무번호 2개) + v2~v16 시리즈 (15개) = 17개 (옵션 B 이전 역사 자료. v17 두 개는 위 14·15줄에 별도 명시)
     │
     ├── backend\                          # Python FastAPI (port 8000)
-    │   ├── venv\                         # Python 가상환경
-    │   ├── .env                          # NAVER 키 활성, line 29 파싱 경고
+    │   ├── venv\                         # Python 가상환경 (Poetry)
+    │   ├── .env                          # NAVER + IMAGE_PROXY_* 키 활성, line 29 파싱 경고
     │   ├── model_agency.db               # SQLite (seed 22건)
+    │   ├── proxy_cache\                  # ★ J-8a 신규 (런타임 디스크 캐시, .gitignore)
     │   ├── requirements.txt
+    │   ├── tests\                        # ★ J-8a 신규
+    │   │   └── test_image_proxy_mismatch.py  # S11 회귀 (Poetry 환경)
     │   └── app\
     │       ├── main.py                   # FastAPI 진입점 + CORS + 시작 훅
     │       ├── config.py                 # Settings (case_sensitive=True)
@@ -38,7 +42,7 @@ G:\Project M\
     │       │   ├── agency.py
     │       │   └── agency_financial.py
     │       ├── schemas.py                # 모놀리식 (573줄, 하위 호환)
-    │       ├── routers\                  # 15개 엔드포인트 핸들러 (__init__.py 제외)
+    │       ├── routers\                  # 16개 엔드포인트 핸들러 (__init__.py 제외)
     │       │   ├── auth.py               # /api/auth/login, /me, admins CRUD
     │       │   ├── token_refresh.py      # /api/auth/refresh, /logout
     │       │   ├── models.py
@@ -53,14 +57,16 @@ G:\Project M\
     │       │   ├── image_search.py       # 5 엔드포인트 (Naver/Google)
     │       │   ├── stats.py
     │       │   ├── activity_logs.py
-    │       │   └── notifications.py
+    │       │   ├── notifications.py
+    │       │   └── proxy.py              # ★ J-8a 신규 — GET /api/proxy/image (SSRF 방어)
     │       ├── services\
     │       │   ├── token_service.py      # SPEC-AUTH-001 토큰 라이프사이클
     │       │   ├── notification_service.py
-    │       │   └── search_service.py     # Naver/Google 통합
+    │       │   ├── search_service.py     # Naver/Google 통합 (graceful 503, 99253666)
+    │       │   └── image_proxy_service.py  # ★ J-8a 신규 — 캐시(2-level) + 매직 바이트
     │       └── utils\
     │           ├── activity_log.py
-    │           └── security.py           # SSRF 방어 + 매직 바이트 검증
+    │           └── security.py           # SSRF 방어 + 매직 바이트 + validate_proxy_host (J-8a 확장)
     │
     ├── frontend\                         # React + TypeScript + Electron (port 5173)
     │   ├── node_modules\                 # 502 패키지
@@ -76,7 +82,7 @@ G:\Project M\
     │       │   ├── auth-api.ts           # 401 인터셉터 + silent refresh + refreshPromise 싱글톤
     │       │   ├── domain-api.ts         # modelsAPI/clientsAPI/...
     │       │   └── api.ts                # 배럴 재수출
-    │       ├── pages\                    # 14개 페이지
+    │       ├── pages\                    # 16개 페이지 (NotFoundPage 신설 2cfe17bc, 이전 setup의 14는 카운트 오류)
     │       │   ├── LoginPage.tsx
     │       │   ├── DashboardPage.tsx                # 445줄
     │       │   ├── ModelListPage.tsx
@@ -91,10 +97,13 @@ G:\Project M\
     │       │   ├── NewsSearchPage.tsx               # Naver + 자동 모델 매칭 (J-2/J-4)
     │       │   ├── ImageSearchPage.tsx              # Naver/Google + SSRF 방어 (J-3/J-4)
     │       │   ├── SNSAnalyticsPage.tsx             # 390줄, 껍데기 (SNS-1 미착수)
-    │       │   └── ProfileExportPage.tsx            # 476줄, 껍데기 (K-1 미착수)
+    │       │   ├── ProfileExportPage.tsx            # 476줄, 껍데기 (K-1 미착수)
+    │       │   └── NotFoundPage.tsx                 # ★ catch-all 404 라우트 (2cfe17bc)
+    │       ├── utils\                    # ★ J-8b 신규
+    │       │   └── imageProxy.ts         # proxify() + handleImgError() + IMAGE_PROXY_PLACEHOLDER (SPEC-IMAGE-PROXY-002 §3)
     │       ├── components\
-    │       │   ├── search\               # 검색 결과 카드, 모달
-    │       │   ├── model-detail\         # ModelNewsList, ModelImageGallery (J-5)
+    │       │   ├── search\               # 검색 결과 카드, 모달 (ImageResultCard·ImagePreviewModal: proxify 적용 J-8b)
+    │       │   ├── model-detail\         # ModelNewsList, ModelImageGallery (J-5; proxify 적용 J-8b)
     │       │   ├── model-form\
     │       │   ├── notification\         # NotificationBell, Dropdown (G-1)
     │       │   ├── casting\
@@ -126,14 +135,24 @@ G:\Project M\
     │   │   ├── tech.md
     │   │   ├── scenarios.md              # ★ /auto setup 으로 생성
     │   │   └── canary.md                 # ★ /auto setup 으로 생성
-    │   └── specs\
-    │       └── SPEC-AUTH-001\            # ✅ completed
-    │           ├── spec.md
-    │           ├── plan.md
-    │           ├── prd.md
-    │           ├── research.md
-    │           ├── acceptance.md
-    │           └── review.md
+    │   ├── specs\
+    │   │   ├── SPEC-AUTH-001\            # ✅ completed
+    │   │   │   ├── spec.md
+    │   │   │   ├── plan.md
+    │   │   │   ├── prd.md
+    │   │   │   ├── research.md
+    │   │   │   ├── acceptance.md
+    │   │   │   └── review.md
+    │   │   ├── SPEC-IMAGE-PROXY-002\     # ✅ completed (J-8b 프론트엔드 프록시 통합, 2026-04-27)
+    │   │   │   ├── spec.md
+    │   │   │   ├── plan.md
+    │   │   │   ├── acceptance.md
+    │   │   │   └── research.md
+    │   │   └── SPEC-IMAGE-PROXY-001.md   # ★ J-8 통합 SPEC (J-8a 백엔드 ✅ / J-8b ✅ / 8c·d·e 미착수)
+    │   ├── plans\                        # ★ J-8a 신규
+    │   │   └── PLAN-J-8a.md              # planner v2 (정정 3건 반영)
+    │   └── brainstorms\                  # untracked (Option B 정책)
+    │       └── J-6-fix-plan.md           # J-6 fix 1-2 + 폐기 결정 기록
     │
     └── .claude\, .codex\, .gemini\       # AI CLI 하네스 미러 3종 (autopus.yaml `platforms`는 4종이지만 OpenCode는 root의 `opencode.json`로만 통합 — `.opencode\` 폴더 부재)
 ```
@@ -142,14 +161,15 @@ G:\Project M\
 
 | 패키지 | 역할 | 핵심 파일 |
 |--------|------|-----------|
-| `backend/app/models/` | SQLAlchemy ORM | `database.py` (Admin/Model/ModelFile/NewsArticle/SNSData/ShareLink/ActivityLog/Notification 8개), `auth.py` (RefreshToken). 도메인 5개(Client/Casting/Contract/Schedule/Settlement)는 `routers/*.py`에 분산 — 시스템 총 14개 테이블 |
+| `backend/app/models/` | SQLAlchemy ORM | `database.py` (Admin/Model/ModelFile/NewsArticle/SNSData/ShareLink/ActivityLog/Notification 8개), `search.py` (ModelNews/ModelSearchImage 2개), `settlement.py` (Settlement 1개), `auth.py` (RefreshToken 1개) — **시스템 총 12개 ORM 모델** (grep `^class.*Base` 검증 2026-04-26). 도메인 4개(Client/Casting/Contract/Schedule)는 별도 ORM 클래스 없이 `routers/*.py` 핸들러 + `schemas/*.py` Pydantic으로 처리 |
 | `backend/app/schemas/` | Pydantic 요청/응답 검증 | `auth.py`, `agency.py`, `agency_financial.py` |
-| `backend/app/routers/` | 15개 HTTP 핸들러 (`__init__.py` 제외) | 도메인별 분리 |
-| `backend/app/services/` | 비즈니스 로직 | `token_service.py`, `notification_service.py`, `search_service.py` |
-| `backend/app/utils/` | 보안 + 활동 로그 | `security.py` (SSRF/매직바이트), `activity_log.py` |
+| `backend/app/routers/` | 16개 HTTP 핸들러 (`__init__.py` 제외, J-8a `proxy.py` 추가) | 도메인별 분리 |
+| `backend/app/services/` | 비즈니스 로직 | `token_service.py`, `notification_service.py`, `search_service.py`, `image_proxy_service.py` (J-8a) |
+| `backend/app/utils/` | 보안 + 활동 로그 | `security.py` (SSRF/매직바이트 + `validate_proxy_host` J-8a 확장), `activity_log.py` |
+| `backend/tests/` | 회귀 테스트 (J-8a 신규) | `test_image_proxy_mismatch.py` (S11 — Poetry 환경 전제) |
 | `frontend/src/services/` | API 계층 + 토큰 관리 | `auth-api.ts` (R13 싱글톤), `domain-api.ts` |
 | `frontend/src/contexts/` | 전역 상태 | `AuthContext.tsx` |
-| `frontend/src/pages/` | 14 페이지 | LoginPage 외 13개 |
+| `frontend/src/pages/` | 16 페이지 (Explorer 2026-04-26 검증) | LoginPage 외 15개 |
 | `frontend/src/components/` | 재사용 UI | search/, model-detail/, notification/ |
 
 ## 진입점

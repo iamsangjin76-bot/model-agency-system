@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { SearchImage } from '@/services/domain-api';
+import { proxify, handleImgError } from '@/utils/imageProxy';
 
 interface Props {
   image: SearchImage;
@@ -24,9 +25,10 @@ export default function ImagePreviewModal({ image, isChecked, onClose, onToggleC
 
       <div className="max-w-4xl max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
         <img
-          src={image.originalUrl}
+          src={proxify(image.original_url)}
           alt={image.source}
           className="max-w-full max-h-[80vh] object-contain rounded-lg"
+          onError={handleImgError}
         />
         <div className="mt-4 flex items-center justify-between text-white">
           <div>
@@ -45,7 +47,7 @@ export default function ImagePreviewModal({ image, isChecked, onClose, onToggleC
               {isChecked ? '선택됨' : '선택'}
             </button>
             <a
-              href={image.originalUrl}
+              href={image.original_url}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg flex items-center gap-2 transition-colors"

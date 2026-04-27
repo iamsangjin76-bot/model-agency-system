@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon, Trash2, Star, X } from 'lucide-react';
 import { imageSearchAPI, SavedSearchImage } from '@/services/domain-api';
 import { useToast } from '@/contexts/ToastContext';
+import { proxify, handleImgError } from '@/utils/imageProxy';
 import DetailSection from './DetailSection';
 
 interface Props {
@@ -69,11 +70,12 @@ export default function ModelImageGallery({ modelId }: Props) {
               <div key={img.id} className="relative group rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-[3/4]">
                 {/* Thumbnail */}
                 <img
-                  src={imageUrl(img.localPath)}
+                  src={proxify(imageUrl(img.localPath))}
                   alt={img.source}
                   className="w-full h-full object-cover cursor-pointer"
                   onClick={() => setPreview(img)}
                   loading="lazy"
+                  onError={handleImgError}
                 />
 
                 {/* Portfolio badge */}
@@ -131,9 +133,10 @@ export default function ModelImageGallery({ modelId }: Props) {
           </button>
           <div className="max-w-3xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <img
-              src={imageUrl(preview.localPath)}
+              src={proxify(imageUrl(preview.localPath))}
               alt={preview.source}
               className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              onError={handleImgError}
             />
             <div className="mt-3 flex items-center justify-between text-white">
               <div>

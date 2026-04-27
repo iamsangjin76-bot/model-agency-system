@@ -1,6 +1,7 @@
 # Product — Model Agency Management System
 
-> 갱신: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 생성: 2026-04-25 (`/auto setup`, 옵션 B 마이그레이션 후 첫 동기화)
+> 최종 갱신: 2026-04-27 (`/auto sync SPEC-IMAGE-PROXY-002`, J-8b 프론트엔드 프록시 통합 완료 후)
 
 ## 프로젝트 정보
 
@@ -17,7 +18,7 @@
 
 광고 모델 에이전시의 모델·고객·캐스팅·계약·정산을 한 데스크톱 앱에서 관리한다. 뉴스/이미지 검색을 모델별로 자동 매칭하여 포트폴리오를 업데이트하고, 캐스팅 → 계약 → 정산을 연결된 흐름으로 다룬다. Electron 패키징 후 단일 PC 설치형으로 배포 예정 (Phase I-1).
 
-## 핵심 기능 9개 (옵션 B 후 실제 구현)
+## 핵심 기능 10개 (옵션 B 후 + J-8a 후 실제 구현)
 
 | 기능 | 핵심 동작 | 관련 Phase |
 |------|-----------|-----------|
@@ -30,6 +31,7 @@
 | 7. 이미지 검색 + 포트폴리오 등록 | Naver(Google 비활성) → SSRF 방어 다운로드 → 포트폴리오 승격 | J-3, J-4 |
 | 8. 알림 시스템 | 30초 폴링 + 자동 트리거 (캐스팅/정산/모델) + `exclude_admin_id` 자기 제외 | G-1 (SPEC-NOTIF-001) |
 | 9. JWT 토큰 갱신 | Access 15분 + Refresh 7일, silent refresh, family revocation | SPEC-AUTH-001 ✅ |
+| **10. 외부 이미지 프록시** | `/api/proxy/image` SSRF 방어 + 디스크 캐시 (TTL 7일) + 매직 바이트 검증 + 핫링크 우회 (Naver/Ruliweb CDN) | **J-8a (SPEC-IMAGE-PROXY-001 §1)** ✅ |
 
 ## Phase 진행 현황 (v17 옵션 B 후 기준)
 
@@ -51,8 +53,12 @@
 | J-3 | 이미지 라우터 (5 엔드포인트) | ✅ 완료 |
 | J-4 | 프론트 검색 페이지 API 연동 | ✅ 완료 |
 | J-5 | 모델 상세 + 뉴스/이미지 통합 | ✅ 완료 |
-| **J-6** | **통합 검증 + fix** | 🔴 **미착수 (다음 작업)** |
-| J-8 | 이미지 검색 UX 자동 매칭 | 🔴 미착수 |
+| **J-6** | **통합 검증 + graceful 503 fix** | ✅ **완료** (2026-04-25, commit `99253666`) |
+| **J-8a** | **외부 이미지 프록시 백엔드** (SSRF 방어 6항목 + 디스크 캐시) | ✅ **완료** (2026-04-26, commit `c458bed5`) |
+| **J-8b** | **프론트엔드 이미지 프록시 통합** (`proxify()` 헬퍼 + 4 call site + onError fallback) | ✅ **완료** (2026-04-27, SPEC-IMAGE-PROXY-002) |
+| J-8c | ImageSearchPage UX 패리티 (NewsSearchPage 자동 매칭 패턴 복제) | 🔴 미착수 |
+| J-8d | DashboardPage.tsx:278 PlaceholderPage 다크 짝 1줄 보정 | 🔴 미착수 |
+| J-8e | 통합 KPI vs 도메인별 분산 호출 정책 (Option B 권고) | 🔴 미착수 (결정 보류) |
 | J-7 | 라이브러리 관리 뷰 | 🔴 미착수 |
 | SNS-1 | SPEC-SNS-001 (Instagram/TikTok/YouTube) | 🔴 미착수 |
 | K-1 | 프로필 내보내기 4종 (PPT/PDF) | 🔴 미착수 |
@@ -71,14 +77,21 @@
 3. **캐스팅 → 계약 → 정산**: CastingPage 공고 생성 → 모델 제안 (status: request → confirmed) → ContractPage 계약 등록 → SettlementPage 수수료/모델료 기록.
 4. **데스크톱 + 다크모드 + 알림**: 사이드바 접기, 테이블↔카드 자동 전환, 30초마다 알림 폴링, Tailwind dark: 클래스로 야간 작업 지원.
 
-## 로드맵 (총 14~17 세션 예상, v17 향후개발지시서 기반)
+## 로드맵 (J-8b 완료 후 갱신, 2026-04-27)
 
 ```
-J-6 통합 검증 (Sonnet, 검증만)
+✅ J-6 통합 검증 + graceful 503 (완료 — commit 99253666)
    ↓
-J-8 이미지 검색 자동 매칭 (Sonnet, NewsSearch 패턴 복제)
+✅ J-8a 백엔드 이미지 프록시 (완료 — commit c458bed5)
    ↓
-J-7 라이브러리 관리 뷰 (Opus 설계 → Sonnet 구현, 2세션)
+✅ J-8b 프론트엔드 이미지 프록시 통합 (완료 — SPEC-IMAGE-PROXY-002, 2026-04-27)
+   - proxify() 헬퍼 + 4 call site + onError fallback
+   ↓
+🔴 J-8c·d 프론트엔드 잔여 (Sonnet, 1세션)
+   - 8c: ImageSearchPage UX 패리티 (NewsSearch 패턴 복제)
+   - 8d: DashboardPage.tsx:278 dark 1줄
+   ↓
+🔴 J-7 라이브러리 관리 뷰 (Opus 설계 → Sonnet 구현, 2세션)
    ↓
 SNS-1 SPEC-SNS-001 (Opus 설계 → Sonnet 구현, 2세션)
    ↓

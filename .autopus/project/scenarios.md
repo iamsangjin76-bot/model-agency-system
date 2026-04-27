@@ -1,6 +1,6 @@
 # E2E Scenarios — Model Agency Management System
 
-> 자동 생성: 2026-04-25 (`/auto setup`). 갱신: `/auto sync`.
+> 자동 생성: 2026-04-25 (`/auto setup`). 최종 갱신: 2026-04-26 (`/auto setup`, J-8a 후 S13~S16 추가).
 
 ## Project Type: Frontend (React + Electron) + API (FastAPI)
 ## Backend Build: `cd backend && python -m uvicorn app.main:app --reload` (port 8000)
@@ -38,7 +38,7 @@ FRONTEND_URL=http://localhost:5173
 
 ---
 
-## 시나리오 12개 (S1~S12)
+## 시나리오 16개 (S1~S16, J-8a 후 S13~S16 추가)
 
 ### S1: 슈퍼 관리자 로그인 — Happy Path
 
@@ -167,13 +167,53 @@ FRONTEND_URL=http://localhost:5173
 - **Depends**: N/A (manager1 로그인 inline 포함, S1과 독립)
 - **Status**: active
 
+### S13: 이미지 프록시 — 정상 흐름 (J-8a)
+
+- **Command**: `GET /api/proxy/image?url=http://imgnews.naver.net/image/<path>.jpg`
+- **Precondition**: 백엔드 실행 중, `.env` 의 `IMAGE_PROXY_*` 5개 변수 설정 완료, 허용 도메인(imgnews.naver.net) URL 보유
+- **Env**: `BACKEND_URL`
+- **Expect**: 200 OK + `Content-Type: image/jpeg|png|webp|gif` + JPEG 매직 바이트 (`ffd8 ffe0`) + `Cache-Control: public, max-age=604800` + `Set-Cookie` 헤더 미전달
+- **Verify**: `status_code(200)`, `header_contains("cache-control", "public")`, `header_absent("set-cookie")`
+- **Depends**: N/A (인증 불필요)
+- **Status**: active
+
+### S14: 이미지 프록시 — SSRF private IP 차단 (J-8a)
+
+- **Command**: `GET /api/proxy/image?url=http://127.0.0.1/secret`
+- **Precondition**: `validate_proxy_host` 활성, `_PRIVATE_NETS` 8개 대역 등록
+- **Env**: `BACKEND_URL`
+- **Expect**: 403 Forbidden — 호스트가 화이트리스트 미매칭
+- **Verify**: `status_code(403)`
+- **Depends**: N/A
+- **Status**: active
+
+### S15: 이미지 프록시 — scheme 제한 (J-8a)
+
+- **Command**: `GET /api/proxy/image?url=file:///etc/passwd`
+- **Precondition**: scheme 화이트리스트 (http/https only) 활성
+- **Env**: `BACKEND_URL`
+- **Expect**: 422 Unprocessable Entity — scheme 미허용
+- **Verify**: `status_code(422)`
+- **Depends**: N/A
+- **Status**: active
+
+### S16: 이미지 프록시 — Content-Type 헤더 위조 차단 (J-8a, pytest 단위)
+
+- **Command**: `cd backend && poetry run pytest tests/test_image_proxy_mismatch.py`
+- **Precondition**: Poetry 환경 (`pydantic_settings` 설치). 시스템 Python pytest 실행 시 실패 — **Poetry 전용**
+- **Env**: `BACKEND_DIR=backend`
+- **Expect**: 1 passed — `fetch_proxied_image()` 가 mock(헤더=image/jpeg + body=PNG magic) 호출 시 HTTP 415 raise
+- **Verify**: pytest exit_code(0), `"불일치" in detail`
+- **Depends**: N/A
+- **Status**: active
+
 ---
 
 ## 실행 가이드
 
 ### 자동 실행
 ```powershell
-auto test run                    # 전체 12개
+auto test run                    # 전체 16개 (S1~S16)
 auto test run -s S1              # 단일 시나리오
 auto test run -s S4 -v           # 상세 출력
 auto test run --json             # JSON 결과
@@ -190,6 +230,8 @@ S1 (로그인) ─→ S4 (모델 검색) ─→ S5 (모델 상세)
 S1 ─→ S9, S10, S11
 S2, S3 (독립)
 S12 (manager1 별도 로그인 필요)
+S13~S15 (독립, 인증 불필요)
+S16 (Poetry pytest 환경 전제, 코드 통합 검증)
 ```
 
 ### 한계 / 보류

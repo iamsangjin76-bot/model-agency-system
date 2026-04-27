@@ -1,13 +1,13 @@
 # Canary Configuration — Model Agency Management System
 
-> 자동 생성: 2026-04-25 (`/auto setup`). 갱신: `/auto sync`.
+> 자동 생성: 2026-04-25 (`/auto setup`). 최종 갱신: 2026-04-26 (`/auto setup`, J-8a 후 H6 추가).
 
 ## Project Type: Frontend (React + Electron) + API (FastAPI)
 ## Backend Build: `cd backend && python -m uvicorn app.main:app --reload`
 ## Frontend Build: `cd frontend && npm run build`
 ## Deploy Platform: 로컬 개발 (Electron 패키징은 Phase I-1 예정)
 
-## Health Checks (5개)
+## Health Checks (6개, J-8a 후 H6 추가)
 
 | ID | Type | Target | Expect | Timeout |
 |----|------|--------|--------|---------|
@@ -16,6 +16,7 @@
 | H3 | endpoint | `GET http://localhost:8000/api/health` | status 200, `status="healthy"` | 5s |
 | H4 | browser | `http://localhost:5173/login` | LoginPage 렌더, no console errors | 15s |
 | H5 | browser | `http://localhost:5173/dashboard` (admin/admin1234 로그인 후) | DashboardHome 렌더, no console errors | 15s |
+| **H6** | endpoint | `GET http://localhost:8000/api/proxy/image?url=http://127.0.0.1/x` | status 403 (SSRF 방어 정상 — J-8a) | 5s |
 
 ## Detailed Specification
 
@@ -76,9 +77,20 @@ curl -sf http://localhost:8000/api/health
   - Console 에러 0건
   - 401 silent refresh 가 발생하면 자동 재시도 후 정상 렌더 (R13 검증)
 
+### H6: Image Proxy SSRF Defense (J-8a)
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000/api/proxy/image?url=http://127.0.0.1/x"
+```
+
+- **Validates**: J-8a 프록시 라우터 + `validate_proxy_host()` + `_PRIVATE_NETS` 차단 정상 동작.
+- **Pass criteria**: HTTP 403 (private IP 차단 — `127.0.0.1` 은 `_PRIVATE_NETS` 의 `127.0.0.0/8` 매칭).
+- **Fail signals**: 200/302 (SSRF 우회) → CRITICAL, 404 (라우터 미등록) → 중대.
+- **Source**: `backend/app/routers/proxy.py`, `backend/app/utils/security.py:validate_proxy_host`.
+
 ## 사전 조건
 
-H3, H4, H5 는 두 서버가 실행 중이어야 동작:
+H3, H4, H5, H6 은 백엔드 서버가 실행 중이어야 동작:
 
 ```powershell
 # 창 1: Backend (port 8000)
@@ -108,9 +120,9 @@ H1, H2 는 서버 실행 여부와 무관하게 즉시 가능.
 
 | 결과 | 조건 |
 |------|------|
-| **PASS** | H1~H5 모두 통과 + console 에러 없음 |
+| **PASS** | H1~H6 모두 통과 + console 에러 없음 |
 | **WARN** | 빌드 OK + 일부 E2E 실패 또는 비치명적 console warning |
-| **FAIL** | 빌드 실패 / Health endpoint 다운 / 페이지 렌더 실패 |
+| **FAIL** | 빌드 실패 / Health endpoint 다운 / 페이지 렌더 실패 / 프록시 SSRF 방어 우회 (H6 통과 못함) |
 
 ## 결과 저장
 
