@@ -275,9 +275,9 @@ function DashboardHome() {
 // 플레이스홀더 페이지
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <p className="text-gray-500">이 페이지는 개발 중입니다.</p>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+      <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">{title}</h2>
+      <p className="text-gray-500 dark:text-gray-400">이 페이지는 개발 중입니다.</p>
     </div>
   );
 }
