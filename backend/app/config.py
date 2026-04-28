@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     # 모델 폴더
     MODEL_FILES_DIR: str = "./model_files"
 
+    # YouTube Data API v3 (optional — enable at https://console.cloud.google.com)
+    # Can reuse GOOGLE_API_KEY if YouTube Data API v3 is enabled in the same project
+    YOUTUBE_API_KEY: Optional[str] = None
+
     # Instagram Graph API (optional — graceful degradation when unset)
     # Setup: https://developers.facebook.com → Business Discovery API
     INSTAGRAM_ACCESS_TOKEN: Optional[str] = None   # Long-lived token (60-day)

@@ -278,8 +278,24 @@ ROLE_PERMISSIONS = {
 }
 
 
+def _run_migrations(engine) -> None:
+    """Apply lightweight column additions for SQLite backward compatibility."""
+    from sqlalchemy import text, inspect as sa_inspect
+    with engine.connect() as conn:
+        existing = sa_inspect(engine).get_table_names()
+        # Add platform column to follower_snapshots if table exists but column missing
+        if "follower_snapshots" in existing:
+            cols = [r[1] for r in conn.execute(text("PRAGMA table_info(follower_snapshots)"))]
+            if "platform" not in cols:
+                conn.execute(text(
+                    "ALTER TABLE follower_snapshots ADD COLUMN platform VARCHAR(20) DEFAULT 'instagram'"
+                ))
+                conn.commit()
+
+
 def init_db():
     """데이터베이스 초기화"""
+    _run_migrations(engine)
     Base.metadata.create_all(bind=engine)
 
 

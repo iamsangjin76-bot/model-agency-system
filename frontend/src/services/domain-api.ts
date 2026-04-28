@@ -325,11 +325,15 @@ export interface SyncResult {
   duration_ms: number;
 }
 
+export interface SnsStatus {
+  instagram: boolean; youtube: boolean; any_configured: boolean;
+}
+
 export const snsAPI = {
   status: () =>
-    request<{ configured: boolean }>('/sns/status'),
+    request<SnsStatus>('/sns/status'),
   sync: (modelId: number) =>
-    request<SyncResult>(`/sns/sync/${modelId}`, { method: 'POST' }),
+    request<{ ok: boolean; instagram: any; youtube: any }>(`/sns/sync/${modelId}`, { method: 'POST' }),
   syncBatch: (modelType?: string) =>
     request<{ job_id: string; profile_count: number; status: string }>(
       `/sns/sync/batch${modelType ? `?model_type=${modelType}` : ''}`,
@@ -339,9 +343,9 @@ export const snsAPI = {
     request<{ id: string; status: string; profile_count: number; completed_count: number; failed_count: number }>(
       `/sns/jobs/${jobId}`
     ),
-  snapshots: (modelId: number, limit = 30) =>
-    request<{ model_id: number; items: FollowerSnapshot[] }>(
-      `/sns/snapshots/${modelId}?limit=${limit}`
+  snapshots: (modelId: number, platform = 'instagram', limit = 30) =>
+    request<{ model_id: number; platform: string; items: FollowerSnapshot[] }>(
+      `/sns/snapshots/${modelId}?platform=${platform}&limit=${limit}`
     ),
   media: (modelId: number, limit = 10) =>
     request<{ model_id: number; items: MediaMetric[] }>(

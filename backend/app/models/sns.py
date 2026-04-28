@@ -19,24 +19,25 @@ from .database import Base
 
 
 class FollowerSnapshot(Base):
-    """One row per sync event — follower/following/media counts at a point in time."""
+    """One row per sync event — follower/subscriber counts at a point in time."""
 
     __tablename__ = "follower_snapshots"
 
     id = Column(Integer, primary_key=True, index=True)
     model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
+    platform = Column(String(20), nullable=False, default="instagram")  # instagram | youtube
     snapshot_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     followers_count = Column(Integer, nullable=False)
     follows_count = Column(Integer)
     media_count = Column(Integer)
-    source = Column(String(20), nullable=False)   # graph_api | manual
+    source = Column(String(20), nullable=False)   # graph_api | youtube_api | manual
     raw_response = Column(JSON)                    # full API response (audit trail)
     sync_duration_ms = Column(Integer)
 
     model = relationship("Model", back_populates="follower_snapshots")
 
     __table_args__ = (
-        Index("idx_snap_model_time", "model_id", "snapshot_at"),
+        Index("idx_snap_model_platform_time", "model_id", "platform", "snapshot_at"),
     )
 
 
