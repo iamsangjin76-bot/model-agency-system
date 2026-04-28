@@ -239,7 +239,7 @@ export default function ImageSearchPage() {
                     <button key={m.id} onClick={() => saveToModel(m)}
                       className="w-full px-4 py-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-colors flex items-center justify-between">
                       <span className="font-medium text-gray-800 dark:text-gray-100">{m.name}</span>
-                      {m.english_name && <span className="text-sm text-gray-400 dark:text-gray-500">{m.english_name}</span>}
+                      {m.name_english && <span className="text-sm text-gray-400 dark:text-gray-500">{m.name_english}</span>}
                     </button>
                   ))}
                 </div>

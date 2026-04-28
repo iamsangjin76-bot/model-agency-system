@@ -163,7 +163,7 @@ YOUTUBE_API_KEY=your_key  # GOOGLE_API_KEY도 가능`}
                     className="w-full px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between gap-2">
                     <span className="font-medium text-gray-800 dark:text-gray-100">{m.name}</span>
                     <span className="text-xs text-gray-400 flex items-center gap-1">
-                      {m.instagram && <Instagram className="w-3 h-3 text-pink-400" />}
+                      {m.instagram_id && <Instagram className="w-3 h-3 text-pink-400" />}
                       {(m as any).youtube_id && <Youtube className="w-3 h-3 text-red-400" />}
                     </span>
                   </button>

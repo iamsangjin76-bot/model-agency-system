@@ -10,11 +10,29 @@ import { request } from './auth-api';
 // ---------------------------------------------------------------------------
 
 export interface Model {
-  id: number; name: string; english_name?: string; gender: string;
-  birth_date?: string; age?: number; height?: number; weight?: number;
+  id: number; name: string; gender: string;
+  name_english?: string;        // backend field (snake_case)
+  birth_date?: string; age?: number;
+  height?: number; weight?: number;
   bust?: number; waist?: number; hip?: number; shoe_size?: number;
-  phone?: string; email?: string; instagram?: string;
-  model_type?: string; is_exclusive?: boolean; profile_image?: string;
+  contact1?: string; email?: string;
+  agency_name?: string; agency_phone?: string;
+  model_type?: string; is_active?: boolean; profile_image?: string;
+  // SNS
+  instagram_id?: string; instagram_followers?: number;
+  youtube_id?: string; youtube_subscribers?: number;
+  tiktok_id?: string; tiktok_followers?: number;
+  // Career
+  career_broadcast?: string; career_movie?: string;
+  career_commercial?: string; career_print_ad?: string;
+  career_theater?: string; career_musical?: string;
+  career_fashion_show?: string; career_music_video?: string;
+  career_other?: string;
+  // Foreign model
+  nationality?: string; languages?: string;
+  visa_type?: string; entry_date?: string;
+  school?: string; debut?: string; hobby?: string; memo?: string;
+  keywords?: string;
 }
 
 export interface Client {
@@ -353,13 +371,43 @@ export const snsAPI = {
     ),
 };
 
+// ---------------------------------------------------------------------------
+// Export API — PPTX generation
+// ---------------------------------------------------------------------------
+
+export type ExportTemplateKey = 'new_model_a' | 'new_model_b' | 'influencer' | 'foreign_model';
+
+export const exportAPI = {
+  /**
+   * Download a PPTX file for the given model IDs.
+   * Returns a Blob for the caller to trigger a browser download.
+   */
+  pptx: async (modelIds: number[], template: ExportTemplateKey): Promise<Blob> => {
+    const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000/api';
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${API_BASE}/export/pptx`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ model_ids: modelIds, template }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'PPTX 생성 실패' }));
+      throw new Error(err.detail || 'PPTX 생성 실패');
+    }
+    return res.blob();
+  },
+};
+
 /** Default export grouping all domain namespaces. */
 const domainApi = {
   models: modelsAPI, clients: clientsAPI, castings: castingsAPI,
   contracts: contractsAPI, settlements: settlementsAPI,
   schedules: schedulesAPI, files: filesAPI, activityLogs: activityLogsAPI,
   notifications: notificationsAPI,
-  news: newsAPI, imageSearch: imageSearchAPI, sns: snsAPI,
+  news: newsAPI, imageSearch: imageSearchAPI, sns: snsAPI, export: exportAPI,
 };
 
 export default domainApi;

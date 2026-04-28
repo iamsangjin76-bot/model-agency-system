@@ -13,12 +13,15 @@ Endpoints:
 
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.models.database import get_db, Model
 from app.models.sns import FollowerSnapshot, MediaMetric, SyncJob
@@ -183,8 +186,8 @@ async def _run_batch(job_id: str, model_ids: list[int]) -> None:
                     if ig["followers_count"] is not None:
                         model.instagram_followers = ig["followers_count"]
                     ok = True
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("Batch IG sync failed for model %d: %s", mid, e)
             yt_id = (model.youtube_id or "").strip()
             if yt_id:
                 try:
@@ -198,8 +201,8 @@ async def _run_batch(job_id: str, model_ids: list[int]) -> None:
                     if yt["subscriber_count"] is not None:
                         model.youtube_subscribers = yt["subscriber_count"]
                     ok = True
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("Batch YT sync failed for model %d: %s", mid, e)
             if ok:
                 db.query(SyncJob).filter(SyncJob.id == job_id).update(
                     {"completed_count": SyncJob.completed_count + 1}
