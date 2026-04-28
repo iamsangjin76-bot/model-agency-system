@@ -7,10 +7,11 @@ import os
 
 from app.config import settings
 from app.models.database import init_db
+import app.models.sns  # noqa: F401 — ensure SNS tables are registered before init_db()
 from app.routers import (
     auth, models, clients, castings, contracts, settlements,
     schedules, files, media, stats, activity_logs, notifications,
-    token_refresh, news, image_search, proxy,
+    token_refresh, news, image_search, proxy, sns,
 )
 from app.services.token_service import cleanup_expired_tokens
 
@@ -71,6 +72,7 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["not
 app.include_router(news.router, prefix="/api/news", tags=["news"])
 app.include_router(image_search.router, prefix="/api/image-search", tags=["image-search"])
 app.include_router(proxy.router, prefix="/api/proxy", tags=["proxy"])
+app.include_router(sns.router, prefix="/api/sns", tags=["sns"])
 
 
 @app.get("/")

@@ -290,13 +290,72 @@ export const filesAPI = {
     request<{ ok: boolean; profile_image: string }>(`/models/${modelId}/files/${fileId}/set-profile`, { method: 'PATCH' }),
 };
 
+// ---------------------------------------------------------------------------
+// SNS Analytics types
+// ---------------------------------------------------------------------------
+
+export interface FollowerSnapshot {
+  id: number;
+  snapshot_at: string;
+  followers_count: number;
+  follows_count: number | null;
+  media_count: number | null;
+  source: string;
+  duration_ms: number | null;
+}
+
+export interface MediaMetric {
+  id: number;
+  media_id: string | null;
+  media_type: string | null;
+  posted_at: string | null;
+  like_count: number | null;
+  comment_count: number | null;
+  caption_excerpt: string | null;
+  permalink: string | null;
+}
+
+export interface SyncResult {
+  ok: boolean;
+  snapshot_id: number;
+  followers_count: number;
+  follows_count: number | null;
+  media_count: number | null;
+  posts_synced: number;
+  duration_ms: number;
+}
+
+export const snsAPI = {
+  status: () =>
+    request<{ configured: boolean }>('/sns/status'),
+  sync: (modelId: number) =>
+    request<SyncResult>(`/sns/sync/${modelId}`, { method: 'POST' }),
+  syncBatch: (modelType?: string) =>
+    request<{ job_id: string; profile_count: number; status: string }>(
+      `/sns/sync/batch${modelType ? `?model_type=${modelType}` : ''}`,
+      { method: 'POST' }
+    ),
+  job: (jobId: string) =>
+    request<{ id: string; status: string; profile_count: number; completed_count: number; failed_count: number }>(
+      `/sns/jobs/${jobId}`
+    ),
+  snapshots: (modelId: number, limit = 30) =>
+    request<{ model_id: number; items: FollowerSnapshot[] }>(
+      `/sns/snapshots/${modelId}?limit=${limit}`
+    ),
+  media: (modelId: number, limit = 10) =>
+    request<{ model_id: number; items: MediaMetric[] }>(
+      `/sns/media/${modelId}?limit=${limit}`
+    ),
+};
+
 /** Default export grouping all domain namespaces. */
 const domainApi = {
   models: modelsAPI, clients: clientsAPI, castings: castingsAPI,
   contracts: contractsAPI, settlements: settlementsAPI,
   schedules: schedulesAPI, files: filesAPI, activityLogs: activityLogsAPI,
   notifications: notificationsAPI,
-  news: newsAPI, imageSearch: imageSearchAPI,
+  news: newsAPI, imageSearch: imageSearchAPI, sns: snsAPI,
 };
 
 export default domainApi;

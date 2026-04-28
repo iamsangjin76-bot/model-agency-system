@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     # 모델 폴더
     MODEL_FILES_DIR: str = "./model_files"
 
+    # Instagram Graph API (optional — graceful degradation when unset)
+    # Setup: https://developers.facebook.com → Business Discovery API
+    INSTAGRAM_ACCESS_TOKEN: Optional[str] = None   # Long-lived token (60-day)
+    INSTAGRAM_MY_IG_USER_ID: Optional[str] = None  # Your own IG Business account ID
+
     # Search API credentials (optional — graceful degradation when unset)
     NAVER_CLIENT_ID: Optional[str] = None
     NAVER_CLIENT_SECRET: Optional[str] = None

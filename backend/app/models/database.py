@@ -158,6 +158,8 @@ class Model(Base):
     sns_data = relationship("SNSData", back_populates="model")
     saved_news = relationship("ModelNews", back_populates="model")
     search_images = relationship("ModelSearchImage", back_populates="model")
+    follower_snapshots = relationship("FollowerSnapshot", back_populates="model")
+    media_metrics = relationship("MediaMetric", back_populates="model")
 
 
 class ModelFile(Base):
