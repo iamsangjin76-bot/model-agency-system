@@ -6,8 +6,11 @@ Supports 4 template types: new_model_a, new_model_b, influencer, foreign_model.
 from __future__ import annotations
 
 import io
+import logging
 import os
 from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
 
 from pptx import Presentation
 from pptx.util import Cm, Pt
@@ -48,6 +51,7 @@ CAREER_FIELDS = [
     ("방송", "career_broadcast"), ("영화", "career_movie"),
     ("광고", "career_commercial"), ("지면광고", "career_print_ad"),
     ("패션쇼", "career_fashion_show"), ("뮤지컬", "career_musical"),
+    ("앨범", "career_album"), ("뮤직비디오", "career_music_video"),
     ("기타", "career_other"),
 ]
 
@@ -122,16 +126,24 @@ def _add_photo(
 
 
 def _resolve_path(url: Optional[str], upload_dir: str, model_files_dir: str) -> Optional[str]:
+    """Resolve a URL-style path to an absolute filesystem path.
+
+    Security: normalizes the result with os.path.abspath and verifies
+    the resolved path is strictly inside the allowed base directory to
+    prevent path-traversal attacks (e.g. '../../etc/passwd').
+    """
     if not url:
         return None
     for prefix, directory in [("/uploads/", upload_dir), ("/model_files/", model_files_dir)]:
         if url.startswith(prefix):
-            p = os.path.join(directory, url[len(prefix):])
-            if os.path.exists(p):
-                return p
-    # Raw filesystem path (fallback)
-    if os.path.exists(url):
-        return url
+            base = os.path.abspath(directory)
+            candidate = os.path.abspath(os.path.join(directory, url[len(prefix):]))
+            # Reject if candidate escapes the base directory
+            if not candidate.startswith(base + os.sep) and candidate != base:
+                logger.warning("Path traversal attempt blocked: %s", url)
+                return None
+            if os.path.exists(candidate):
+                return candidate
     return None
 
 
@@ -175,6 +187,8 @@ def _build_data(model: Any) -> dict:
         "career_print_ad": _str(model.career_print_ad),
         "career_fashion_show": _str(model.career_fashion_show),
         "career_musical": _str(model.career_musical),
+        "career_album": _str(getattr(model, "career_album", "")),
+        "career_music_video": _str(getattr(model, "career_music_video", "")),
         "career_other": _str(model.career_other),
         "visa_type": _str(model.visa_type) if hasattr(model, "visa_type") else "",
         "entry_date": str(model.entry_date) if hasattr(model, "entry_date") and model.entry_date else "",
