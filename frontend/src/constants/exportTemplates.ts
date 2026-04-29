@@ -1,7 +1,17 @@
 /**
  * Shared constants and types for model profile export templates.
  * Used by print utilities and export UI components.
+ *
+ * MODEL_TYPE_LABELS / GENDER_LABELS: re-exported from types/model.ts (single source of truth).
+ * PALETTE: export-specific hex color palette for PDF/PPTX rendering.
+ * MODEL_TYPE_BADGE_COLORS: Tailwind badge classes for the export UI list.
+ *
+ * NOTE: pptx_builder.py (backend) duplicates these labels in Python.
+ * Keep both in sync when adding new model types.
  */
+
+// Re-export label maps from the project-wide source of truth
+export { MODEL_TYPE_LABELS, GENDER_LABELS } from '../types/model';
 
 export type TemplateKey = 'new_model_a' | 'new_model_b' | 'influencer' | 'foreign_model';
 
@@ -54,16 +64,15 @@ export interface PrintModel {
   [key: string]: any;
 }
 
-export const MODEL_TYPE_LABELS: Record<string, string> = {
-  new_model: '신인 모델', influencer: '인플루언서',
-  foreign_model: '외국인 모델', celebrity: '연예인',
+/** Tailwind badge color classes for the export UI model list */
+export const MODEL_TYPE_BADGE_COLORS: Record<string, string> = {
+  new_model: 'bg-blue-100 text-blue-700',
+  influencer: 'bg-pink-100 text-pink-700',
+  foreign_model: 'bg-green-100 text-green-700',
+  celebrity: 'bg-purple-100 text-purple-700',
 };
 
-export const GENDER_LABELS: Record<string, string> = {
-  male: '남성', female: '여성', other: '기타',
-};
-
-/** Template color palettes */
+/** Hex color palettes for PDF/PPTX template rendering */
 export const PALETTE: Record<TemplateKey, { primary: string; bg: string }> = {
   new_model_a:   { primary: '#7c3aed', bg: '#f3f0ff' },
   new_model_b:   { primary: '#1f2937', bg: '#f9fafb' },

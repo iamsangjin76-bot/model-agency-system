@@ -52,6 +52,7 @@ TMPL: dict[str, dict] = {
 
 # ---------------------------------------------------------------------------
 # Label lookup tables
+# NOTE: Keep these values in sync with frontend/src/types/model.ts
 # ---------------------------------------------------------------------------
 
 MODEL_TYPE_LABELS = {

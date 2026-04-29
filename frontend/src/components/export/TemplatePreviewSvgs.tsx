@@ -5,6 +5,7 @@
 
 import React from 'react';
 import type { ExportTemplateKey } from '@/services/domain-api';
+import { MODEL_TYPE_LABELS, MODEL_TYPE_BADGE_COLORS } from '@/constants/exportTemplates';
 
 // ---------------------------------------------------------------------------
 // SVG preview components
@@ -138,18 +139,5 @@ export const TEMPLATES: Array<{
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Shared label / color maps used by export page and model list
-// ---------------------------------------------------------------------------
-
-export const MODEL_TYPE_LABELS: Record<string, string> = {
-  new_model: '신인 모델', influencer: '인플루언서',
-  foreign_model: '외국인 모델', celebrity: '연예인',
-};
-
-export const MODEL_TYPE_COLORS: Record<string, string> = {
-  new_model: 'bg-blue-100 text-blue-700',
-  influencer: 'bg-pink-100 text-pink-700',
-  foreign_model: 'bg-green-100 text-green-700',
-  celebrity: 'bg-purple-100 text-purple-700',
-};
+// Re-export from single source of truth so consumers only need one import
+export { MODEL_TYPE_LABELS, MODEL_TYPE_BADGE_COLORS as MODEL_TYPE_COLORS };
