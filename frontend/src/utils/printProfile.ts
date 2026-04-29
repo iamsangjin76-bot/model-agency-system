@@ -39,9 +39,10 @@ export async function printModels(
   models: PrintModel[],
   template: TemplateKey = 'new_model_a',
   win: Window,
+  onProgress?: (current: number, total: number) => void,
 ): Promise<void> {
   // Pre-fetch all profile images as base64 (popup is open but blank while this runs)
-  const resolved = await prefetchImages(models);
+  const resolved = await prefetchImages(models, onProgress);
 
   if (win.closed) return;
 

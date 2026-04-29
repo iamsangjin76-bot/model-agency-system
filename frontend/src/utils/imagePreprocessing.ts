@@ -44,12 +44,25 @@ export async function toBase64DataUri(path: string): Promise<string> {
 /**
  * Pre-fetch all model profile images as base64 data URIs.
  * Returns new model objects with profile_image replaced by data URI.
+ *
+ * @param onProgress - Optional callback fired after each image resolves.
+ *                     Receives (completedCount, totalCount).
  */
-export async function prefetchImages(models: PrintModel[]): Promise<PrintModel[]> {
+export async function prefetchImages(
+  models: PrintModel[],
+  onProgress?: (current: number, total: number) => void,
+): Promise<PrintModel[]> {
+  const total = models.length;
+  let completed = 0;
+
   return Promise.all(
     models.map(async (m) => {
-      if (!m.profile_image) return m;
+      if (!m.profile_image) {
+        onProgress?.(++completed, total);
+        return m;
+      }
       const dataUri = await toBase64DataUri(m.profile_image);
+      onProgress?.(++completed, total);
       return { ...m, profile_image: dataUri || m.profile_image };
     })
   );

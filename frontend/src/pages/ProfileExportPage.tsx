@@ -25,6 +25,7 @@ export default function ProfileExportPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<ExportTemplateKey>('new_model_a');
   const [format, setFormat] = useState<'pdf' | 'pptx'>('pdf');
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState<{ current: number; total: number } | null>(null);
 
   const fetchModels = useCallback(async () => {
     setIsLoading(true);
@@ -71,10 +72,17 @@ export default function ProfileExportPage() {
     }
 
     setIsExporting(true);
+    setExportProgress(null);
     try {
       if (format === 'pdf' && printWin) {
         const details = await Promise.all(ids.map(id => modelsAPI.get(id)));
-        await printModels(details as any[], selectedTemplate as TemplateKey, printWin);
+        setExportProgress({ current: 0, total: details.length });
+        await printModels(
+          details as any[],
+          selectedTemplate as TemplateKey,
+          printWin,
+          (current, total) => setExportProgress({ current, total }),
+        );
         toast.success(`${details.length}명의 PDF를 준비했습니다. 인쇄 창이 열립니다.`);
       } else {
         const blob = await exportAPI.pptx(ids, selectedTemplate);
@@ -93,6 +101,7 @@ export default function ProfileExportPage() {
       toast.error(e?.message || '내보내기에 실패했습니다.');
     } finally {
       setIsExporting(false);
+      setExportProgress(null);
     }
   };
 
@@ -114,6 +123,26 @@ export default function ProfileExportPage() {
             : <><Download className="w-5 h-5" />{format === 'pdf' ? 'PDF' : 'PPT'} 내보내기{selected.size > 0 ? ` (${selected.size}명)` : ''}</>}
         </button>
       </div>
+
+      {/* Image prefetch progress bar (PDF only) */}
+      {isExporting && exportProgress && format === 'pdf' && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl px-5 py-4 shadow-sm border border-purple-200 dark:border-purple-700">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+              이미지 로딩 중...
+            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {exportProgress.current} / {exportProgress.total}명
+            </span>
+          </div>
+          <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div
+              className="h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300"
+              style={{ width: `${Math.round((exportProgress.current / exportProgress.total) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Template selection */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
