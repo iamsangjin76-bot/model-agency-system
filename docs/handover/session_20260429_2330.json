@@ -1,0 +1,120 @@
+{
+  "session_date": "2026-04-29",
+  "session_id": "session_20260429_2330",
+  "last_commit": "17ed6c1b",
+  "git_branch": "master",
+  "git_status": "dirty",
+  "git_note": "CLAUDE.md modified (JARVIS rules added), not yet committed",
+  "origin_ahead": 6,
+
+  "completed_tasks": [
+    {
+      "commit": "bf51a690",
+      "description": "Security fix: path traversal in _resolve_path + schema fix: career_album/music_video added to CAREER_FIELDS + docs folder restructure",
+      "files": [
+        "backend/app/services/pptx_service.py",
+        "docs/handover/ (40 files)",
+        "docs/ARCHITECTURE.md",
+        "docs/CHANGELOG.md",
+        "docs/IMPLEMENTATION_PLAN.md",
+        "docs/Autopus-adk_README.ko.md"
+      ]
+    },
+    {
+      "commit": "e67bad66",
+      "description": "File split refactoring: all oversized files brought under 300-line rule",
+      "files": [
+        "frontend/src/constants/exportTemplates.ts",
+        "frontend/src/utils/imagePreprocessing.ts",
+        "frontend/src/utils/printHelpers.ts",
+        "frontend/src/utils/printCards.ts",
+        "frontend/src/utils/printProfile.ts",
+        "frontend/src/components/export/TemplatePreviewSvgs.tsx",
+        "frontend/src/components/export/ModelSelectList.tsx",
+        "frontend/src/pages/ProfileExportPage.tsx",
+        "backend/app/services/pptx_builder.py",
+        "backend/app/services/pptx_renderer.py",
+        "backend/app/services/pptx_service.py"
+      ]
+    },
+    {
+      "commit": "513a6bda",
+      "description": "Deduplicate constants: MODEL_TYPE_LABELS/GENDER_LABELS unified to types/model.ts",
+      "files": [
+        "frontend/src/constants/exportTemplates.ts",
+        "frontend/src/components/export/TemplatePreviewSvgs.tsx",
+        "backend/app/services/pptx_builder.py"
+      ]
+    },
+    {
+      "commit": "6ed8d4e8",
+      "description": "UX: image prefetch progress bar added for PDF export",
+      "files": [
+        "frontend/src/utils/imagePreprocessing.ts",
+        "frontend/src/utils/printProfile.ts",
+        "frontend/src/pages/ProfileExportPage.tsx"
+      ]
+    },
+    {
+      "commit": "17ed6c1b",
+      "description": "Cleanup: staged deletions for files moved to docs/",
+      "files": [
+        "ARCHITECTURE.md (deleted)",
+        "Autopus-adk_README.ko.md (deleted)",
+        "CHANGELOG.md (deleted)",
+        "IMPLEMENTATION_PLAN.md (deleted)",
+        "handover/인수인계_문서_20260425_v18.md (deleted)"
+      ]
+    }
+  ],
+
+  "pending_tasks": [
+    {
+      "priority": "medium",
+      "description": "Remove duplicate MODEL_TYPE_COLORS from ModelDetailPage.tsx — import from types/model.ts instead",
+      "files": ["frontend/src/pages/ModelDetailPage.tsx"],
+      "line": 16,
+      "note": "Spawn task chip was created in session"
+    },
+    {
+      "priority": "low",
+      "description": "Decide whether to git push to origin/master (currently 6 commits ahead)",
+      "files": [],
+      "note": "Requires Jin's approval"
+    }
+  ],
+
+  "resolved_issues": [
+    { "issue": "Path traversal vulnerability in _resolve_path()", "status": "fixed", "commit": "bf51a690" },
+    { "issue": "career_album and career_music_video missing from CAREER_FIELDS", "status": "fixed", "commit": "bf51a690" },
+    { "issue": "3 files over 300-line limit", "status": "fixed", "commit": "e67bad66" },
+    { "issue": "Duplicate constants in 3 places", "status": "fixed", "commit": "513a6bda" },
+    { "issue": "No progress indicator during image prefetch (10-20s wait)", "status": "fixed", "commit": "6ed8d4e8" },
+    { "issue": "Moved files not staged as deleted in git", "status": "fixed", "commit": "17ed6c1b" }
+  ],
+
+  "known_issues": [
+    {
+      "file": "frontend/src/pages/ModelDetailPage.tsx",
+      "line": 16,
+      "description": "MODEL_TYPE_COLORS defined locally instead of imported from types/model.ts",
+      "severity": "low"
+    }
+  ],
+
+  "file_line_counts": {
+    "frontend/src/constants/exportTemplates.ts": 81,
+    "frontend/src/utils/imagePreprocessing.ts": 77,
+    "frontend/src/utils/printHelpers.ts": 195,
+    "frontend/src/utils/printCards.ts": 233,
+    "frontend/src/utils/printProfile.ts": 68,
+    "frontend/src/components/export/TemplatePreviewSvgs.tsx": 143,
+    "frontend/src/components/export/ModelSelectList.tsx": 134,
+    "frontend/src/pages/ProfileExportPage.tsx": 285,
+    "backend/app/services/pptx_builder.py": 163,
+    "backend/app/services/pptx_renderer.py": 239,
+    "backend/app/services/pptx_service.py": 57
+  },
+
+  "next_action": "Start next session with: git log --oneline -10 && check ModelDetailPage.tsx spawn task"
+}
