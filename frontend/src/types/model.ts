@@ -13,21 +13,21 @@ export enum Gender {
   OTHER = 'other',
 }
 
-export const MODEL_TYPE_LABELS: Record<ModelType, string> = {
+export const MODEL_TYPE_LABELS: Record<string, string> = {
   [ModelType.NEW_MODEL]: '신인 모델',
   [ModelType.INFLUENCER]: '인플루언서',
   [ModelType.FOREIGN_MODEL]: '외국인 모델',
   [ModelType.CELEBRITY]: '연예인',
 };
 
-export const MODEL_TYPE_COLORS: Record<ModelType, string> = {
+export const MODEL_TYPE_COLORS: Record<string, string> = {
   [ModelType.NEW_MODEL]: 'bg-blue-500',
   [ModelType.INFLUENCER]: 'bg-purple-500',
   [ModelType.FOREIGN_MODEL]: 'bg-green-500',
   [ModelType.CELEBRITY]: 'bg-red-500',
 };
 
-export const GENDER_LABELS: Record<Gender, string> = {
+export const GENDER_LABELS: Record<string, string> = {
   [Gender.MALE]: '남성',
   [Gender.FEMALE]: '여성',
   [Gender.OTHER]: '기타',
