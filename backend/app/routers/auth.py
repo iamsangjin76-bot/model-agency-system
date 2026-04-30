@@ -178,6 +178,23 @@ async def update_admin(admin_id: int, admin_update: AdminUpdate, db: Session = D
     return admin
 
 
+@router.post("/admins/{admin_id}/reset-password")
+async def reset_admin_password(admin_id: int, data: dict, db: Session = Depends(get_db),
+                               current_user: Admin = Depends(get_current_active_user)):
+    """Reset another user's password (SUPER_ADMIN only)."""
+    if current_user.role != AdminRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="최고 관리자만 비밀번호를 변경할 수 있습니다")
+    admin = db.query(Admin).filter(Admin.id == admin_id).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다")
+    new_pw = data.get("new_password", "")
+    if len(new_pw) < 6:
+        raise HTTPException(status_code=400, detail="비밀번호는 6자 이상이어야 합니다")
+    admin.password_hash = get_password_hash(new_pw)
+    db.commit()
+    return {"message": "비밀번호가 변경되었습니다"}
+
+
 @router.delete("/admins/{admin_id}")
 async def delete_admin(admin_id: int, db: Session = Depends(get_db),
                        current_user: Admin = Depends(require_permission("admin", "delete"))):
