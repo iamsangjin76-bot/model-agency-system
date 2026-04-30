@@ -78,16 +78,40 @@ app.include_router(export.router, prefix="/api/export", tags=["export"])
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Model Agency Management System API",
-        "version": settings.APP_VERSION,
-        "docs": "/docs",
-    }
+    """Serve frontend SPA at root, or API info if dist not built."""
+    from fastapi.responses import FileResponse
+    _idx = os.path.join(_FRONTEND_DIST, "index.html")
+    if os.path.exists(_idx):
+        return FileResponse(_idx)
+    return {"message": "Model Agency Management System API", "version": settings.APP_VERSION, "docs": "/docs"}
 
 
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "version": settings.APP_VERSION}
+
+
+# Serve built frontend (SPA) — mount AFTER all API routes
+_FRONTEND_DIST = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "dist")
+)
+print(f"[SPA] dist path: {_FRONTEND_DIST} | exists: {os.path.exists(_FRONTEND_DIST)}")
+if os.path.exists(_FRONTEND_DIST):
+    from fastapi.responses import FileResponse as _FR, JSONResponse as _JR
+    from fastapi.staticfiles import StaticFiles as _SF
+    from starlette.requests import Request as _Req
+
+    # Serve CSS/JS/image assets
+    _assets_dir = os.path.join(_FRONTEND_DIST, "assets")
+    if os.path.exists(_assets_dir):
+        app.mount("/assets", _SF(directory=_assets_dir), name="spa-assets")
+
+    # SPA catch-all: serve index.html for any non-API 404
+    @app.exception_handler(404)
+    async def spa_404(_req: _Req, _exc):
+        if _req.url.path.startswith("/api/"):
+            return _JR({"detail": "Not Found"}, status_code=404)
+        return _FR(os.path.join(_FRONTEND_DIST, "index.html"))
 
 
 if __name__ == "__main__":
