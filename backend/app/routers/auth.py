@@ -194,6 +194,24 @@ async def delete_admin(admin_id: int, db: Session = Depends(get_db),
     return {"message": "관리자가 삭제되었습니다"}
 
 
+@router.post("/change-password")
+async def change_password(
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user: Admin = Depends(get_current_active_user),
+):
+    """Allow the currently logged-in user to change their own password."""
+    current_pw = data.get("current_password", "")
+    new_pw = data.get("new_password", "")
+    if not verify_password(current_pw, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="현재 비밀번호가 올바르지 않습니다")
+    if len(new_pw) < 6:
+        raise HTTPException(status_code=400, detail="비밀번호는 6자 이상이어야 합니다")
+    current_user.password_hash = get_password_hash(new_pw)
+    db.commit()
+    return {"message": "비밀번호가 변경되었습니다"}
+
+
 @router.post("/init-super-admin")
 async def init_super_admin(db: Session = Depends(get_db)):
     """Create the initial super-admin (one-time only)."""
