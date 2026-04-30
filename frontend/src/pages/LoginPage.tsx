@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage() {
@@ -10,8 +9,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isInitMode, setIsInitMode] = useState(false);
-  const [name, setName] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,22 +20,6 @@ export default function LoginPage() {
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || '로그인에 실패했습니다');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await authAPI.initSuperAdmin(username, password, name);
-      await login(username, password);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || '초기화에 실패했습니다');
     } finally {
       setLoading(false);
     }
@@ -60,26 +41,10 @@ export default function LoginPage() {
         {/* Login Card */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
           <h2 className="text-2xl font-semibold text-white mb-6 text-center">
-            {isInitMode ? '최초 관리자 설정' : '로그인'}
+            로그인
           </h2>
 
-          <form onSubmit={isInitMode ? handleInit : handleLogin} className="space-y-5">
-            {isInitMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  이름
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  placeholder="관리자 이름"
-                  required
-                />
-              </div>
-            )}
-
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 아이디
@@ -127,18 +92,9 @@ export default function LoginPage() {
                   </svg>
                   처리 중...
                 </span>
-              ) : isInitMode ? '관리자 생성 및 로그인' : '로그인'}
+              ) : '로그인'}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsInitMode(!isInitMode)}
-              className="text-sm text-gray-400 hover:text-purple-400 transition"
-            >
-              {isInitMode ? '로그인으로 돌아가기' : '최초 관리자 설정'}
-            </button>
-          </div>
         </div>
 
         {/* Footer */}
