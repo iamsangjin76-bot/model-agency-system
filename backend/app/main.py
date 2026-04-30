@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     try:
         existing = db.query(Admin).first()
         if not existing:
-            super_admin = Admin(
+            existing = Admin(
                 username="admin",
                 password_hash=get_password_hash("ProjectM2026!"),
                 name="조해은",
@@ -37,15 +37,15 @@ async def lifespan(app: FastAPI):
                 role=AdminRole.SUPER_ADMIN,
                 permissions=ROLE_PERMISSIONS.get(AdminRole.SUPER_ADMIN, {}),
             )
-            db.add(super_admin)
+            db.add(existing)
             db.commit()
             print("[OK] Default super admin created: admin / ProjectM2026!")
         # Reset admin password if RESET_ADMIN_PASSWORD env var is set
         reset_pw = os.environ.get("RESET_ADMIN_PASSWORD", "")
-        if reset_pw and existing:
+        if reset_pw:
             existing.password_hash = get_password_hash(reset_pw)
             db.commit()
-            print(f"[OK] Admin password reset via RESET_ADMIN_PASSWORD env var")
+            print("[OK] Admin password reset via RESET_ADMIN_PASSWORD env var")
         deleted = cleanup_expired_tokens(db)
         print(f"[OK] Token cleanup: {deleted} expired tokens removed")
     finally:
