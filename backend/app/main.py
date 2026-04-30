@@ -27,7 +27,8 @@ async def lifespan(app: FastAPI):
     from app.routers.auth import get_password_hash
     db = SessionLocal()
     try:
-        if not db.query(Admin).first():
+        existing = db.query(Admin).first()
+        if not existing:
             super_admin = Admin(
                 username="admin",
                 password_hash=get_password_hash("ProjectM2026!"),
@@ -39,6 +40,12 @@ async def lifespan(app: FastAPI):
             db.add(super_admin)
             db.commit()
             print("[OK] Default super admin created: admin / ProjectM2026!")
+        # Reset admin password if RESET_ADMIN_PASSWORD env var is set
+        reset_pw = os.environ.get("RESET_ADMIN_PASSWORD", "")
+        if reset_pw and existing:
+            existing.password_hash = get_password_hash(reset_pw)
+            db.commit()
+            print(f"[OK] Admin password reset via RESET_ADMIN_PASSWORD env var")
         deleted = cleanup_expired_tokens(db)
         print(f"[OK] Token cleanup: {deleted} expired tokens removed")
     finally:
