@@ -11,7 +11,7 @@ import app.models.sns  # noqa: F401 — ensure SNS tables are registered before 
 from app.routers import (
     auth, models, clients, castings, contracts, settlements,
     schedules, files, media, stats, activity_logs, notifications,
-    token_refresh, news, image_search, proxy, sns, export,
+    token_refresh, news, image_search, proxy, sns, export, backup,
 )
 from app.services.token_service import cleanup_expired_tokens
 
@@ -74,6 +74,7 @@ app.include_router(image_search.router, prefix="/api/image-search", tags=["image
 app.include_router(proxy.router, prefix="/api/proxy", tags=["proxy"])
 app.include_router(sns.router, prefix="/api/sns", tags=["sns"])
 app.include_router(export.router, prefix="/api/export", tags=["export"])
+app.include_router(backup.router, prefix="/api/backup", tags=["backup"])
 
 
 @app.get("/")
