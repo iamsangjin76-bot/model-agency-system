@@ -22,10 +22,23 @@ async def lifespan(app: FastAPI):
     init_db()
     print("[OK] Database initialized")
 
-    # Clean up expired refresh tokens on startup
-    from app.models.database import SessionLocal
+    # Auto-create super admin if no admin exists
+    from app.models.database import SessionLocal, Admin, AdminRole, ROLE_PERMISSIONS
+    from app.routers.auth import get_password_hash
     db = SessionLocal()
     try:
+        if not db.query(Admin).first():
+            super_admin = Admin(
+                username="admin",
+                password_hash=get_password_hash("ProjectM2026!"),
+                name="조해은",
+                email="admin@project-m.co.kr",
+                role=AdminRole.SUPER_ADMIN,
+                permissions=ROLE_PERMISSIONS.get(AdminRole.SUPER_ADMIN, {}),
+            )
+            db.add(super_admin)
+            db.commit()
+            print("[OK] Default super admin created: admin / ProjectM2026!")
         deleted = cleanup_expired_tokens(db)
         print(f"[OK] Token cleanup: {deleted} expired tokens removed")
     finally:
