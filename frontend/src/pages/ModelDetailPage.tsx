@@ -5,26 +5,7 @@ import { ArrowLeft, Edit, Trash2, User } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import Spinner from '@/components/ui/Spinner';
 import ModelInfoSections from '@/components/model-detail/ModelInfoSections';
-
-const MODEL_TYPE_LABELS: Record<string, string> = {
-  new_model: '신인 모델',
-  influencer: '인플루언서',
-  foreign_model: '외국인 모델',
-  celebrity: '연예인',
-};
-
-const MODEL_TYPE_COLORS: Record<string, string> = {
-  new_model: 'bg-blue-500',
-  influencer: 'bg-purple-500',
-  foreign_model: 'bg-green-500',
-  celebrity: 'bg-red-500',
-};
-
-const GENDER_LABELS: Record<string, string> = {
-  male: '남성',
-  female: '여성',
-  other: '기타',
-};
+import { MODEL_TYPE_LABELS, MODEL_TYPE_COLORS, GENDER_LABELS } from '@/types/model';
 
 // Calculate age from a YYYY-MM-DD birth date string
 function calcAge(birthDate?: string): string {
