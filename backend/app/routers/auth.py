@@ -212,15 +212,4 @@ async def change_password(
     return {"message": "비밀번호가 변경되었습니다"}
 
 
-@router.post("/init-super-admin")
-async def init_super_admin(db: Session = Depends(get_db)):
-    """Create the initial super-admin (one-time only)."""
-    if db.query(Admin).first():
-        raise HTTPException(status_code=400, detail="이미 관리자가 존재합니다")
-    super_admin = Admin(username="admin", password_hash=get_password_hash("admin123"),
-                        name="시스템 관리자", email="admin@agency.com",
-                        role=AdminRole.SUPER_ADMIN,
-                        permissions=ROLE_PERMISSIONS.get(AdminRole.SUPER_ADMIN, {}))
-    db.add(super_admin)
-    db.commit()
-    return {"message": "슈퍼 관리자가 생성되었습니다", "username": "admin", "password": "admin123"}
+# init-super-admin endpoint removed after initial setup
