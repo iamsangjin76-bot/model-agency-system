@@ -17,26 +17,17 @@ from app.models.database import Admin
 
 router = APIRouter()
 
-# Backup secret key from env (set in Railway Variables)
-BACKUP_SECRET = os.environ.get("BACKUP_SECRET_KEY", "")
-
-
-def _require_backup_secret(x_backup_secret: str = Header(...)):
-    """Validate the backup secret key header."""
-    if not BACKUP_SECRET:
-        raise HTTPException(status_code=503, detail="Backup not configured")
-    if x_backup_secret != BACKUP_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid backup secret")
-
 
 @router.get("/download")
 async def download_backup(
-    _: None = Depends(_require_backup_secret),
+    current_user: Admin = Depends(get_current_active_user),
 ):
     """
     Download a zip archive containing the SQLite DB and uploads.
-    Requires X-Backup-Secret header matching BACKUP_SECRET_KEY env var.
+    Requires super_admin authentication.
     """
+    if current_user.role != AdminRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="최고 관리자만 백업을 다운로드할 수 있습니다")
     # Resolve paths
     db_url = settings.DATABASE_URL  # e.g. sqlite:////data/model_agency.db
     if db_url.startswith("sqlite:///"):
