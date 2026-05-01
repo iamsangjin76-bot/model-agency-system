@@ -117,3 +117,20 @@ class ImageSaveResponse(BaseModel):
     failed: int
     duplicates: int
     items: List[SavedSearchImage]
+
+
+# ---------------------------------------------------------------------------
+# ORM → schema conversion helper
+# ---------------------------------------------------------------------------
+
+def to_saved_search_image(r: object) -> SavedSearchImage:
+    """Convert a ModelSearchImage ORM row to SavedSearchImage schema."""
+    return SavedSearchImage(
+        id=r.id, model_id=r.model_id,  # type: ignore[attr-defined]
+        original_url=r.original_url, local_path=r.local_path,
+        filename=r.filename, width=r.width, height=r.height,
+        file_size=r.file_size, source=r.source,
+        provider=r.provider, memo=r.memo,
+        is_portfolio=r.is_portfolio,
+        created_at=r.created_at.isoformat() if r.created_at else "",
+    )

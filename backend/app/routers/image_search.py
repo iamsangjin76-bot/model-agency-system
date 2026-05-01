@@ -29,6 +29,7 @@ from app.models.search import ModelSearchImage
 from app.routers.auth import require_permission
 from app.schemas.search import (
     ImageSearchResult, ImageSaveRequest, ImageSaveResponse, SavedSearchImage,
+    to_saved_search_image as _to_saved,
 )
 from app.services.search_service import search_images as _search_images
 from app.utils.security import validate_image_url, validate_magic_bytes
@@ -291,18 +292,3 @@ def delete_image(
     db.commit()
     return {"message": "삭제되었습니다"}
 
-
-# ---------------------------------------------------------------------------
-# Internal helper
-# ---------------------------------------------------------------------------
-
-def _to_saved(r: ModelSearchImage) -> SavedSearchImage:
-    return SavedSearchImage(
-        id=r.id, model_id=r.model_id,
-        original_url=r.original_url, local_path=r.local_path,
-        filename=r.filename, width=r.width, height=r.height,
-        file_size=r.file_size, source=r.source,
-        provider=r.provider, memo=r.memo,
-        is_portfolio=r.is_portfolio,
-        created_at=r.created_at.isoformat() if r.created_at else "",
-    )

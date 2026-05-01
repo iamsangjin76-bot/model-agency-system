@@ -7,7 +7,7 @@ Run with: python -m app.seed  (from the backend/ directory)
 from datetime import date
 import bcrypt
 
-from app.models.database import SessionLocal, Admin, Model, AdminRole, ModelType, Gender, ActivityLog
+from app.models.database import SessionLocal, Admin, Model, AdminRole, ModelType, Gender, ActivityLog, Base, engine
 from app.routers.clients import Client, ClientGrade, Industry
 from app.routers.castings import Casting, CastingType, CastingStatus
 from app.routers.contracts import Contract, ContractType, ContractStatus
@@ -267,15 +267,7 @@ def seed_activity_logs(db, admin_ids: dict):
 
 def run():
     """Orchestrate seeding in FK-safe order with a single transaction."""
-    # Ensure all tables exist before inserting
-    from app.models.database import Base, engine
-    from app.routers.clients import Client
-    from app.routers.castings import Casting
-    from app.routers.contracts import Contract
-    from app.routers.schedules import Schedule
-    from app.routers.settlements import Settlement
     Base.metadata.create_all(bind=engine)
-
     db = SessionLocal()
     try:
         admin_ids, a_ins, a_sk = seed_admins(db)
@@ -286,20 +278,15 @@ def run():
         sc_ins, sc_sk = seed_schedules(db, model_ids, client_ids, casting_ids)
         se_ins, se_sk = seed_settlements(db, contract_ids, model_ids, client_ids)
         al_ins, al_sk = seed_activity_logs(db, admin_ids)
-
         db.commit()
-
-        total_ins = a_ins + cl_ins + m_ins + ca_ins + co_ins + sc_ins + se_ins + al_ins
+        stats = [("admins", a_ins, a_sk), ("clients", cl_ins, cl_sk), ("models", m_ins, m_sk),
+                 ("castings", ca_ins, ca_sk), ("contracts", co_ins, co_sk),
+                 ("schedules", sc_ins, sc_sk), ("settlements", se_ins, se_sk),
+                 ("activity_logs", al_ins, al_sk)]
         print("=== Seed 완료 ===")
-        print(f"admins:        {a_ins}건 삽입 ({a_sk}건 스킵)")
-        print(f"clients:       {cl_ins}건 삽입 ({cl_sk}건 스킵)")
-        print(f"models:        {m_ins}건 삽입 ({m_sk}건 스킵)")
-        print(f"castings:      {ca_ins}건 삽입 ({ca_sk}건 스킵)")
-        print(f"contracts:     {co_ins}건 삽입 ({co_sk}건 스킵)")
-        print(f"schedules:     {sc_ins}건 삽입 ({sc_sk}건 스킵)")
-        print(f"settlements:   {se_ins}건 삽입 ({se_sk}건 스킵)")
-        print(f"activity_logs: {al_ins}건 삽입 ({al_sk}건 스킵)")
-        print(f"총계:          {total_ins}건 삽입")
+        for lbl, ins, sk in stats:
+            print(f"{lbl:14s}: {ins}건 삽입 ({sk}건 스킵)")
+        print(f"총계:          {sum(x[1] for x in stats)}건 삽입")
     except Exception:
         db.rollback()
         raise

@@ -248,50 +248,11 @@ class ShareLink(Base):
     created_by = Column(Integer, ForeignKey("admins.id"))
 
 
-# ============ 권한 설정 ============
-
-# 사용 가능한 모든 권한 목록
-ALL_PERMISSIONS = {
-    "model": "모델 관리",
-    "news": "뉴스 검색",
-    "image": "이미지 검색",
-    "profile": "프로필 다운로드",
-    "sns": "SNS 분석",
-    "casting": "캐스팅 관리",
-    "client": "고객 관리",
-    "schedule": "일정 관리",
-    "contract": "계약 관리",
-    "settlement": "정산 관리",
-    "share": "외부 공유",
-    "settings": "시스템 설정",
-}
-
-# 최고관리자 기본 권한 (모든 권한)
-SUPER_ADMIN_PERMISSIONS = list(ALL_PERMISSIONS.keys()) + ["admin"]
-
-# 일반 사용자 기본 권한 (없음 - 최고관리자가 설정)
-DEFAULT_USER_PERMISSIONS = []
-
-ROLE_PERMISSIONS = {
-    AdminRole.SUPER_ADMIN: {
-        "model": ["create", "read", "update", "delete", "export"],
-        "admin": ["create", "read", "update", "delete"],
-        "news": ["search", "save", "delete"],
-        "image": ["search", "save", "delete"],
-        "profile": ["generate", "download", "share"],
-        "sns": ["fetch", "view"],
-        "casting": ["create", "read", "update", "delete"],
-        "client": ["create", "read", "update", "delete"],
-        "schedule": ["create", "read", "update", "delete"],
-        "contract": ["create", "read", "update", "delete"],
-        "settlement": ["create", "read", "update", "delete"],
-        "share": ["create", "read", "delete"],
-        "settings": ["view", "modify"],
-    },
-    AdminRole.USER: {
-        # 기본값은 비어있음, 최고관리자가 개별 설정
-    },
-}
+# Permission constants live in models/permissions.py.
+# Re-imported here so that `from app.models.database import ROLE_PERMISSIONS` keeps working.
+from app.models.permissions import (  # noqa: E402, F401
+    ALL_PERMISSIONS, SUPER_ADMIN_PERMISSIONS, DEFAULT_USER_PERMISSIONS, ROLE_PERMISSIONS,
+)
 
 
 def _run_migrations(engine) -> None:
@@ -328,37 +289,6 @@ if __name__ == "__main__":
     init_db()
     print("Database initialized successfully!")
 
-class ActivityLog(Base):
-    """활동 로그 테이블"""
-    __tablename__ = "activity_logs"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    admin_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
-    action = Column(String(50), nullable=False)  # create, update, delete, login, logout
-    target_type = Column(String(50))  # model, client, casting, contract, etc.
-    target_id = Column(Integer)
-    target_name = Column(String(200))  # 이름이나 타이틀
-    details = Column(Text)  # 상세 내용
-    ip_address = Column(String(50))
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class Notification(Base):
-    """알림 테이블"""
-    __tablename__ = "notifications"
-
-    id = Column(Integer, primary_key=True, index=True)
-    admin_id = Column(Integer, ForeignKey("admins.id"), nullable=False)
-    title = Column(String(100), nullable=False)
-    message = Column(Text)
-    notification_type = Column(String(50))  # casting, contract, settlement, system
-    is_read = Column(Boolean, default=False)
-    link_url = Column(String(200))  # link URL navigated on click
-    target_type = Column(String(50), nullable=True)   # entity type: casting, settlement, model
-    target_id = Column(Integer, nullable=True)         # entity ID for dedup and linking
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    __table_args__ = (
-        Index("idx_notifications_admin_unread", "admin_id", "is_read"),
-        Index("idx_notifications_admin_created", "admin_id", "created_at"),
-        Index("idx_notifications_target", "target_type", "target_id"),
-    )
+# ActivityLog and Notification live in models/activity.py.
+# Re-imported here so that `from app.models.database import ActivityLog` keeps working.
+from app.models.activity import ActivityLog, Notification  # noqa: E402, F401

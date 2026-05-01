@@ -34,6 +34,7 @@ from app.services.youtube_service import (
     YouTubeAPIError, YouTubeNotConfiguredError,
     fetch_channel as yt_fetch,
 )
+from app.services.sns_batch_service import run_batch as _run_batch
 
 router = APIRouter()
 
@@ -159,69 +160,6 @@ async def sync_model(
 # ---------------------------------------------------------------------------
 # POST /sync/batch
 # ---------------------------------------------------------------------------
-
-async def _run_batch(job_id: str, model_ids: list[int]) -> None:
-    from app.models.database import SessionLocal
-    db = SessionLocal()
-    try:
-        db.query(SyncJob).filter(SyncJob.id == job_id).update({"status": "running"})
-        db.commit()
-        for mid in model_ids:
-            model = db.query(Model).filter(Model.id == mid).first()
-            if not model:
-                continue
-            ok = False
-            ig_username = (model.instagram_id or "").lstrip("@").strip()
-            if ig_username:
-                try:
-                    ig = await ig_fetch(ig_username)
-                    db.add(FollowerSnapshot(
-                        model_id=mid, platform="instagram",
-                        followers_count=ig["followers_count"],
-                        follows_count=ig["follows_count"],
-                        media_count=ig["media_count"],
-                        source="graph_api",
-                        sync_duration_ms=ig["duration_ms"],
-                    ))
-                    if ig["followers_count"] is not None:
-                        model.instagram_followers = ig["followers_count"]
-                    ok = True
-                except Exception as e:
-                    logger.warning("Batch IG sync failed for model %d: %s", mid, e)
-            yt_id = (model.youtube_id or "").strip()
-            if yt_id:
-                try:
-                    yt = await yt_fetch(yt_id)
-                    db.add(FollowerSnapshot(
-                        model_id=mid, platform="youtube",
-                        followers_count=yt["subscriber_count"] or 0,
-                        media_count=yt["video_count"],
-                        source="youtube_api",
-                    ))
-                    if yt["subscriber_count"] is not None:
-                        model.youtube_subscribers = yt["subscriber_count"]
-                    ok = True
-                except Exception as e:
-                    logger.warning("Batch YT sync failed for model %d: %s", mid, e)
-            if ok:
-                db.query(SyncJob).filter(SyncJob.id == job_id).update(
-                    {"completed_count": SyncJob.completed_count + 1}
-                )
-            else:
-                db.query(SyncJob).filter(SyncJob.id == job_id).update(
-                    {"failed_count": SyncJob.failed_count + 1}
-                )
-            db.commit()
-        db.query(SyncJob).filter(SyncJob.id == job_id).update(
-            {"status": "completed", "completed_at": datetime.utcnow()}
-        )
-        db.commit()
-    except Exception:
-        db.query(SyncJob).filter(SyncJob.id == job_id).update({"status": "failed"})
-        db.commit()
-    finally:
-        db.close()
-
 
 @router.post("/sync/batch")
 async def sync_batch(
