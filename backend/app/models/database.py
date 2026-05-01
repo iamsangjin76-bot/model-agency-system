@@ -10,8 +10,11 @@ from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import enum
 
-# 데이터베이스 설정
-DATABASE_URL = "sqlite:///./model_agency.db"
+# Database configuration — reads DATABASE_URL from env var (Railway Variable)
+# so data is stored on the persistent Railway Volume (/data/model_agency.db).
+from app.config import settings  # noqa: E402
+
+DATABASE_URL = settings.DATABASE_URL
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
