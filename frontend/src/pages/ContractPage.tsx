@@ -1,80 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { contractsAPI, Contract } from '@/services/api';
-import {
-  Search,
-  Plus,
-  Filter,
-  FileText,
-  Calendar,
-  User,
-  Building2,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Download,
-  Eye,
-  Edit,
-  Trash2,
-  MoreVertical,
-  X,
-  DollarSign,
-  FileSignature,
-  Shield,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
-
-// 계약 상태
-type ContractStatus = 'draft' | 'pending' | 'active' | 'expired' | 'terminated';
-
-const STATUS_CONFIG: Record<ContractStatus, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
-  draft: { label: '초안', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700', icon: FileText },
-  pending: { label: '검토중', color: 'text-yellow-600', bgColor: 'bg-yellow-100', icon: Clock },
-  active: { label: '진행중', color: 'text-green-600', bgColor: 'bg-green-100', icon: CheckCircle2 },
-  expired: { label: '만료', color: 'text-red-600', bgColor: 'bg-red-100', icon: AlertCircle },
-  terminated: { label: '해지', color: 'text-gray-500 dark:text-gray-400', bgColor: 'bg-gray-200 dark:bg-gray-600', icon: XCircle },
-};
-
-// 계약 유형
-type ContractType = 'exclusive' | 'project' | 'annual' | 'event';
-
-const CONTRACT_TYPES: Record<ContractType, { label: string; color: string }> = {
-  exclusive: { label: '전속계약', color: 'bg-purple-500' },
-  project: { label: '프로젝트', color: 'bg-blue-500' },
-  annual: { label: '연간계약', color: 'bg-green-500' },
-  event: { label: '단발성', color: 'bg-orange-500' },
-};
-
-const formatCurrency = (amount?: number | null) => {
-  if (!amount) return '-';
-  return new Intl.NumberFormat('ko-KR').format(amount) + '원';
-};
-
-const getContractTypeKey = (type?: string): ContractType => {
-  if (type && type in CONTRACT_TYPES) return type as ContractType;
-  return 'project';
-};
-
-const getStatusKey = (status?: string): ContractStatus => {
-  if (status && status in STATUS_CONFIG) return status as ContractStatus;
-  return 'draft';
-};
-
-// 새 계약 폼 상태
-interface NewContractForm {
-  title: string;
-  contract_type: ContractType;
-  status: ContractStatus;
-  model_name: string;
-  client_name: string;
-  total_amount: string;
-  agency_fee: string;
-  model_fee: string;
-  start_date: string;
-  end_date: string;
-  memo: string;
-}
+import { STATUS_CONFIG, CONTRACT_TYPES, formatCurrency, getContractTypeKey, getStatusKey, NewContractForm, ContractStatus, ContractType } from '@/components/contract/ContractConstants';
+import { ContractDetailModal } from '@/components/contract/ContractDetailModal';
+import { ContractFormModal } from '@/components/contract/ContractFormModal';
+import { Search, Plus, FileText, CheckCircle2, Clock, DollarSign, User, Building2, Eye, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function ContractPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -115,70 +44,45 @@ export default function ContractPage() {
     fetchContracts();
   }, [fetchContracts]);
 
-  // 필터링된 계약 목록
-  const filteredContracts = contracts.filter(contract => {
-    const title = (contract as any).title || '';
-    const modelName = contract.model_name || '';
-    const clientName = contract.client_name || '';
-    const matchesSearch =
-      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      modelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      clientName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || contract.status === statusFilter;
-    const matchesType = typeFilter === 'all' || contract.contract_type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
+  // Filtered contract list
+  const q = searchTerm.toLowerCase();
+  const filteredContracts = contracts.filter(c => {
+    const matchesSearch = [(c as any).title, c.model_name, c.client_name].some(v => (v || '').toLowerCase().includes(q));
+    return matchesSearch && (statusFilter === 'all' || c.status === statusFilter) && (typeFilter === 'all' || c.contract_type === typeFilter);
   });
 
-  // 통계 (API 데이터 기반)
   const stats = {
     total: contracts.length,
     active: contracts.filter(c => c.status === 'active').length,
     pending: contracts.filter(c => c.status === 'pending' || c.status === 'draft').length,
     totalAmount: contracts.reduce((sum, c) => sum + (c.total_amount || 0), 0),
   };
-
-  // 만료 임박 계약 (30일 이내)
   const today = new Date();
   const expiringContracts = contracts.filter(c => {
     if (c.status !== 'active' || !c.end_date) return false;
-    const endDate = new Date(c.end_date);
-    const daysUntilExpiry = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+    const days = Math.ceil((new Date(c.end_date).getTime() - today.getTime()) / 86400000);
+    return days <= 30 && days > 0;
   });
 
+  const toNum = (s: string) => s ? Number(s.replace(/,/g, '')) : undefined;
   const handleCreateContract = async () => {
     if (!newContract.title.trim()) return;
     setIsSaving(true);
     try {
-      await contractsAPI.create({
-        contract_type: newContract.contract_type,
-        status: newContract.status,
-        model_name: newContract.model_name || undefined,
-        client_name: newContract.client_name || undefined,
-        total_amount: newContract.total_amount ? Number(newContract.total_amount.replace(/,/g, '')) : undefined,
-        agency_fee: newContract.agency_fee ? Number(newContract.agency_fee.replace(/,/g, '')) : undefined,
-        model_fee: newContract.model_fee ? Number(newContract.model_fee.replace(/,/g, '')) : undefined,
-        start_date: newContract.start_date || undefined,
-        end_date: newContract.end_date || undefined,
-        memo: newContract.memo || undefined,
-      } as any);
+      await contractsAPI.create({ contract_type: newContract.contract_type, status: newContract.status,
+        model_name: newContract.model_name || undefined, client_name: newContract.client_name || undefined,
+        total_amount: toNum(newContract.total_amount), agency_fee: toNum(newContract.agency_fee),
+        model_fee: toNum(newContract.model_fee), start_date: newContract.start_date || undefined,
+        end_date: newContract.end_date || undefined, memo: newContract.memo || undefined } as any);
       setShowNewModal(false);
-      setNewContract({
-        title: '', contract_type: 'project', status: 'draft',
-        model_name: '', client_name: '', total_amount: '', agency_fee: '',
-        model_fee: '', start_date: '', end_date: '', memo: '',
-      });
+      setNewContract({ title: '', contract_type: 'project', status: 'draft', model_name: '', client_name: '', total_amount: '', agency_fee: '', model_fee: '', start_date: '', end_date: '', memo: '' });
       fetchContracts();
-    } catch (err) {
-      console.error('계약 등록 실패:', err);
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (err) { console.error('계약 등록 실패:', err); } finally { setIsSaving(false); }
   };
 
   return (
     <div className="space-y-6">
-      {/* 상단 통계 */}
+      {/* Top statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: '전체 계약', value: stats.total, icon: FileText, color: 'from-gray-500 to-gray-600', small: false },
@@ -202,7 +106,7 @@ export default function ContractPage() {
         ))}
       </div>
 
-      {/* 만료 임박 경고 */}
+      {/* Expiry warning */}
       {expiringContracts.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
@@ -215,11 +119,11 @@ export default function ContractPage() {
         </div>
       )}
 
-      {/* 검색 및 필터 */}
+      {/* Search and filter */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            {/* 검색 */}
+            {/* Search */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
@@ -230,7 +134,7 @@ export default function ContractPage() {
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
-            {/* 새로고침 */}
+            {/* Refresh */}
             <button
               onClick={fetchContracts}
               className="p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -239,7 +143,7 @@ export default function ContractPage() {
               <RefreshCw className={`w-5 h-5 text-gray-500 dark:text-gray-400 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* 상태 필터 */}
+            {/* Status filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ContractStatus | 'all')}
@@ -251,7 +155,7 @@ export default function ContractPage() {
               ))}
             </select>
 
-            {/* 유형 필터 */}
+            {/* Type filter */}
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as ContractType | 'all')}
@@ -264,7 +168,7 @@ export default function ContractPage() {
             </select>
           </div>
 
-          {/* 새 계약 버튼 */}
+          {/* New contract button */}
           <button
             onClick={() => setShowNewModal(true)}
             className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center gap-2"
@@ -275,22 +179,14 @@ export default function ContractPage() {
         </div>
       </div>
 
-      {/* 계약 목록 */}
+      {/* Contract list */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">계약번호</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">계약명</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">유형</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">모델</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">광고주</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">계약금액</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">기간</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">상태</th>
-                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 dark:text-gray-400">관리</th>
-              </tr>
+              <tr>{['계약번호','계약명','유형','모델','광고주','계약금액','기간','상태'].map(h=>(
+                <th key={h} className="px-6 py-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{h}</th>
+              ))}<th className="px-6 py-4 text-right text-sm font-medium text-gray-500 dark:text-gray-400">관리</th></tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {isLoading ? (
@@ -341,16 +237,10 @@ export default function ContractPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm">{contract.model_name || '-'}</span>
-                      </div>
+                      <div className="flex items-center gap-2"><User className="w-4 h-4 text-gray-400 dark:text-gray-500" /><span className="text-sm">{contract.model_name || '-'}</span></div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm">{contract.client_name || '-'}</span>
-                      </div>
+                      <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-400 dark:text-gray-500" /><span className="text-sm">{contract.client_name || '-'}</span></div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-green-600">{formatCurrency(contract.total_amount)}</span>
@@ -367,14 +257,9 @@ export default function ContractPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setSelectedContract(contract); }}
-                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                        >
-                          <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        </button>
-                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedContract(contract); }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                      </button>
                     </td>
                   </tr>
                 );
@@ -384,308 +269,23 @@ export default function ContractPage() {
         </div>
       </div>
 
-      {/* 계약 상세 모달 */}
-      {selectedContract && (() => {
-        const statusKey = getStatusKey(selectedContract.status);
-        const typeKey = getContractTypeKey(selectedContract.contract_type);
-        const contractTitle = (selectedContract as any).title || `계약 #${selectedContract.contract_number || selectedContract.id}`;
-        return (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-0.5 text-xs font-medium text-white rounded ${CONTRACT_TYPES[typeKey].color}`}>
-                        {CONTRACT_TYPES[typeKey].label}
-                      </span>
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded ${STATUS_CONFIG[statusKey].bgColor} ${STATUS_CONFIG[statusKey].color}`}>
-                        {STATUS_CONFIG[statusKey].label}
-                      </span>
-                      {selectedContract.contract_number && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{selectedContract.contract_number}</span>
-                      )}
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{contractTitle}</h2>
-                  </div>
-                  <button onClick={() => setSelectedContract(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+      {/* Contract detail modal */}
+      {selectedContract && (
+        <ContractDetailModal
+          contract={selectedContract}
+          onClose={() => setSelectedContract(null)}
+        />
+      )}
 
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
-                {/* 계약 당사자 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <User className="w-5 h-5 text-purple-500" />
-                      <span className="font-medium">모델</span>
-                    </div>
-                    <p className="text-lg font-semibold">{selectedContract.model_name || '-'}</p>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Building2 className="w-5 h-5 text-purple-500" />
-                      <span className="font-medium">광고주</span>
-                    </div>
-                    <p className="text-lg font-semibold">{selectedContract.client_name || '-'}</p>
-                  </div>
-                </div>
-
-                {/* 계약 금액 */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                    <span className="font-medium text-green-800">계약 금액</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">총 계약금</p>
-                      <p className="text-xl font-bold text-green-600">{formatCurrency(selectedContract.total_amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">에이전시 수수료</p>
-                      <p className="text-xl font-bold text-blue-600">{formatCurrency(selectedContract.agency_fee)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">모델 지급액</p>
-                      <p className="text-xl font-bold text-purple-600">{formatCurrency(selectedContract.model_fee)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 계약 기간 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
-                      <Calendar className="w-4 h-4" />계약 시작
-                    </div>
-                    <p className="font-semibold">{selectedContract.start_date || '-'}</p>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
-                      <Calendar className="w-4 h-4" />계약 종료
-                    </div>
-                    <p className="font-semibold">{selectedContract.end_date || '-'}</p>
-                  </div>
-                </div>
-
-                {/* 계약 내용 (메모) */}
-                {selectedContract.memo && (
-                  <div>
-                    <h3 className="font-semibold mb-2 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-purple-500" />
-                      계약 내용
-                    </h3>
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-                      <p className="text-gray-600 dark:text-gray-300">{selectedContract.memo}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50 dark:bg-gray-900">
-                <button
-                  onClick={() => setSelectedContract(null)}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-                >
-                  닫기
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* 새 계약 등록 모달 */}
+      {/* New contract modal */}
       {showNewModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl">
-                  <FileSignature className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">계약 등록</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">새로운 계약을 등록합니다</p>
-                </div>
-              </div>
-              <button onClick={() => setShowNewModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto max-h-[60vh] space-y-6">
-              {/* 기본 정보 */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-500" />기본 정보
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약명 *</label>
-                    <input
-                      type="text"
-                      placeholder="계약 제목을 입력하세요"
-                      value={newContract.title}
-                      onChange={e => setNewContract(p => ({ ...p, title: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약 유형 *</label>
-                    <select
-                      value={newContract.contract_type}
-                      onChange={e => setNewContract(p => ({ ...p, contract_type: e.target.value as ContractType }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    >
-                      {Object.entries(CONTRACT_TYPES).map(([key, config]) => (
-                        <option key={key} value={key}>{config.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약 상태</label>
-                    <select
-                      value={newContract.status}
-                      onChange={e => setNewContract(p => ({ ...p, status: e.target.value as ContractStatus }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    >
-                      {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                        <option key={key} value={key}>{config.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* 계약 당사자 */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                  <User className="w-5 h-5 text-purple-500" />계약 당사자
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">모델명</label>
-                    <input
-                      type="text"
-                      placeholder="모델 이름"
-                      value={newContract.model_name}
-                      onChange={e => setNewContract(p => ({ ...p, model_name: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">광고주명</label>
-                    <input
-                      type="text"
-                      placeholder="광고주 이름"
-                      value={newContract.client_name}
-                      onChange={e => setNewContract(p => ({ ...p, client_name: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 계약 금액 */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-purple-500" />계약 금액
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">총 계약금</label>
-                    <input
-                      type="number"
-                      placeholder="50000000"
-                      value={newContract.total_amount}
-                      onChange={e => setNewContract(p => ({ ...p, total_amount: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">에이전시 수수료</label>
-                    <input
-                      type="number"
-                      placeholder="15000000"
-                      value={newContract.agency_fee}
-                      onChange={e => setNewContract(p => ({ ...p, agency_fee: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">모델 지급액</label>
-                    <input
-                      type="number"
-                      placeholder="35000000"
-                      value={newContract.model_fee}
-                      onChange={e => setNewContract(p => ({ ...p, model_fee: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 계약 기간 */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-purple-500" />계약 기간
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약 시작일</label>
-                    <input
-                      type="date"
-                      value={newContract.start_date}
-                      onChange={e => setNewContract(p => ({ ...p, start_date: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약 종료일</label>
-                    <input
-                      type="date"
-                      value={newContract.end_date}
-                      onChange={e => setNewContract(p => ({ ...p, end_date: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 계약 내용 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">계약 내용</label>
-                <textarea
-                  rows={3}
-                  placeholder="계약에 대한 상세 내용을 입력하세요"
-                  value={newContract.memo}
-                  onChange={e => setNewContract(p => ({ ...p, memo: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100 resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
-              <button
-                onClick={() => setShowNewModal(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleCreateContract}
-                disabled={isSaving || !newContract.title.trim()}
-                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
-              >
-                {isSaving ? '등록 중...' : '등록하기'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ContractFormModal
+          newContract={newContract}
+          isSaving={isSaving}
+          onClose={() => setShowNewModal(false)}
+          onSave={handleCreateContract}
+          onChange={updates => setNewContract(p => ({ ...p, ...updates }))}
+        />
       )}
     </div>
   );

@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  BarChart3, TrendingUp, Users, Heart, MessageCircle,
-  Instagram, Youtube, RefreshCw, Loader2, ChevronDown, ExternalLink,
-  AlertCircle, CheckCircle2, WifiOff, Eye,
-} from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar, Legend,
-} from 'recharts';
+import { BarChart3, TrendingUp, Users, Heart, MessageCircle, Instagram, Youtube, RefreshCw, Loader2, ChevronDown, ExternalLink, AlertCircle, Eye } from 'lucide-react';
+import { StatusBadge, KpiCard, SyncResultCard } from '@/components/sns/SnsSubComponents';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { modelsAPI, snsAPI, SnsStatus, FollowerSnapshot, MediaMetric, Model } from '@/services/domain-api';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -69,30 +63,21 @@ export default function SNSAnalyticsPage() {
     try {
       const res = await snsAPI.sync(selected.id);
       setLastSync({ instagram: res.instagram, youtube: res.youtube });
-      // Toast summary
-      const parts: string[] = [];
-      if (res.instagram?.ok) parts.push(`인스타 ${fmt(res.instagram.followers_count)}`);
-      if (res.youtube?.ok) parts.push(`유튜브 ${fmt(res.youtube.subscriber_count)}`);
+      const parts = [res.instagram?.ok && `인스타 ${fmt(res.instagram.followers_count)}`, res.youtube?.ok && `유튜브 ${fmt(res.youtube.subscriber_count)}`].filter(Boolean);
       if (parts.length) toast.success(`동기화 완료 — ${parts.join(' / ')}`);
       else toast.warning('동기화됐지만 가져온 데이터가 없습니다');
       await loadData(selected);
-    } catch (err: any) {
-      toast.error(err?.message || '동기화에 실패했습니다.');
-    } finally { setIsSyncing(false); }
+    } catch (err: any) { toast.error(err?.message || '동기화에 실패했습니다.'); }
+    finally { setIsSyncing(false); }
   };
 
   const snaps = platform === 'instagram' ? igSnaps : ytSnaps;
-  const chartData = [...snaps].reverse().map(s => ({
-    date: fmtDate(s.snapshot_at),
-    수: s.followers_count,
-  }));
-  const latest = snaps[0] ?? null;
+  const chartData = [...snaps].reverse().map(s => ({ date: fmtDate(s.snapshot_at), 수: s.followers_count }));
   const igLatest = igSnaps[0] ?? null;
   const ytLatest = ytSnaps[0] ?? null;
   const engRate = igLatest && media.length > 0
-    ? (media.reduce((s, m) => s + (m.like_count ?? 0) + (m.comment_count ?? 0), 0) / media.length / igLatest.followers_count * 100)
+    ? media.reduce((s, m) => s + (m.like_count ?? 0) + (m.comment_count ?? 0), 0) / media.length / igLatest.followers_count * 100
     : null;
-
   const igOk = status?.instagram;
   const ytOk = status?.youtube;
 
@@ -226,20 +211,11 @@ YOUTUBE_API_KEY=your_key  # GOOGLE_API_KEY도 가능`}
               {(igSnaps.length > 0 || ytSnaps.length > 0) && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-purple-600" />
-                      팔로워 / 구독자 추이
-                    </h3>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-600" />팔로워 / 구독자 추이</h3>
                     <div className="flex gap-1">
-                      {([['instagram', <Instagram className="w-3.5 h-3.5" />, igSnaps.length > 0],
-                         ['youtube', <Youtube className="w-3.5 h-3.5" />, ytSnaps.length > 0]] as const).map(([p, icon, hasData]) => (
-                        <button key={p} onClick={() => setPlatform(p as Platform)}
-                          disabled={!hasData}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
-                            platform === p
-                              ? p === 'instagram' ? 'bg-pink-600 text-white' : 'bg-red-600 text-white'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                          }`}>
+                      {([['instagram', <Instagram className="w-3.5 h-3.5" />, igSnaps.length > 0], ['youtube', <Youtube className="w-3.5 h-3.5" />, ytSnaps.length > 0]] as const).map(([p, icon, hasData]) => (
+                        <button key={p} onClick={() => setPlatform(p as Platform)} disabled={!hasData}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${platform === p ? (p === 'instagram' ? 'bg-pink-600 text-white' : 'bg-red-600 text-white') : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                           {icon}{p === 'instagram' ? '인스타' : '유튜브'}
                         </button>
                       ))}
@@ -287,18 +263,13 @@ YOUTUBE_API_KEY=your_key  # GOOGLE_API_KEY도 가능`}
               {media.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-blue-600" />
-                    Instagram 최근 게시물 인게이지먼트
+                    <MessageCircle className="w-5 h-5 text-blue-600" />Instagram 최근 게시물 인게이지먼트
                   </h3>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={media.map((m, i) => ({
-                        name: m.posted_at ? fmtDate(m.posted_at) : `#${i + 1}`,
-                        좋아요: m.like_count ?? 0, 댓글: m.comment_count ?? 0,
-                      }))}>
+                      <BarChart data={media.map((m, i) => ({ name: m.posted_at ? fmtDate(m.posted_at) : `#${i + 1}`, 좋아요: m.like_count ?? 0, 댓글: m.comment_count ?? 0 }))}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
+                        <XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} />
                         <Tooltip /><Legend />
                         <Bar dataKey="좋아요" fill="#ec4899" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="댓글" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -307,29 +278,13 @@ YOUTUBE_API_KEY=your_key  # GOOGLE_API_KEY도 가능`}
                   </div>
                   <div className="mt-3 space-y-1.5">
                     {media.slice(0, 5).map((m, i) => (
-                      <div key={m.id ?? i}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-sm">
+                      <div key={m.id ?? i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-sm">
                         <span className="text-xs text-gray-400 w-12 shrink-0">{fmtDate(m.posted_at)}</span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                          m.media_type === 'VIDEO' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
-                          {m.media_type ?? '사진'}
-                        </span>
-                        <span className="flex-1 truncate text-gray-600 dark:text-gray-300">
-                          {m.caption_excerpt || '(캡션 없음)'}
-                        </span>
-                        <span className="flex items-center gap-1 text-pink-500 shrink-0">
-                          <Heart className="w-3 h-3" />{fmt(m.like_count)}
-                        </span>
-                        <span className="flex items-center gap-1 text-purple-500 shrink-0">
-                          <MessageCircle className="w-3 h-3" />{fmt(m.comment_count)}
-                        </span>
-                        {m.permalink && (
-                          <a href={m.permalink} target="_blank" rel="noreferrer"
-                            className="text-gray-400 hover:text-purple-500 shrink-0">
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
+                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${m.media_type === 'VIDEO' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>{m.media_type ?? '사진'}</span>
+                        <span className="flex-1 truncate text-gray-600 dark:text-gray-300">{m.caption_excerpt || '(캡션 없음)'}</span>
+                        <span className="flex items-center gap-1 text-pink-500 shrink-0"><Heart className="w-3 h-3" />{fmt(m.like_count)}</span>
+                        <span className="flex items-center gap-1 text-purple-500 shrink-0"><MessageCircle className="w-3 h-3" />{fmt(m.comment_count)}</span>
+                        {m.permalink && <a href={m.permalink} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-purple-500 shrink-0"><ExternalLink className="w-3.5 h-3.5" /></a>}
                       </div>
                     ))}
                   </div>
@@ -339,61 +294,6 @@ YOUTUBE_API_KEY=your_key  # GOOGLE_API_KEY도 가능`}
           )}
         </>
       )}
-    </div>
-  );
-}
-
-// ── Sub-components ──────────────────────────────────────────────────────────
-
-function StatusBadge({ icon, label, ok }: { icon: React.ReactNode; label: string; ok: boolean }) {
-  return (
-    <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${
-      ok ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400'
-         : 'bg-gray-50 border-gray-200 text-gray-400 dark:bg-gray-800 dark:border-gray-700'
-    }`}>
-      {icon}
-      {label}
-      {ok ? <CheckCircle2 className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-    </div>
-  );
-}
-
-function KpiCard({ icon, bg, label, value, sub }: {
-  icon: React.ReactNode; bg: string; label: string; value: string; sub: string;
-}) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-      <div className="flex items-center gap-2 mb-2">
-        <div className={`p-2 ${bg} rounded-lg`}>{icon}</div>
-        <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
-      </div>
-      <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>
-    </div>
-  );
-}
-
-function SyncResultCard({ platform, result }: { platform: string; result: any }) {
-  if (!result) return null;
-  const isIG = platform === 'instagram';
-  const icon = isIG ? <Instagram className="w-4 h-4 text-pink-500" /> : <Youtube className="w-4 h-4 text-red-500" />;
-  const name = isIG ? 'Instagram' : 'YouTube';
-  if (result.ok) {
-    const val = isIG ? result.followers_count : result.subscriber_count;
-    return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-sm">
-        {icon}
-        <span className="font-medium text-green-800 dark:text-green-300">{name} 동기화 완료</span>
-        <span className="ml-auto text-green-700 dark:text-green-400 font-bold">
-          {isIG ? '팔로워' : '구독자'} {val != null ? `${val.toLocaleString()}명` : '-'}
-        </span>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm">
-      {icon}
-      <span className="text-gray-500 dark:text-gray-400">{name}: {result.message}</span>
     </div>
   );
 }
