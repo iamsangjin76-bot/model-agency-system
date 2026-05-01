@@ -5,13 +5,20 @@
 
 import { request } from './auth-api';
 
-// Re-export all domain types so consumers can import from this file unchanged.
-export type {
+// Import types for use within this file, then re-export for consumers.
+import type {
   Model, Client, Casting, Contract, Settlement, Schedule, ActivityLogEntry,
   NotificationEntry, NewsArticle, NewsSearchResult, SavedNews,
   SearchImage, ImageSearchResult, SavedSearchImage,
   FollowerSnapshot, MediaMetric, SyncResult, SnsStatus, ExportTemplateKey,
 } from './domain-api-types';
+
+export type {
+  Model, Client, Casting, Contract, Settlement, Schedule, ActivityLogEntry,
+  NotificationEntry, NewsArticle, NewsSearchResult, SavedNews,
+  SearchImage, ImageSearchResult, SavedSearchImage,
+  FollowerSnapshot, MediaMetric, SyncResult, SnsStatus, ExportTemplateKey,
+};
 
 // ---------------------------------------------------------------------------
 // Helper: build query string from optional params
