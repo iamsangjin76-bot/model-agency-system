@@ -4,9 +4,8 @@
 import os
 import io
 import zipfile
-import shutil
 from datetime import datetime
-from fastapi import APIRouter, Header, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -78,36 +77,16 @@ async def download_backup(
 async def backup_status(
     current_user: Admin = Depends(get_current_active_user),
 ):
-    """Return backup configuration and file existence status (super admin only)."""
+    """Return backup configuration status (super admin only)."""
     if current_user.role != AdminRole.SUPER_ADMIN:
         raise HTTPException(status_code=403, detail="권한이 없습니다")
 
     db_url = settings.DATABASE_URL
     db_path = db_url[len("sqlite:///"):] if db_url.startswith("sqlite:///") else None
 
-    # List /data directory to diagnose volume mount issues
-    data_dir = "/data"
-    try:
-        data_contents = os.listdir(data_dir)
-    except Exception:
-        data_contents = []
-
-    # Also check likely alternate paths (when DATABASE_URL uses relative path)
-    import glob as _glob
-    cwd = os.getcwd()
-    alt_db = os.path.join(cwd, "model_agency.db")
-
     return {
         "backup_configured": True,
-        "db_url": db_url,
-        "db_resolved_path": db_path,
         "db_file_exists": os.path.exists(db_path) if db_path else False,
-        "alt_db_path": alt_db,
-        "alt_db_exists": os.path.exists(alt_db),
-        "cwd": cwd,
-        "upload_dir": settings.UPLOAD_DIR,
         "upload_dir_exists": os.path.exists(settings.UPLOAD_DIR),
-        "model_files_dir": settings.MODEL_FILES_DIR,
         "model_files_dir_exists": os.path.exists(settings.MODEL_FILES_DIR),
-        "data_dir_contents": data_contents,
     }
