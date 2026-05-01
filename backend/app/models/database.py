@@ -16,6 +16,19 @@ from app.config import settings  # noqa: E402
 
 DATABASE_URL = settings.DATABASE_URL
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+# Enable WAL mode for safe concurrent access (multiple users writing simultaneously).
+# WAL allows concurrent reads + non-blocking writes, preventing "database is locked" errors.
+from sqlalchemy import event as _sa_event  # noqa: E402
+
+@_sa_event.listens_for(engine, "connect")
+def _set_sqlite_pragmas(dbapi_conn, _record):
+    cursor = dbapi_conn.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")   # concurrent read+write
+    cursor.execute("PRAGMA synchronous=NORMAL")  # safe + faster than FULL
+    cursor.execute("PRAGMA busy_timeout=5000")   # wait 5s before lock error
+    cursor.close()
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
