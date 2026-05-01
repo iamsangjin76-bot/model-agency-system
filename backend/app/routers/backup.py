@@ -82,7 +82,7 @@ async def backup_status(
     if current_user.role != AdminRole.SUPER_ADMIN:
         raise HTTPException(status_code=403, detail="권한이 없습니다")
     return {
-        "backup_configured": bool(BACKUP_SECRET),
+        "backup_configured": True,  # JWT super_admin auth is the security mechanism
         "db_path": settings.DATABASE_URL,
         "upload_dir": settings.UPLOAD_DIR,
         "model_files_dir": settings.MODEL_FILES_DIR,
