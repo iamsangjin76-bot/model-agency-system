@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from typing import Optional
 
 from app.config import settings
-from app.limiter import limiter
+from app.services.rate_limit_service import login_rate_limit
 from app.models.database import get_db, Admin, AdminRole, ROLE_PERMISSIONS
 from app.schemas import Token, TokenData, LoginRequest, AdminCreate, AdminUpdate, AdminResponse
 from app.services import token_service
@@ -94,8 +94,8 @@ def require_permission(resource: str, action: str):
 # ============ ENDPOINTS ============
 
 @router.post("/login", response_model=Token)
-@limiter.limit("10/minute")
-async def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, body: LoginRequest, db: Session = Depends(get_db),
+                _rl: None = Depends(login_rate_limit)):
     """Login with username/password and receive access + refresh tokens."""
     user = get_user_by_username(db, body.username)
     if not user or not verify_password(body.password, user.password_hash):
@@ -115,8 +115,8 @@ async def login(request: Request, body: LoginRequest, db: Session = Depends(get_
 
 
 @router.post("/token", response_model=Token)
-@limiter.limit("10/minute")
-async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(),
+                                  db: Session = Depends(get_db), _rl: None = Depends(login_rate_limit)):
     """OAuth2 token endpoint for Swagger UI compatibility."""
     user = get_user_by_username(db, form_data.username)
     if not user or not verify_password(form_data.password, user.password_hash):

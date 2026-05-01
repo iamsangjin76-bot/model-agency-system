@@ -5,11 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import os
 
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-
 from app.config import settings
-from app.limiter import limiter
 from app.models.database import init_db
 import app.models.sns  # noqa: F401 — ensure SNS tables are registered before init_db()
 from app.routers import (
@@ -65,10 +61,6 @@ app = FastAPI(
     description="Model Agency Management System API",
     lifespan=lifespan,
 )
-
-# Rate limiting
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
