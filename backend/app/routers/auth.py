@@ -13,6 +13,7 @@ from app.services.rate_limit_service import login_rate_limit
 from app.models.database import get_db, Admin, AdminRole, ROLE_PERMISSIONS
 from app.schemas import Token, TokenData, LoginRequest, AdminCreate, AdminUpdate, AdminResponse
 from app.services import token_service
+from app.utils.activity_log import log_activity
 import bcrypt
 
 router = APIRouter()
@@ -111,6 +112,10 @@ async def login(request: Request, body: LoginRequest, db: Session = Depends(get_
     raw_rt = token_service.generate_refresh_token()
     token_service.create_refresh_token(db, user.id, raw_rt)
     db.commit()
+    try:
+        log_activity(db, user.id, "login", details=f"로그인 성공: {user.username}")
+    except Exception:
+        pass  # log failure must not break main operation
     return {"access_token": access_token, "token_type": "bearer", "refresh_token": raw_rt}
 
 

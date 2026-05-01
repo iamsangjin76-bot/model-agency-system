@@ -16,6 +16,7 @@ from app.config import settings
 from app.models.database import get_db, Base
 from app.schemas import ContractCreate, ContractUpdate, ContractStatusEnum, ContractTypeEnum
 from app.routers.auth import require_permission
+from app.utils.activity_log import log_activity
 
 router = APIRouter()
 
@@ -235,7 +236,10 @@ async def create_contract(
     db.add(db_contract)
     db.commit()
     db.refresh(db_contract)
-
+    try:
+        log_activity(db, current_user.id, "create", "contract", db_contract.id, db_contract.title, details=f"계약 {db_contract.title} 등록")
+    except Exception:
+        pass  # log failure must not break main operation
     return {"message": "계약이 등록되었습니다", "id": db_contract.id, "contract_number": db_contract.contract_number}
 
 
@@ -262,7 +266,10 @@ async def update_contract(
     
     db.commit()
     db.refresh(contract)
-    
+    try:
+        log_activity(db, current_user.id, "update", "contract", contract_id, contract.title, details=f"계약 {contract.title} 수정")
+    except Exception:
+        pass  # log failure must not break main operation
     return {"message": "계약 정보가 수정되었습니다", "id": contract_id}
 
 

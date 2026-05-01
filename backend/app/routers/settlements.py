@@ -16,6 +16,7 @@ from app.models.settlement import Settlement, SettlementStatus, SettlementType
 from app.schemas import SettlementCreate, SettlementUpdate, SettlementStatusEnum, SettlementTypeEnum
 from app.routers.auth import require_permission
 from app.services.notification_service import notify_all_admins
+from app.utils.activity_log import safe_log
 
 router = APIRouter()
 
@@ -179,7 +180,7 @@ async def create_settlement(
     db.add(db_settlement)
     db.commit()
     db.refresh(db_settlement)
-
+    safe_log(db, current_user.id, "create", target_type="settlement", target_id=db_settlement.id, target_name=db_settlement.title or str(db_settlement.id), details=f"정산 {db_settlement.title or str(db_settlement.id)} 등록")
     return {"message": "정산이 등록되었습니다", "id": db_settlement.id}
 
 
@@ -208,7 +209,7 @@ async def update_settlement(
     
     db.commit()
     db.refresh(settlement)
-    
+    safe_log(db, current_user.id, "update", target_type="settlement", target_id=settlement_id, target_name=settlement.title or str(settlement_id), details=f"정산 {settlement.title or str(settlement_id)} 수정")
     return {"message": "정산 정보가 수정되었습니다", "id": settlement_id}
 
 
@@ -243,6 +244,7 @@ async def delete_settlement(
     s = db.query(Settlement).filter(Settlement.id == settlement_id, Settlement.is_active == True).first()
     if not s:
         raise HTTPException(status_code=404, detail="정산을 찾을 수 없습니다")
+    safe_log(db, current_user.id, "delete", target_type="settlement", target_id=settlement_id, target_name=s.title or str(settlement_id), details=f"정산 {s.title or str(settlement_id)} 삭제")
     s.is_active = False
     db.commit()
     return {"message": "정산이 삭제되었습니다"}

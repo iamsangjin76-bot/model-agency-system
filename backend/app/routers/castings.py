@@ -17,6 +17,7 @@ from app.models.database import get_db, Base
 from app.schemas import CastingCreate, CastingUpdate, CastingStatusEnum, CastingTypeEnum
 from app.routers.auth import require_permission
 from app.services.notification_service import notify_all_admins
+from app.utils.activity_log import safe_log
 
 router = APIRouter()
 
@@ -203,6 +204,7 @@ async def create_casting(
     db.refresh(db_casting)
     notify_all_admins(db, f"새 캐스팅: {db_casting.title}", "casting", "casting", db_casting.id, link_url="/dashboard/casting", exclude_admin_id=current_user.id)
     db.commit()
+    safe_log(db, current_user.id, "create", target_type="casting", target_id=db_casting.id, target_name=db_casting.title, details=f"캐스팅 {db_casting.title} 등록")
     return {"message": "캐스팅이 등록되었습니다", "id": db_casting.id}
 
 
@@ -229,7 +231,7 @@ async def update_casting(
     
     db.commit()
     db.refresh(casting)
-    
+    safe_log(db, current_user.id, "update", target_type="casting", target_id=casting_id, target_name=casting.title, details=f"캐스팅 {casting.title} 수정")
     return {"message": "캐스팅 정보가 수정되었습니다", "id": casting_id}
 
 
@@ -291,7 +293,7 @@ async def delete_casting(
             status_code=409,
             detail="확정된 캐스팅은 삭제할 수 없습니다. 먼저 상태를 변경해 주세요."
         )
-
+    safe_log(db, current_user.id, "delete", target_type="casting", target_id=casting_id, target_name=casting.title, details=f"캐스팅 {casting.title} 삭제")
     casting.is_active = False
     db.commit()
 

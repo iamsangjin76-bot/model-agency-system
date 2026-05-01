@@ -16,6 +16,7 @@ from app.config import settings
 from app.models.database import get_db, Base
 from app.schemas import ClientCreate, ClientUpdate, ClientResponse, ClientGradeEnum, IndustryEnum
 from app.routers.auth import get_current_active_user, require_permission
+from app.utils.activity_log import log_activity
 
 router = APIRouter()
 
@@ -187,7 +188,10 @@ async def create_client(
     db.add(db_client)
     db.commit()
     db.refresh(db_client)
-    
+    try:
+        log_activity(db, current_user.id, "create", "client", db_client.id, db_client.name, details=f"고객 {db_client.name} 등록")
+    except Exception:
+        pass  # log failure must not break main operation
     return {"message": "고객이 등록되었습니다", "id": db_client.id}
 
 
@@ -214,7 +218,10 @@ async def update_client(
     
     db.commit()
     db.refresh(client)
-    
+    try:
+        log_activity(db, current_user.id, "update", "client", client_id, client.name, details=f"고객 {client.name} 수정")
+    except Exception:
+        pass  # log failure must not break main operation
     return {"message": "고객 정보가 수정되었습니다", "id": client_id}
 
 
@@ -228,10 +235,13 @@ async def delete_client(
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
         raise HTTPException(status_code=404, detail="고객을 찾을 수 없습니다")
-    
+    try:
+        log_activity(db, current_user.id, "delete", "client", client_id, client.name, details=f"고객 {client.name} 삭제")
+    except Exception:
+        pass  # log failure must not break main operation
     client.is_active = False
     db.commit()
-    
+
     return {"message": "고객이 삭제되었습니다", "id": client_id}
 
 

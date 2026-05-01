@@ -17,6 +17,7 @@ from app.schemas import (
 from app.schemas_detail import ModelDetailResponse
 from app.routers.auth import require_permission
 from app.services.notification_service import notify_all_admins
+from app.utils.activity_log import log_activity
 
 router = APIRouter()
 
@@ -152,6 +153,10 @@ async def create_model(
     db.refresh(db_model)
     notify_all_admins(db, f"새 모델 등록: {db_model.name}", "model", "model", db_model.id, link_url="/dashboard/models", exclude_admin_id=current_user.id)
     db.commit()
+    try:
+        log_activity(db, current_user.id, "create", "model", db_model.id, db_model.name, details=f"모델 {db_model.name} 등록")
+    except Exception:
+        pass  # log failure must not break main operation
     return db_model
 
 
@@ -177,6 +182,10 @@ async def update_model(
             setattr(model, key, value)
     db.commit()
     db.refresh(model)
+    try:
+        log_activity(db, current_user.id, "update", "model", model_id, model.name, details=f"모델 {model.name} 수정")
+    except Exception:
+        pass  # log failure must not break main operation
     return model
 
 
@@ -190,6 +199,10 @@ async def delete_model(
     model = db.query(Model).filter(Model.id == model_id).first()
     if not model:
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다")
+    try:
+        log_activity(db, current_user.id, "delete", "model", model_id, model.name, details=f"모델 {model.name} 삭제")
+    except Exception:
+        pass  # log failure must not break main operation
     model.is_active = False
     db.commit()
     return {"message": "모델이 삭제되었습니다", "id": model_id}

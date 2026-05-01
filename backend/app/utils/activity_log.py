@@ -2,6 +2,7 @@
 from sqlalchemy.orm import Session
 from app.models.database import ActivityLog
 
+
 def log_activity(
     db: Session,
     admin_id: int,
@@ -10,17 +11,21 @@ def log_activity(
     target_id: int = None,
     target_name: str = None,
     details: str = None,
-    ip_address: str = None
+    ip_address: str = None,
 ):
     log = ActivityLog(
-        admin_id=admin_id,
-        action=action,
-        target_type=target_type,
-        target_id=target_id,
-        target_name=target_name,
-        details=details,
-        ip_address=ip_address
+        admin_id=admin_id, action=action, target_type=target_type,
+        target_id=target_id, target_name=target_name,
+        details=details, ip_address=ip_address,
     )
     db.add(log)
     db.commit()
     return log
+
+
+def safe_log(db: Session, admin_id: int, action: str, **kwargs) -> None:
+    """Call log_activity silently — log failures never break the main operation."""
+    try:
+        log_activity(db, admin_id, action, **kwargs)
+    except Exception:
+        pass
