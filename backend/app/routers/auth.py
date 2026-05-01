@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Authentication API Router"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -9,6 +9,7 @@ from jose import JWTError, jwt
 from typing import Optional
 
 from app.config import settings
+from app.limiter import limiter
 from app.models.database import get_db, Admin, AdminRole, ROLE_PERMISSIONS
 from app.schemas import Token, TokenData, LoginRequest, AdminCreate, AdminUpdate, AdminResponse
 from app.services import token_service
@@ -93,10 +94,11 @@ def require_permission(resource: str, action: str):
 # ============ ENDPOINTS ============
 
 @router.post("/login", response_model=Token)
-async def login(request: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     """Login with username/password and receive access + refresh tokens."""
-    user = get_user_by_username(db, request.username)
-    if not user or not verify_password(request.password, user.password_hash):
+    user = get_user_by_username(db, body.username)
+    if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="아이디 또는 비밀번호가 올바르지 않습니다",
                             headers={"WWW-Authenticate": "Bearer"})
@@ -113,7 +115,8 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """OAuth2 token endpoint for Swagger UI compatibility."""
     user = get_user_by_username(db, form_data.username)
     if not user or not verify_password(form_data.password, user.password_hash):

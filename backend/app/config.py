@@ -30,18 +30,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # 15 minutes
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    # CORS 설정
+    # CORS settings — production default is the official domain only.
+    # For local dev, override via .env:  CORS_ORIGINS=http://localhost:5173,http://localhost:5174
     CORS_ORIGINS: list = [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://192.168.0.34:5173",
-        "http://192.168.0.34:5174",
-        "http://192.168.0.51:5173",
-        "https://model-agency-app.loca.lt",
-        "https://model-agency-api.loca.lt",
+        "https://project-m.co.kr",
+        "https://www.project-m.co.kr",
     ]
     
     # 파일 업로드
@@ -105,3 +98,4 @@ settings = Settings()
 # 업로드 디렉토리 생성
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 os.makedirs(settings.MODEL_FILES_DIR, exist_ok=True)
+
