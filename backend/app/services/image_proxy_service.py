@@ -107,27 +107,26 @@ async def fetch_proxied_image(url: str) -> tuple[bytes, str]:
     if _cache_valid(data_path) and ct_path.exists():
         return data_path.read_bytes(), ct_path.read_text().strip()
 
-    # 5. Fetch — no redirect follow, streaming size check
-    # Initialise outside try so raw_ct and chunks are accessible post-block
+    # 5. Fetch — follow redirects (CDN hops), streaming size check
     chunks: list[bytes] = []
-    raw_ct: str = ""
     try:
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(settings.IMAGE_PROXY_TIMEOUT),
-            follow_redirects=False,
-            headers={"Referer": f"https://{hostname}/"},
+            follow_redirects=True,
+            max_redirects=5,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0.0.0 Safari/537.36"
+                ),
+                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+                "Referer": f"https://{hostname}/",
+            },
         ) as client:
             async with client.stream("GET", url) as resp:
-                if resp.is_redirect:
-                    raise HTTPException(status_code=502, detail="Upstream redirect not followed")
                 resp.raise_for_status()
-
-                raw_ct = resp.headers.get("content-type", "").split(";")[0].strip().lower()
-                if raw_ct not in _ALLOWED_CONTENT_TYPES:
-                    raise HTTPException(
-                        status_code=415,
-                        detail=f"Upstream Content-Type not allowed: {raw_ct}",
-                    )
 
                 total = 0
                 async for chunk in resp.aiter_bytes(8192):
@@ -145,12 +144,10 @@ async def fetch_proxied_image(url: str) -> tuple[bytes, str]:
 
     data = b"".join(chunks)
 
-    # 6. Magic bytes verification + header/magic mismatch check (SPEC §6.5)
+    # 6. Magic bytes verification — trust actual bytes, not the Content-Type header
     detected_ct = _verify_magic(data)
     if detected_ct is None:
         raise HTTPException(status_code=415, detail="Response body is not a recognised image format")
-    if detected_ct != raw_ct:
-        raise HTTPException(status_code=415, detail="Content-Type 헤더와 실제 이미지 형식 불일치")
 
     # 7. Persist to disk cache (2-level fanout directory)
     data_path.parent.mkdir(parents=True, exist_ok=True)

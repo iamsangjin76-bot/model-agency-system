@@ -20,16 +20,16 @@ export default function ImageResultCard({ image, index, isChecked, onToggle, onP
       onClick={() => onToggle(index)}
     >
       <img
-        src={proxify(image.original_url || image.thumbnail_url.replace('type=b150', 'type=b300'))}
+        src={proxify(image.thumbnail_url.replace('type=b150', 'type=b300') || image.original_url)}
         alt={image.source}
         className="w-full h-full object-cover"
         loading="lazy"
         onError={e => {
           const img = e.currentTarget;
-          if (!img.dataset.fb1) {
-            // Fallback 1: Naver CDN thumbnail (b300) via proxy
+          if (!img.dataset.fb1 && image.original_url) {
+            // Fallback 1: try original URL via proxy
             img.dataset.fb1 = 'true';
-            img.src = proxify(image.thumbnail_url.replace('type=b150', 'type=b300'));
+            img.src = proxify(image.original_url);
           } else {
             handleImgError(e);
           }
