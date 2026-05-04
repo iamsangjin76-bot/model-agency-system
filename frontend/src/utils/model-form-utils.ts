@@ -1,6 +1,21 @@
 // Utility functions for ModelFormPage data transformation.
 import { Model, ModelType, Gender } from '@/types/model';
 
+/**
+ * Pad a partial birth date to a full YYYY-MM-DD for the backend Date column.
+ * "1990"       → "1990-01-01"
+ * "1990-05"    → "1990-05-01"
+ * "1990-05-15" → "1990-05-15"
+ * ""  / null   → null
+ */
+function padBirthDate(val: string | undefined | null): string | null {
+  if (!val) return null;
+  const parts = val.split('-');
+  if (parts.length === 1) return `${parts[0]}-01-01`;
+  if (parts.length === 2) return `${parts[0]}-${parts[1]}-01`;
+  return val;
+}
+
 // Map API snake_case response to camelCase form data
 export function mapApiToForm(data: any): Partial<Model> {
   return {
@@ -40,7 +55,7 @@ export function mapApiToForm(data: any): Partial<Model> {
 export function buildPayload(f: Partial<Model>): Record<string, any> {
   return {
     name: f.name, name_english: f.nameEnglish,
-    birth_date: f.birthDate || null, gender: f.gender, model_type: f.modelType,
+    birth_date: padBirthDate(f.birthDate as string | undefined), gender: f.gender, model_type: f.modelType,
     height: f.height || null, weight: f.weight || null,
     bust: f.bust || null, waist: f.waist || null, hip: f.hip || null,
     shoe_size: f.shoeSize || null,

@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { User } from 'lucide-react';
 import { Model, ModelType, GENDER_LABELS } from '@/types/model';
 import { FormSection, FormField, inputClass, selectClass } from './FormParts';
+
+/** Parse "YYYY-MM-DD", "YYYY-MM", or "YYYY" into parts. */
+function parseBirthDate(val: string) {
+  const parts = (val || '').split('-');
+  return {
+    year:  parts[0] || '',
+    month: parts[1] || '',
+    day:   parts[2] || '',
+  };
+}
+
+/** Build birth_date string from parts. Month/day are optional. */
+function buildBirthDate(year: string, month: string, day: string): string {
+  if (!year) return '';
+  if (!month) return year;
+  if (!day) return `${year}-${month}`;
+  return `${year}-${month}-${day}`;
+}
 
 interface Props {
   formData: Partial<Model>;
@@ -9,6 +27,13 @@ interface Props {
 }
 
 export default function BasicInfoFields({ formData, onChange }: Props) {
+  const { year, month, day } = useMemo(() => parseBirthDate(formData.birthDate as string), [formData.birthDate]);
+
+  const handleDatePart = (part: 'year' | 'month' | 'day', value: string) => {
+    const next = { year, month, day, [part]: value };
+    onChange('birthDate', buildBirthDate(next.year, next.month, next.day));
+  };
+
   return (
     <FormSection title="기본 정보" icon={User}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -19,7 +44,23 @@ export default function BasicInfoFields({ formData, onChange }: Props) {
           <input type="text" value={formData.nameEnglish} onChange={e => onChange('nameEnglish', e.target.value)} className={inputClass} placeholder="Hong Gildong" />
         </FormField>
         <FormField label="생년월일">
-          <input type="date" value={formData.birthDate} onChange={e => onChange('birthDate', e.target.value)} className={inputClass} />
+          <div className="flex gap-1.5 items-center">
+            <input
+              type="number" min="1900" max="2099" value={year}
+              onChange={e => handleDatePart('year', e.target.value)}
+              className={`${inputClass} w-24`} placeholder="년도" />
+            <span className="text-gray-400 text-sm">-</span>
+            <input
+              type="number" min="1" max="12" value={month}
+              onChange={e => handleDatePart('month', e.target.value.padStart(2, '0').slice(-2))}
+              className={`${inputClass} w-16`} placeholder="월" />
+            <span className="text-gray-400 text-sm">-</span>
+            <input
+              type="number" min="1" max="31" value={day}
+              onChange={e => handleDatePart('day', e.target.value.padStart(2, '0').slice(-2))}
+              className={`${inputClass} w-16`} placeholder="일" />
+          </div>
+          <p className="text-xs text-gray-400 mt-1">월/일은 선택 사항입니다 (년도만 입력 가능)</p>
         </FormField>
         <FormField label="성별">
           <select value={formData.gender} onChange={e => onChange('gender', e.target.value)} className={selectClass}>
