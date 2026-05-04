@@ -105,21 +105,24 @@ def _is_private_ip(ip_str: str) -> bool:
 
 def validate_proxy_host(hostname: str, allowed_suffixes: list[str]) -> bool:
     """
-    Return True only if:
-      1. hostname matches an allowed suffix (suffix-only, no glob wildcard abuse)
-      2. all resolved IPs are non-private
+    Return True only if all resolved IPs are non-private (SSRF defense).
+
+    When allowed_suffixes is non-empty, the hostname must also match at least
+    one suffix (suffix-only matching, no glob wildcard abuse).
+    Pass an empty list to allow any public-internet host.
 
     Caller converts False → HTTP 403.
     """
-    # Step 1: suffix whitelist (suffix-only matching)
-    hostname_lower = hostname.lower()
-    matched = any(
-        hostname_lower == s.lower().lstrip(".")
-        or hostname_lower.endswith("." + s.lower().lstrip("."))
-        for s in allowed_suffixes
-    )
-    if not matched:
-        return False
+    # Step 1: suffix whitelist — skipped when list is empty (allow-all-public mode)
+    if allowed_suffixes:
+        hostname_lower = hostname.lower()
+        matched = any(
+            hostname_lower == s.lower().lstrip(".")
+            or hostname_lower.endswith("." + s.lower().lstrip("."))
+            for s in allowed_suffixes
+        )
+        if not matched:
+            return False
 
     # Step 2: DNS resolve + private IP check (re-resolved every request, no cache)
     try:

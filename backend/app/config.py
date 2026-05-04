@@ -65,19 +65,9 @@ class Settings(BaseSettings):
     SEARCH_IMAGE_MAX_SIZE: int = 10 * 1024 * 1024  # 10MB
 
     # ── Image proxy (J-8a) ────────────────────────────────────────────────
-    IMAGE_PROXY_ALLOWED_DOMAINS: str = (
-        # Naver image domains
-        "imgnews.naver.net,naver.net,blogfiles.naver.net,"
-        # pstatic.net covers search.pstatic.net (Naver image thumbnail CDN),
-        # postfiles.pstatic.net, ssl.pstatic.net, etc.
-        "pstatic.net,"
-        # Ruliweb CDN
-        "i1.ruliweb.com,i2.ruliweb.com,i3.ruliweb.com,"
-        # Other Korean media sites
-        "image.fmkorea.com,img.insight.co.kr,"
-        # Naver blog / news image CDNs
-        "naverblogfiles.pstatic.net,imgnews.pstatic.net"
-    )
+    # Empty string = allow any public-internet host (private IPs still blocked via SSRF defense).
+    # Set a comma-separated list to restrict to specific domains if needed.
+    IMAGE_PROXY_ALLOWED_DOMAINS: str = ""
     IMAGE_PROXY_MAX_SIZE: int = 10_485_760   # 10 MB
     IMAGE_PROXY_TIMEOUT: float = 5.0          # seconds
     IMAGE_PROXY_CACHE_DIR: str = "proxy_cache"
