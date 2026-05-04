@@ -18,7 +18,8 @@ export default function ImageSearchPage() {
   const [totalResults, setTotalResults] = useState(0);
   const [images, setImages] = useState<SearchImage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [checkedImages, setCheckedImages] = useState<Set<number>>(new Set());
+  // selectedImages persists across pages — keyed by thumbnail_url for uniqueness
+  const [selectedImages, setSelectedImages] = useState<Map<string, SearchImage>>(new Map());
   const [isSaving, setIsSaving] = useState(false);
   const [models, setModels] = useState<Model[]>([]);
   const [matchingModels, setMatchingModels] = useState<Model[]>([]);
@@ -31,10 +32,11 @@ export default function ImageSearchPage() {
     modelsAPI.list({ size: 200 }).then(res => setModels(res.items)).catch(() => {});
   }, []);
 
-  const handleSearch = async (page = 1) => {
+  const handleSearch = async (page = 1, resetSelection = false) => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
-    setCheckedImages(new Set());
+    // Only clear selection on a brand-new search, not on page navigation
+    if (resetSelection) setSelectedImages(new Map());
     try {
       const res = await imageSearchAPI.search({ query: searchQuery, page, display: DISPLAY, provider });
       setImages(res.items);
@@ -47,16 +49,32 @@ export default function ImageSearchPage() {
     }
   };
 
+  const imageKey = (img: SearchImage) => img.thumbnail_url || img.original_url;
+
   const toggleCheck = (index: number) => {
-    setCheckedImages(prev => {
-      const next = new Set(prev);
-      next.has(index) ? next.delete(index) : next.add(index);
+    const img = images[index];
+    if (!img) return;
+    const key = imageKey(img);
+    setSelectedImages(prev => {
+      const next = new Map(prev);
+      next.has(key) ? next.delete(key) : next.set(key, img);
       return next;
     });
   };
 
   const toggleAll = () => {
-    setCheckedImages(checkedImages.size === images.length ? new Set() : new Set(images.map((_, i) => i)));
+    const allOnPageSelected = images.every(img => selectedImages.has(imageKey(img)));
+    setSelectedImages(prev => {
+      const next = new Map(prev);
+      if (allOnPageSelected) {
+        // Deselect all images on current page
+        images.forEach(img => next.delete(imageKey(img)));
+      } else {
+        // Select all images on current page
+        images.forEach(img => next.set(imageKey(img), img));
+      }
+      return next;
+    });
   };
 
   const saveToModel = async (model: Model) => {
@@ -64,14 +82,14 @@ export default function ImageSearchPage() {
     setMatchingModels([]);
     setShowNameModal(false);
     try {
-      const selected = [...checkedImages].map(i => images[i]);
+      const selected = [...selectedImages.values()];
       const result = await imageSearchAPI.save({ model_id: model.id, images: selected }) as unknown as { saved?: number; failed?: number } | void;
       if (result && typeof result === 'object' && 'failed' in result && (result.failed ?? 0) > 0) {
         toast.warning?.(`${result.saved ?? 0}개 저장, ${result.failed}개 실패`);
       } else {
-        toast.success(`${checkedImages.size}개의 이미지가 ${model.name}에 저장되었습니다`);
+        toast.success(`${selectedImages.size}개의 이미지가 ${model.name}에 저장되었습니다`);
       }
-      setCheckedImages(new Set());
+      setSelectedImages(new Map());
     } catch {
       toast.error('이미지 저장에 실패했습니다.');
     } finally {
@@ -80,7 +98,7 @@ export default function ImageSearchPage() {
   };
 
   const handleSave = () => {
-    if (checkedImages.size === 0) { toast.error('저장할 이미지를 선택해주세요.'); return; }
+    if (selectedImages.size === 0) { toast.error('저장할 이미지를 선택해주세요.'); return; }
     const matched = models.filter(m => searchQuery.includes(m.name));
     if (matched.length === 1) { saveToModel(matched[0]); return; }
     if (matched.length > 1) { setMatchingModels(matched); return; }
@@ -94,7 +112,7 @@ export default function ImageSearchPage() {
     try {
       const created = await modelsAPI.create({ name: newModelName.trim(), model_type: 'new_model' });
       setModels(prev => [...prev, created]);
-      const selected = [...checkedImages].map(i => images[i]);
+      const selected = [...selectedImages.values()];
       await imageSearchAPI.save({ model_id: created.id, images: selected });
       // Navigate to model edit page so user can complete the profile
       // (first saved image is auto-set as profile photo by the backend)
@@ -128,11 +146,11 @@ export default function ImageSearchPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch(1)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch(1, true)}
               placeholder="모델 이름을 포함하여 검색하세요 (예: 한서주 광고)"
               className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all" />
           </div>
-          <button onClick={() => handleSearch(1)} disabled={isSearching || !searchQuery.trim()}
+          <button onClick={() => handleSearch(1, true)} disabled={isSearching || !searchQuery.trim()}
             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap">
             {isSearching ? <><Loader2 className="w-5 h-5 animate-spin" />검색 중...</> : <><Search className="w-5 h-5" />검색</>}
           </button>
@@ -144,25 +162,26 @@ export default function ImageSearchPage() {
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={checkedImages.size === images.length && images.length > 0}
+                <input type="checkbox"
+                  checked={images.length > 0 && images.every(img => selectedImages.has(imageKey(img)))}
                   onChange={toggleAll} className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600" />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">전체 선택</span>
               </label>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {totalResults.toLocaleString()}개 결과 | {checkedImages.size}개 선택됨
+                {totalResults.toLocaleString()}개 결과 | {selectedImages.size}개 선택됨 (전체 페이지)
               </span>
             </div>
-            {checkedImages.size > 0 && (
+            {selectedImages.size > 0 && (
               <button onClick={handleSave} disabled={isSaving}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50">
-                {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" />저장 중...</> : <><Download className="w-4 h-4" />선택 이미지 저장 ({checkedImages.size}개)</>}
+                {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" />저장 중...</> : <><Download className="w-4 h-4" />선택 이미지 저장 ({selectedImages.size}개)</>}
               </button>
             )}
           </div>
 
           <div className="p-4 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {images.map((image, i) => (
-              <ImageResultCard key={i} image={image} index={i} isChecked={checkedImages.has(i)}
+              <ImageResultCard key={i} image={image} index={i} isChecked={selectedImages.has(imageKey(image))}
                 onToggle={toggleCheck} onPreview={setPreviewImage} />
             ))}
           </div>
@@ -199,7 +218,7 @@ export default function ImageSearchPage() {
 
       {previewImage && (
         <ImagePreviewModal image={previewImage}
-          isChecked={images.some((img, i) => img === previewImage && checkedImages.has(i))}
+          isChecked={selectedImages.has(imageKey(previewImage))}
           onClose={() => setPreviewImage(null)}
           onToggleCheck={() => { const idx = images.indexOf(previewImage); if (idx !== -1) toggleCheck(idx); }} />
       )}
